@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Button, Card, Rating, Badge, Avatar } from '../../../src/components/common';
+import { Button, Card, Rating, Badge, Avatar, Chip } from '../../../src/components/common';
 import { formatCurrencyRange } from '../../../src/constants';
 
 // Mock expert data
