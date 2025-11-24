@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -132,14 +132,15 @@ export default function DocumentsScreen() {
   };
 
   const handleCameraUpload = async (type: string) => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow camera access to take photos.');
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
     });
 
@@ -149,14 +150,15 @@ export default function DocumentsScreen() {
   };
 
   const handleGalleryUpload = async (type: string) => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow photo library access.');
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
     });
 
@@ -184,7 +186,6 @@ export default function DocumentsScreen() {
   const addDocument = async (type: string, uri: string, fileName: string) => {
     setUploading(true);
 
-    // Simulate upload
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const docType = documentTypes.find((d) => d.id === type);
@@ -294,8 +295,8 @@ export default function DocumentsScreen() {
                           backgroundColor: existingDoc
                             ? getStatusColor(existingDoc.status) + '20'
                             : isDark
-                            ? '#1E293B'
-                            : '#F1F5F9',
+                              ? '#1E293B'
+                              : '#F1F5F9',
                         }}
                       >
                         <MaterialIcons
@@ -371,8 +372,8 @@ export default function DocumentsScreen() {
                           backgroundColor: existingDoc
                             ? getStatusColor(existingDoc.status) + '20'
                             : isDark
-                            ? '#1E293B'
-                            : '#F1F5F9',
+                              ? '#1E293B'
+                              : '#F1F5F9',
                         }}
                       >
                         <MaterialIcons
@@ -402,15 +403,14 @@ export default function DocumentsScreen() {
 
                     <TouchableOpacity
                       onPress={() => existingDoc ? handleDeleteDocument(existingDoc.id) : handlePickDocument(docType.id)}
-                      className={`h-8 w-8 rounded-lg items-center justify-center ${
-                        existingDoc
-                          ? isDark
-                            ? 'bg-red-500/20'
-                            : 'bg-red-50'
-                          : isDark
+                      className={`h-8 w-8 rounded-lg items-center justify-center ${existingDoc
+                        ? isDark
+                          ? 'bg-red-500/20'
+                          : 'bg-red-50'
+                        : isDark
                           ? 'bg-slate-800'
                           : 'bg-slate-100'
-                      }`}
+                        }`}
                     >
                       <MaterialIcons
                         name={existingDoc ? 'delete' : 'add'}

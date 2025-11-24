@@ -22,15 +22,15 @@ export default function EditExpertProfileScreen() {
   const [saving, setSaving] = useState(false);
 
   const handlePickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permissionResult.granted) {
+    if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow access to your photos to change your profile picture.');
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
