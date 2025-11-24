@@ -35,7 +35,7 @@ const menuItems = [
     title: 'Notifications',
     subtitle: 'Manage your alerts',
     icon: 'notifications' as const,
-    route: '/(driver)/profile/notifications',
+    route: '/(shared)/notifications',
   },
   {
     id: 'settings',
@@ -49,7 +49,7 @@ const menuItems = [
     title: 'Help & Support',
     subtitle: 'FAQs and contact us',
     icon: 'help' as const,
-    route: '/(driver)/profile/help',
+    route: '/(shared)/help',
   },
 ];
 

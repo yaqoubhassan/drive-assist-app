@@ -76,7 +76,7 @@ const experts = [
   },
 ];
 
-const priceRangeLabels = {
+const priceRangeLabels: Record<string, string> = {
   budget: '$',
   average: '$$',
   premium: '$$$',
@@ -300,6 +300,7 @@ export default function ExpertsSearchScreen() {
                 className={`flex-1 h-10 rounded-lg items-center justify-center ${
                   isDark ? 'bg-slate-700' : 'bg-slate-100'
                 }`}
+                onPress={() => router.push(`/(shared)/messages?expertId=${expert.id}`)}
               >
                 <Text
                   className={`font-semibold ${
