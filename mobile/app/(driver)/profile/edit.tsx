@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -20,15 +20,15 @@ export default function EditProfileScreen() {
   const [loading, setSaving] = useState(false);
 
   const handlePickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permissionResult.granted) {
+    if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow access to your photos to change your profile picture.');
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -41,7 +41,6 @@ export default function EditProfileScreen() {
 
   const handleSave = async () => {
     setSaving(true);
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setSaving(false);
     Alert.alert('Success', 'Profile updated successfully');
@@ -129,7 +128,7 @@ export default function EditProfileScreen() {
               'Are you sure you want to delete your account? This action cannot be undone.',
               [
                 { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => {} },
+                { text: 'Delete', style: 'destructive', onPress: () => { } },
               ]
             )}
           >

@@ -8,6 +8,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,8 +45,15 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photos to upload images.');
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       quality: 0.8,
       selectionLimit: 5 - photos.length,
@@ -58,6 +66,13 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow camera access to take photos.');
+      return;
+    }
+
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
@@ -136,33 +151,31 @@ export default function DiagnoseDescribeScreen() {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  activeTab === tab
-                    ? 'bg-primary-500'
-                    : isDark
+                className={`flex-1 py-3 rounded-xl items-center ${activeTab === tab
+                  ? 'bg-primary-500'
+                  : isDark
                     ? 'bg-slate-800'
                     : 'bg-slate-100'
-                }`}
+                  }`}
               >
                 <MaterialIcons
                   name={
                     tab === 'text'
                       ? 'edit'
                       : tab === 'voice'
-                      ? 'mic'
-                      : 'photo-camera'
+                        ? 'mic'
+                        : 'photo-camera'
                   }
                   size={20}
                   color={activeTab === tab ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
                 />
                 <Text
-                  className={`text-sm font-semibold mt-1 capitalize ${
-                    activeTab === tab
-                      ? 'text-white'
-                      : isDark
+                  className={`text-sm font-semibold mt-1 capitalize ${activeTab === tab
+                    ? 'text-white'
+                    : isDark
                       ? 'text-slate-300'
                       : 'text-slate-600'
-                  }`}
+                    }`}
                 >
                   {tab}
                 </Text>
@@ -174,9 +187,8 @@ export default function DiagnoseDescribeScreen() {
           {activeTab === 'text' && (
             <View>
               <View
-                className={`rounded-xl border-2 p-4 min-h-[150px] ${
-                  isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'
-                }`}
+                className={`rounded-xl border-2 p-4 min-h-[150px] ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'
+                  }`}
               >
                 <TextInput
                   className={`text-base ${isDark ? 'text-white' : 'text-slate-900'}`}
@@ -214,9 +226,8 @@ export default function DiagnoseDescribeScreen() {
 
               {/* Tip */}
               <View
-                className={`flex-row p-4 rounded-xl mt-4 ${
-                  isDark ? 'bg-amber-500/10' : 'bg-amber-50'
-                }`}
+                className={`flex-row p-4 rounded-xl mt-4 ${isDark ? 'bg-amber-500/10' : 'bg-amber-50'
+                  }`}
               >
                 <MaterialIcons
                   name="lightbulb"
@@ -225,9 +236,8 @@ export default function DiagnoseDescribeScreen() {
                   style={{ marginRight: 12, marginTop: 2 }}
                 />
                 <Text
-                  className={`flex-1 text-sm ${
-                    isDark ? 'text-amber-200' : 'text-amber-700'
-                  }`}
+                  className={`flex-1 text-sm ${isDark ? 'text-amber-200' : 'text-amber-700'
+                    }`}
                 >
                   Tip: Mention when the issue started, how often it happens, and any
                   unusual sounds or smells.
@@ -241,9 +251,8 @@ export default function DiagnoseDescribeScreen() {
             <View className="items-center py-8">
               <TouchableOpacity
                 onPress={() => setIsRecording(!isRecording)}
-                className={`h-32 w-32 rounded-full items-center justify-center ${
-                  isRecording ? 'bg-red-500' : 'bg-primary-500'
-                }`}
+                className={`h-32 w-32 rounded-full items-center justify-center ${isRecording ? 'bg-red-500' : 'bg-primary-500'
+                  }`}
               >
                 <MaterialIcons
                   name={isRecording ? 'stop' : 'mic'}
@@ -252,9 +261,8 @@ export default function DiagnoseDescribeScreen() {
                 />
               </TouchableOpacity>
               <Text
-                className={`text-lg font-semibold mt-6 ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
+                className={`text-lg font-semibold mt-6 ${isDark ? 'text-white' : 'text-slate-900'
+                  }`}
               >
                 {isRecording ? 'Recording...' : 'Tap to start recording'}
               </Text>
@@ -270,9 +278,8 @@ export default function DiagnoseDescribeScreen() {
           {activeTab === 'photos' && (
             <View>
               <Text
-                className={`text-lg font-bold mb-1 ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
+                className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'
+                  }`}
               >
                 Add Photos
               </Text>
@@ -285,9 +292,8 @@ export default function DiagnoseDescribeScreen() {
               {/* Upload Area */}
               <TouchableOpacity
                 onPress={handlePickImage}
-                className={`border-2 border-dashed rounded-xl p-8 items-center ${
-                  isDark ? 'border-slate-600' : 'border-slate-300'
-                }`}
+                className={`border-2 border-dashed rounded-xl p-8 items-center ${isDark ? 'border-slate-600' : 'border-slate-300'
+                  }`}
               >
                 <MaterialIcons
                   name="photo-camera"
@@ -295,9 +301,8 @@ export default function DiagnoseDescribeScreen() {
                   color={isDark ? '#64748B' : '#94A3B8'}
                 />
                 <Text
-                  className={`text-base font-semibold mt-4 ${
-                    isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
+                  className={`text-base font-semibold mt-4 ${isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}
                 >
                   Tap to take photo or upload
                 </Text>
@@ -312,9 +317,8 @@ export default function DiagnoseDescribeScreen() {
               <View className="flex-row gap-3 mt-4">
                 <TouchableOpacity
                   onPress={handleTakePhoto}
-                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${
-                    isDark ? 'bg-slate-800' : 'bg-slate-100'
-                  }`}
+                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+                    }`}
                 >
                   <MaterialIcons
                     name="camera-alt"
@@ -322,18 +326,16 @@ export default function DiagnoseDescribeScreen() {
                     color={isDark ? '#94A3B8' : '#64748B'}
                   />
                   <Text
-                    className={`ml-2 font-semibold ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
+                    className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}
                   >
                     Take Photo
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handlePickImage}
-                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${
-                    isDark ? 'bg-slate-800' : 'bg-slate-100'
-                  }`}
+                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+                    }`}
                 >
                   <MaterialIcons
                     name="photo-library"
@@ -341,9 +343,8 @@ export default function DiagnoseDescribeScreen() {
                     color={isDark ? '#94A3B8' : '#64748B'}
                   />
                   <Text
-                    className={`ml-2 font-semibold ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
+                    className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}
                   >
                     Gallery
                   </Text>
@@ -389,9 +390,8 @@ export default function DiagnoseDescribeScreen() {
 
         {/* Footer */}
         <View
-          className={`px-4 py-4 border-t ${
-            isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
-          }`}
+          className={`px-4 py-4 border-t ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
+            }`}
         >
           <Button
             title="Continue"
