@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark">
+<div class="flex-1">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 bg-background-light/80 py-4 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex items-center px-4">
+<div class="flex size-12 shrink-0 items-center justify-start"></div>
+<h1 class="flex-1 text-center text-xl font-bold text-slate-900 dark:text-white">Messages</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-slate-600 hover:bg-slate-500/10 dark:text-slate-300">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Tabs -->
+<nav class="mb-2">
+<div class="border-b border-slate-200 px-4 dark:border-slate-800">
+<div class="flex justify-between">
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-primary py-3" href="#">
+<p class="font-bold text-primary">All</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-transparent py-3 text-slate-500" href="#">
+<p class="font-bold text-slate-500 dark:text-slate-400">Active</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-transparent py-3 text-slate-500" href="#">
+<p class="font-bold text-slate-500 dark:text-slate-400">Archived</p>
+</a>
+</div>
+</div>
+</nav>
+<!-- Conversation List -->
+<main class="flex flex-col">
+<!-- List Item 1 - With Unread Indicator -->
+<div class="flex items-center gap-4 px-4 py-3.5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of an automotive expert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBN_XUYpvaJlEMZ-3_oaYG71GbnbqSFzZuFo5_9yRz7JG1SIA2AfMu3S9qWN_GeyF2ONnksZHG8S6tC0X5UqjxnwoM_JvljRPHBP7PWlTBf6ks-aY5R-ipxayvXTukKMCLNw3OZsUoIv9a18tySYFPN8puCEDbpDWQA5MK46N0VpDQnGXRKXcUTpSJgGSyQyfCemjWnPedTsO73jO1mOs623Yt1xUBJFbKkEH6l2kOOeL_MVoTjVG2-sZhyJezOmNKIfHvYDkivheS6");'></div>
+</div>
+<div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+<p class="truncate font-semibold text-slate-900 dark:text-white">AutoCare Experts</p>
+<p class="truncate text-sm font-medium text-slate-800 dark:text-slate-200">Hey, I've taken a look at the photos...</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">⭐ 4.9 | 2.5 mi</p>
+</div>
+<div class="flex shrink-0 flex-col items-end gap-1.5 self-start">
+<p class="text-xs text-slate-500 dark:text-slate-400">10:42 AM</p>
+<div class="h-2.5 w-2.5 rounded-full bg-primary"></div>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="flex items-center gap-4 px-4 py-3.5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of an automotive expert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWWMlPmHKmk2web4yR1ytD7__DWyfJYFgZc12vZVVfkcm4WN5lVnlFB_hT6ktK8Gfgy9RbZBQHlS3NnH5euYKwlSsSngnkAwYrGyj_FkfHfJWOH9m0cyW2Nxc4FbdjBZodQsAmzZNIL7J-RtQ4ts47gkVCwXJqak5dqrrjv07NkD5awKpEUY8kYQWRad96SPODeDmGKACg_Wszkn3mUxrqHnsdvvp7syqw4O2xVhsz6J4MfXztEM3fDkdrr16zi8Q3XOmNtK0weyLy");'></div>
+</div>
+<div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+<p class="truncate font-semibold text-slate-900 dark:text-white">ProTech Mechanics</p>
+<p class="truncate text-sm text-slate-500 dark:text-slate-400">Yes, we can definitely help with that...</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">⭐ 4.8 | 5.1 mi</p>
+</div>
+<div class="flex shrink-0 flex-col items-end gap-1.5 self-start">
+<p class="text-xs text-slate-500 dark:text-slate-400">Yesterday</p>
+</div>
+</div>
+<!-- List Item 3 - With Unread Indicator -->
+<div class="flex items-center gap-4 px-4 py-3.5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of an automotive expert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcPt1BMP-ANptde4olj4UHgcUxJz1Ch3hTAMKc7jnUOxNlXLJLcgOh8jukpC9o1dI2pka-kFryrIHtEsFjkP-wVDLm6DjAxCzRFB6ojA4Ft32QybSbpafsKOPX3xyPanHxgSIzywTFDv-xLo6235qT3Rpi5fmjfmvrCNkD_bXy1tLQIuIiIy-H62DyD8gYen_IBCl-kc6vWFFqUFdH8fAVI64dMhncjpgYmH1uPjM8AZ4IRNgIXvCdhWkZqg9vhg5-2vM-xXzOsg-P");'></div>
+</div>
+<div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+<p class="truncate font-semibold text-slate-900 dark:text-white">Citywide Auto</p>
+<p class="truncate text-sm font-medium text-slate-800 dark:text-slate-200">Your appointment is confirmed for...</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">⭐ 5.0 | 1.2 mi</p>
+</div>
+<div class="flex shrink-0 flex-col items-end gap-1.5 self-start">
+<p class="text-xs text-slate-500 dark:text-slate-400">Sun</p>
+<div class="h-2.5 w-2.5 rounded-full bg-primary"></div>
+</div>
+</div>
+<!-- List Item 4 -->
+<div class="flex items-center gap-4 px-4 py-3.5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of an automotive expert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDzgTopAEAOSEEOYhrPNuSFxvzH91QSSU7ANkp5biIanyjyBWfz8p1XLQh4tu1Cgu9Rv7K1Ru2OCdZmpj95-SfJkqkv3MntWaFBPto1doPZL5jCxCMhP57Eq6cStuGfU0UzrKlJvVK_j41v_RjCdr62yOBns2blUSJMH6JkhyxSORAZZRje3wjgeBbZYc8iBNBtjVJAU4s8mFBv1OU0Tgv3HuMwu3IyNROKV0ke7wFRF1Hci_CMFfbswhhXbGxqYKp0yjrvnwHrFTzx");'></div>
+</div>
+<div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+<p class="truncate font-semibold text-slate-900 dark:text-white">Speedy Tune-ups</p>
+<p class="truncate text-sm text-slate-500 dark:text-slate-400">Your vehicle is ready for pickup.</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">⭐ 4.9 | 8.3 mi</p>
+</div>
+<div class="flex shrink-0 flex-col items-end gap-1.5 self-start">
+<p class="text-xs text-slate-500 dark:text-slate-400">Tue</p>
+</div>
+</div>
+<!-- Empty State Example (can be conditionally rendered) -->
+<!-- 
+                <div class="mt-16 flex flex-col items-center justify-center px-8 text-center">
+                    <div class="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined !text-6xl">chat</span>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">No Messages Yet</h2>
+                    <p class="mt-2 text-slate-600 dark:text-slate-400">Start a conversation with a verified expert to get help with your vehicle.</p>
+                    <button class="mt-6 w-full max-w-xs rounded-lg bg-primary px-5 py-3 text-base font-bold text-white">Find Experts</button>
+                </div>
+                -->
+</main>
+</div>
+<!-- Bottom Tab Bar -->
+<footer class="sticky bottom-0 border-t border-slate-200 bg-background-light/90 py-1 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/90">
+<div class="flex justify-around px-2">
+<a class="flex flex-1 flex-col items-center rounded-lg py-2 text-slate-500 hover:bg-slate-500/10 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center rounded-lg py-2 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span class="text-xs font-bold">Messages</span>
+</a>
+<a class="flex flex-1 flex-col items-center rounded-lg py-2 text-slate-500 hover:bg-slate-500/10 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="text-xs">My Garage</span>
+</a>
+<a class="flex flex-1 flex-col items-center rounded-lg py-2 text-slate-500 hover:bg-slate-500/10 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</footer>
+</div>
+</body></html>

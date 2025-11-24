@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Account - DriveAssist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+              "text-light-primary": "#212529",
+              "text-dark-primary": "#EAEAEA",
+              "text-light-secondary": "#6C757D",
+              "text-dark-secondary": "#A0A0A0",
+              "input-bg-light": "#FFFFFF",
+              "input-bg-dark": "#1b2027",
+              "input-border-light": "#CED4DA",
+              "input-border-dark": "#3b4454",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<div class="flex items-center p-4">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-text-light-primary dark:text-text-dark-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+</div>
+<div class="flex flex-1 flex-col px-4 pt-2 pb-8">
+<!-- Header Text -->
+<div class="mb-8">
+<h1 class="text-3xl font-bold leading-tight tracking-tight text-text-light-primary dark:text-text-dark-primary">Create Account</h1>
+<p class="text-base font-normal leading-normal text-text-light-secondary dark:text-text-dark-secondary mt-2">Join thousands of smart drivers</p>
+</div>
+<!-- Form -->
+<div class="flex flex-col space-y-4">
+<!-- Full Name -->
+<div class="relative">
+<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">person</span>
+<input class="form-input w-full rounded-xl border border-input-border-light bg-input-bg-light p-4 pl-12 text-base font-normal text-text-light-primary placeholder:text-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary dark:border-input-border-dark dark:bg-input-bg-dark dark:text-text-dark-primary dark:placeholder:text-text-dark-secondary" placeholder="Full Name" type="text"/>
+</div>
+<!-- Email -->
+<div class="relative">
+<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">mail</span>
+<input class="form-input w-full rounded-xl border border-input-border-light bg-input-bg-light p-4 pl-12 text-base font-normal text-text-light-primary placeholder:text-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary dark:border-input-border-dark dark:bg-input-bg-dark dark:text-text-dark-primary dark:placeholder:text-text-dark-secondary" placeholder="Email" type="email"/>
+</div>
+<!-- Phone Number -->
+<div class="relative">
+<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">phone</span>
+<input class="form-input w-full rounded-xl border border-input-border-light bg-input-bg-light p-4 pl-12 text-base font-normal text-text-light-primary placeholder:text-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary dark:border-input-border-dark dark:bg-input-bg-dark dark:text-text-dark-primary dark:placeholder:text-text-dark-secondary" placeholder="Phone Number (optional)" type="tel"/>
+</div>
+<!-- Password -->
+<div class="relative">
+<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">lock</span>
+<input class="form-input w-full rounded-xl border border-input-border-light bg-input-bg-light p-4 pl-12 pr-12 text-base font-normal text-text-light-primary placeholder:text-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary dark:border-input-border-dark dark:bg-input-bg-dark dark:text-text-dark-primary dark:placeholder:text-text-dark-secondary" placeholder="Password" type="password"/>
+<button class="absolute top-1/2 right-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+<!-- Password Strength Indicator -->
+<div class="flex h-1.5 w-full gap-1 rounded-full">
+<div class="flex-1 rounded-full bg-red-500"></div>
+<div class="flex-1 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex-1 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex-1 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+</div>
+<!-- Confirm Password -->
+<div class="relative">
+<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">lock</span>
+<input class="form-input w-full rounded-xl border border-input-border-light bg-input-bg-light p-4 pl-12 text-base font-normal text-text-light-primary placeholder:text-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary dark:border-input-border-dark dark:bg-input-bg-dark dark:text-text-dark-primary dark:placeholder:text-text-dark-secondary" placeholder="Confirm Password" type="password"/>
+</div>
+</div>
+<!-- Terms and Conditions Checkbox -->
+<div class="mt-6 flex items-start gap-3">
+<input class="form-checkbox mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-input-border-light bg-input-bg-light text-primary focus:ring-primary/50 dark:border-input-border-dark dark:bg-input-bg-dark dark:ring-offset-background-dark" id="terms-checkbox" type="checkbox"/>
+<label class="text-sm text-text-light-secondary dark:text-text-dark-secondary" for="terms-checkbox">
+                    I agree to the <a class="font-medium text-primary hover:underline" href="#">Terms of Service</a> and <a class="font-medium text-primary hover:underline" href="#">Privacy Policy</a>.
+                </label>
+</div>
+<div class="flex-grow"></div>
+<!-- Actions -->
+<div class="mt-8 flex flex-col items-center">
+<button class="w-full rounded-xl bg-primary/50 px-6 py-4 text-center text-base font-bold text-white" disabled="">Create Account</button>
+<p class="mt-6 text-center text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                    Already have an account? <a class="font-bold text-primary hover:underline" href="#">Sign In</a>
+</p>
+</div>
+</div>
+</div>
+</body></html>

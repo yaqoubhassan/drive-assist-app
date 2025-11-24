@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Diagnosis Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.5rem",
+                        "xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 p-4 pb-2 backdrop-blur-sm dark:bg-background-dark/80 justify-between">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined !text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Diagnosis Results</h2>
+<div class="flex w-12 items-center justify-end gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-slate-900 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined !text-2xl">bookmark_border</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-slate-900 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined !text-2xl">share</span>
+</button>
+</div>
+</div>
+<main class="flex-1 pb-40">
+<!-- Hero Card -->
+<div class="p-4">
+<div class="flex flex-col items-center justify-center gap-4 rounded-lg bg-gradient-to-br from-red-500/20 via-red-500/10 to-transparent dark:from-red-900/40 dark:via-red-900/20 dark:to-transparent p-6 text-center">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 dark:bg-red-500/10">
+<span class="material-symbols-outlined !text-4xl text-red-500 dark:text-red-400">warning</span>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Diagnosis Complete!</p>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-normal">Alternator Malfunction</p>
+</div>
+</div>
+</div>
+<!-- Confidence Card -->
+<div class="flex flex-col gap-3 p-4 pt-0">
+<div class="flex gap-6 justify-between">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">AI Confidence</p>
+<p class="text-slate-900 dark:text-white text-sm font-bold leading-normal">92%</p>
+</div>
+<div class="rounded-full h-2 bg-slate-200 dark:bg-slate-800"><div class="h-2 rounded-full bg-primary" style="width: 92%;"></div></div>
+</div>
+<!-- Quick Summary -->
+<div class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 p-4">
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 flex-col dark:border-slate-800 dark:bg-slate-900">
+<span class="material-symbols-outlined text-red-500 dark:text-red-400">error</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">High</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Urgency</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 flex-col dark:border-slate-800 dark:bg-slate-900">
+<span class="material-symbols-outlined text-red-500 dark:text-red-400">no_crash</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">No</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Safe to Drive</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 flex-col dark:border-slate-800 dark:bg-slate-900">
+<span class="material-symbols-outlined text-primary">attach_money</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">$400 - $600</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Est. Cost</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 flex-col dark:border-slate-800 dark:bg-slate-900">
+<span class="material-symbols-outlined text-primary">schedule</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">2-3 Hours</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Est. Time</p>
+</div>
+</div>
+</div>
+<!-- Explanation Section -->
+<div class="px-4 pb-3 pt-5">
+<div class="flex items-center gap-2">
+<h2 class="text-slate-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">What's Happening</h2>
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400">info</span>
+</div>
+</div>
+<p class="px-4 text-slate-600 dark:text-slate-400 text-base">The alternator is a critical component of your vehicle's charging system. It recharges the battery while the engine is running and powers the electrical system. A malfunction means your battery isn't being charged, which will eventually lead to a dead battery and vehicle shutdown.</p>
+<!-- DIY Steps Section -->
+<div class="p-4">
+<details class="group rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
+<summary class="flex cursor-pointer items-center justify-between p-4 font-bold text-slate-900 dark:text-white">
+                        What You Can Try
+                        <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-slate-200 dark:border-slate-800 p-4">
+<div class="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3 mb-4 border border-amber-500/20 dark:bg-amber-500/10">
+<span class="material-symbols-outlined mt-1 text-amber-500 dark:text-amber-400">warning</span>
+<p class="text-sm text-amber-700 dark:text-amber-300">Proceed with caution. These steps involve working near the engine and electrical components. If you are unsure, please consult a professional.</p>
+</div>
+<ol class="list-decimal list-inside space-y-3 text-slate-600 dark:text-slate-400">
+<li><span class="font-semibold text-slate-800 dark:text-slate-200">Check Battery Terminals:</span> Ensure the connections on your battery are tight and free of corrosion.</li>
+<li><span class="font-semibold text-slate-800 dark:text-slate-200">Inspect the Serpentine Belt:</span> Check the belt that drives the alternator for any signs of cracking, fraying, or looseness.</li>
+<li><span class="font-semibold text-slate-800 dark:text-slate-200">Listen for Noises:</span> A failing alternator can sometimes make a grinding or whining noise.</li>
+</ol>
+</div>
+</details>
+</div>
+<!-- Safety Warnings Card -->
+<div class="p-4 pt-0">
+<div class="rounded-lg border border-red-500/20 bg-red-500/10 dark:bg-red-900/20 p-4">
+<h3 class="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Safety Warnings</h3>
+<ul class="space-y-2 text-red-700 dark:text-red-300">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined mt-0.5 !text-base">electric_bolt</span>
+<span>Risk of electric shock. Disconnect the battery before inspecting electrical components.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined mt-0.5 !text-base">do_not_disturb_on</span>
+<span>Do not operate the vehicle. Driving may cause further damage and sudden loss of power.</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Related Issues Section -->
+<h2 class="text-slate-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Related Issues</h2>
+<div class="relative w-full">
+<div class="flex gap-4 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide">
+<div class="flex flex-col items-stretch justify-start rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 w-64 shrink-0 snap-start">
+<div class="w-full bg-slate-100 dark:bg-slate-800 aspect-video bg-cover rounded-t-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 !text-5xl">battery_alert</span>
+</div>
+<div class="flex w-full min-w-0 grow flex-col items-stretch justify-center gap-1 p-4">
+<p class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Weak Battery</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">A failing alternator can damage the battery.</p>
+</div>
+</div>
+<div class="flex flex-col items-stretch justify-start rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 w-64 shrink-0 snap-start">
+<div class="w-full bg-slate-100 dark:bg-slate-800 aspect-video bg-cover rounded-t-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 !text-5xl">compost</span>
+</div>
+<div class="flex w-full min-w-0 grow flex-col items-stretch justify-center gap-1 p-4">
+<p class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Serpentine Belt Wear</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">A worn belt can cause the alternator to fail.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Action Buttons & Footer -->
+<div class="fixed bottom-0 left-0 right-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="p-4 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full rounded-full bg-primary py-3 text-center font-bold text-white">Find Local Expert</button>
+<div class="grid grid-cols-2 gap-3">
+<button class="w-full rounded-full bg-primary/20 dark:bg-primary/20 py-3 text-center font-bold text-primary dark:text-primary">Save This Diagnosis</button>
+<button class="w-full rounded-full bg-primary/20 dark:bg-primary/20 py-3 text-center font-bold text-primary dark:text-primary">Share Results</button>
+</div>
+<div class="pt-2 text-center">
+<p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Disclaimer: This AI diagnosis is for informational purposes only and is not a substitute for professional advice.</p>
+<div class="flex items-center justify-center gap-4">
+<p class="text-sm text-slate-600 dark:text-slate-400">Was this helpful?</p>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-full h-10 w-10 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">thumb_up</span>
+</button>
+<button class="flex items-center justify-center rounded-full h-10 w-10 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">thumb_down</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

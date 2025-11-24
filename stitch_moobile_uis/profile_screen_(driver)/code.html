@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Profile - DriveAssist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 px-4 pb-2 pt-4 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex size-12 shrink-0 items-center"></div>
+<h1 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Profile</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex h-12 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 pb-24">
+<!-- Profile Header -->
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col items-center gap-4">
+<div class="flex flex-col items-center gap-4">
+<div class="aspect-square w-24 rounded-full bg-cover bg-center bg-no-repeat" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7CIvK146MqzyjZsLy6_07ZFXlxMR_wciq45jJg_2Erl3Bc7rwpyKWs_ZxJGELHvwinyAihU_0-kdhZWDYhE-lKlII2kBj6EmLLJpquZhuH_OJgNSwNcNlXwwW1OrLzx3GK6CDiJ9juaiqxuEM4KlFBKRp38AlnbZCEWb1cZVGcspSEfelL04717MvR1tJfV14enmdz32lzF6mZNTFgyyrqIQ_3xLWljk6rMjsMI2TG3mBicq2eXNc8RSEJfJU1IZWmPaRMGdy8x8s");'></div>
+<div class="flex flex-col items-center justify-center">
+<p class="text-[22px] font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Jordan Smith</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">jordan.smith@email.com</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Member since Aug 2023</p>
+</div>
+</div>
+<button class="flex h-10 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-slate-200 px-4 text-sm font-bold leading-normal tracking-[0.015em] text-slate-800 dark:bg-slate-700 dark:text-white">
+<span class="truncate">Change Photo</span>
+</button>
+</div>
+</div>
+<!-- Profile Stats -->
+<div class="flex flex-wrap gap-3 px-4 py-3">
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
+<p class="text-2xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">12</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Diagnoses</p>
+</div>
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
+<p class="text-2xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">5</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Saved Experts</p>
+</div>
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
+<p class="text-2xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">8</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Reviews Given</p>
+</div>
+</div>
+<!-- Account Section -->
+<h3 class="px-4 pb-2 pt-4 text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Account</h3>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">person</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Edit Profile</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">directions_car</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">My Vehicles</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">credit_card</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Payment Methods</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">home</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Addresses</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<!-- Activity Section -->
+<h3 class="px-4 pb-2 pt-4 text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Activity</h3>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">history</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Diagnosis History</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">bookmark</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">My Experts</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">chat</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Messages</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">star</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Reviews &amp; Ratings</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<!-- Preferences Section -->
+<h3 class="px-4 pb-2 pt-4 text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Preferences</h3>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">notifications</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Notifications</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">location_on</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Location Services</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex items-center justify-between gap-4 px-4 py-3">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">dark_mode</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Dark Mode</p>
+</div>
+<div class="shrink-0">
+<button aria-checked="true" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:bg-primary" role="switch">
+<span class="pointer-events-none inline-block h-5 w-5 translate-x-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">language</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Language</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<!-- Support Section -->
+<h3 class="px-4 pb-2 pt-4 text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Support</h3>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">help</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Help Center</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">contact_support</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Contact Support</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">flag</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Report a Problem</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">gavel</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Terms</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><span class="material-symbols-outlined">privacy_tip</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-slate-800 dark:text-slate-200">Privacy Policy</p>
+</div>
+<div class="shrink-0"><span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span></div>
+</div>
+<!-- Danger Zone -->
+<h3 class="px-4 pb-2 pt-4 text-lg font-bold leading-tight tracking-[-0.015em] text-red-600 dark:text-red-500">Danger Zone</h3>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-500"><span class="material-symbols-outlined">logout</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-red-600 dark:text-red-500">Sign Out</p>
+</div>
+</div>
+<div class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 active:bg-slate-100 dark:active:bg-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-500"><span class="material-symbols-outlined">delete_forever</span></div>
+<p class="flex-1 truncate text-base font-normal leading-normal text-red-600 dark:text-red-500">Delete Account</p>
+</div>
+</div>
+</main>
+<!-- Bottom Tab Bar -->
+<nav class="fixed bottom-0 z-10 w-full max-w-md border-t border-slate-200 bg-background-light/80 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/80">
+<div class="flex h-16 justify-around">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="text-xs font-medium">Diagnose</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-xs font-medium">Experts</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

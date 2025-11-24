@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Vehicle Information</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-white/5">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-zinc-900 dark:text-white" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="flex-1 text-center text-zinc-900 dark:text-white text-base font-medium leading-tight">Step 3 of 4</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-zinc-900 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+</div>
+<main class="flex-grow px-4 pt-5 pb-32">
+<!-- Headline & Body Text -->
+<h2 class="text-zinc-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight text-left pb-1">Vehicle Information</h2>
+<p class="text-zinc-600 dark:text-zinc-400 text-base font-normal leading-normal pb-6">Help us provide accurate diagnosis</p>
+<!-- Info Callout -->
+<div class="flex items-center gap-3 bg-yellow-500/10 dark:bg-yellow-500/10 p-3 rounded-lg mb-8">
+<span class="material-symbols-outlined text-yellow-500 flex items-center justify-center shrink-0 size-6" style="font-size: 24px;">info</span>
+<p class="text-yellow-700 dark:text-yellow-400 text-sm font-normal leading-normal flex-1">Note: Optional but recommended</p>
+</div>
+<!-- Vehicle Form -->
+<div class="space-y-4">
+<!-- Year -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2" for="year">Year</label>
+<div class="relative">
+<select class="w-full pl-4 pr-10 py-3 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:ring-primary focus:border-primary placeholder:text-zinc-500" id="year" name="year">
+<option>2023</option>
+<option>2022</option>
+<option>2021</option>
+<option>2020</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500 dark:text-zinc-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">unfold_more</span>
+</div>
+</div>
+</div>
+<!-- Make -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2" for="make">Make</label>
+<div class="relative">
+<input class="w-full pl-4 pr-10 py-3 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:ring-primary focus:border-primary placeholder:text-zinc-500" id="make" name="make" placeholder="Search for make (e.g. Toyota)" type="text"/>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500 dark:text-zinc-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+</div>
+</div>
+</div>
+<!-- Model -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2" for="model">Model</label>
+<input class="w-full pl-4 pr-4 py-3 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:ring-primary focus:border-primary placeholder:text-zinc-500 disabled:opacity-50" disabled="" id="model" name="model" placeholder="Select a make first" type="text"/>
+</div>
+<!-- Mileage -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2" for="mileage">Mileage</label>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 dark:text-zinc-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">speed</span>
+</div>
+<input class="w-full pl-10 pr-16 py-3 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:ring-primary focus:border-primary placeholder:text-zinc-500" id="mileage" name="mileage" placeholder="e.g. 50000" type="number"/>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-500 dark:text-zinc-400">
+<span>miles</span>
+</div>
+</div>
+</div>
+<!-- VIN -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2" for="vin">VIN (Optional)</label>
+<div class="relative">
+<input class="w-full pl-4 py-3 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:ring-primary focus:border-primary placeholder:text-zinc-500 pr-32" id="vin" name="vin" placeholder="Enter vehicle identification number" type="text"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-2.5">
+<button class="bg-primary/20 text-primary text-sm font-bold py-1.5 px-3 rounded-md">Scan VIN</button>
+<button class="ml-1 p-1 text-zinc-500 dark:text-zinc-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">help</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Saved Vehicles Section -->
+<div class="mt-10">
+<h3 class="text-lg font-bold text-zinc-900 dark:text-white mb-4">Saved Vehicles</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-4 bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 p-4 rounded-lg">
+<input class="h-5 w-5 border-zinc-400 dark:border-zinc-600 text-primary focus:ring-primary bg-transparent dark:bg-transparent" id="radio-1" name="saved-vehicle" type="radio"/>
+<label class="flex-1 text-zinc-900 dark:text-white text-base font-normal leading-normal" for="radio-1">2021 Toyota Camry</label>
+</div>
+<div class="flex items-center gap-4 bg-zinc-200/50 dark:bg-zinc-800/50 border border-primary p-4 rounded-lg ring-2 ring-primary">
+<input checked="" class="h-5 w-5 border-primary text-primary focus:ring-primary bg-transparent dark:bg-transparent" id="radio-2" name="saved-vehicle" type="radio"/>
+<label class="flex-1 text-zinc-900 dark:text-white text-base font-normal leading-normal" for="radio-2">2019 Ford F-150</label>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 border-t border-white/5">
+<div class="flex flex-col items-center gap-3">
+<button class="w-full bg-primary text-white text-base font-bold py-4 rounded-full">Continue</button>
+<button class="text-primary text-base font-medium py-2">Skip this step</button>
+</div>
+</div>
+</div>
+</body></html>

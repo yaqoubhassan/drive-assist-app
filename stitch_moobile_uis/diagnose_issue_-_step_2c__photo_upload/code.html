@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Diagnose Issue</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex flex-col flex-1">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+<button class="text-slate-800 dark:text-white flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-800 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Diagnose an Issue</h2>
+<div class="flex size-12 shrink-0 items-center"></div>
+</div>
+<!-- PageIndicators -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-3">
+<div class="h-2 w-2 rounded-full bg-primary/30 dark:bg-primary/20"></div>
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-primary/30 dark:bg-primary/20"></div>
+</div>
+<!-- SegmentedButtons -->
+<div class="flex px-4 py-3">
+<div class="flex h-10 flex-1 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-800 has-[:checked]:dark:text-white">
+<span class="truncate">Details</span>
+<input class="invisible w-0" name="diagnose-step" type="radio" value="Details"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-800 has-[:checked]:dark:text-white">
+<span class="truncate">Audio</span>
+<input class="invisible w-0" name="diagnose-step" type="radio" value="Audio"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-800 has-[:checked]:dark:text-white">
+<span class="truncate">Photos</span>
+<input checked="" class="invisible w-0" name="diagnose-step" type="radio" value="Photos"/>
+</label>
+</div>
+</div>
+<div class="px-4 pt-5 pb-6 flex-1">
+<!-- HeadlineText -->
+<h3 class="text-slate-800 dark:text-white tracking-light text-2xl font-bold leading-tight text-left pb-1">Add Photos</h3>
+<!-- BodyText -->
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal pb-6">Take or upload up to 5 photos of the issue</p>
+<!-- Uploaded Photos Grid -->
+<div class="grid grid-cols-2 gap-4 mb-4">
+<!-- Photo 1 -->
+<div class="relative group">
+<img class="rounded aspect-square object-cover w-full" data-alt="Close-up of a car engine component" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQR0gXcMT1GtHcsgx5EK0XT2M1cEJlBSjoT3_p160pnCJ_Z6aIRGCu8q-u6kUdZ1iruSXGTsjtOHX22y9HtZp_XN7Y7AiDLK6W58FL-QgMylnl7N5No_2HvG87GL8oVgrKZ2KPo8hNsgsI7LfQi293E4kbO7GbCx5A8QhXG8aw9uEtA0HybnaZvfGAqguoRb-aEvx5m2z7iSU4IDYfCh5Z0hr8fZEqyg3tRQGGNii4BgJ4TE8VMf1cGEITbHROXUhR8TEw65nhJ0Ki"/>
+<div class="absolute inset-0 bg-black/20 rounded"></div>
+<div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-semibold px-2 py-1 rounded-full">Main photo</div>
+<button class="absolute top-2 right-2 flex items-center justify-center size-7 bg-red-600/80 hover:bg-red-600 text-white rounded-full transition-colors">
+<span class="material-symbols-outlined text-base">delete</span>
+</button>
+</div>
+<!-- Photo 2 -->
+<div class="relative group">
+<img class="rounded aspect-square object-cover w-full" data-alt="Detailed view of a car engine bay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0I_Ia5hhgjxUnH_4JDeY3JOhXczDxROK7oKGBk1wF9old2y0-Y7SBiRcG0EAA16L_r94yDut6QAG3JPzUBQzLaB6N-hOx5ZvpHYCFrkqzbrKn4bS-cXpF7rcjbufmiE2Ou6cgCdZO-AEbvGfOCMi6MrJWicx9K2ymhjBjMJRuHxefseFWdr1hbrti90CLJS5dWCEETz8Ck2bogTiEYAdkFQLFU3xkAXWLNrBj_Z-OEYXmkUw1FPMmu1P5ApNHPmHR7EaOIGV8UIyW"/>
+<button class="absolute top-2 right-2 flex items-center justify-center size-7 bg-red-600/80 hover:bg-red-600 text-white rounded-full transition-colors">
+<span class="material-symbols-outlined text-base">delete</span>
+</button>
+</div>
+<!-- Photo 3 -->
+<div class="relative group">
+<img class="rounded aspect-square object-cover w-full" data-alt="A worn car tire showing tread wear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA48P5c8DYi0fRB4TbR8UPpqlG6Tu2JzwNFlkzcQsFMb8PA8puBeM7qM5roakiISd7OFdztEL9W9WNe-WiMxT0VJUtcUP0zpbJZ0mFYfbQNhVMXcnar8_X5aFhT2hjYynCcJt_ealhgh8auW8j7TGAf8CTh-9gLbqPFeUZ8njnuf6SVxQ1Eu6RnTr0xN7W24-sHsHHdl6-G6iOBry5aZuFOGzP3ECnygJjGMCe71km2u3Y9-YCcWib0fhPLGqSIBftXP0GSbI5a-aSX"/>
+<button class="absolute top-2 right-2 flex items-center justify-center size-7 bg-red-600/80 hover:bg-red-600 text-white rounded-full transition-colors">
+<span class="material-symbols-outlined text-base">delete</span>
+</button>
+</div>
+</div>
+<p class="text-center text-slate-500 dark:text-slate-400 text-sm mb-6">3 of 5 photos</p>
+<!-- Collapsible Card / Accordion -->
+<details class="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg group">
+<summary class="flex items-center justify-between cursor-pointer list-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">tips_and_updates</span>
+<h4 class="font-bold text-slate-800 dark:text-white">Photo Tips</h4>
+</div>
+<span class="material-symbols-outlined text-slate-800 dark:text-white transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<ul class="mt-4 space-y-2 text-slate-600 dark:text-slate-300 text-sm list-disc list-inside">
+<li>Capture the entire component in one photo.</li>
+<li>Use good, even lighting and avoid shadows.</li>
+<li>Take a wider shot to show the surrounding area.</li>
+<li>Focus on any leaks, cracks, or visible damage.</li>
+</ul>
+</details>
+</div>
+</div>
+<!-- Footer with Action Buttons -->
+<div class="sticky bottom-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-3">
+<button class="w-full text-center py-3 px-6 rounded-full bg-primary/20 dark:bg-primary/30 text-primary font-bold transition-colors">
+                Add More Photos
+            </button>
+<button class="w-full text-center py-3 px-6 rounded-full bg-primary text-white font-bold transition-colors">
+                Continue
+            </button>
+<button class="w-full text-center py-2 px-6 rounded-full text-slate-500 dark:text-slate-400 font-medium transition-colors">
+                Skip
+            </button>
+</div>
+</div>
+</div>
+</body></html>

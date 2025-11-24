@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lead Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden pb-32">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm">
+<div class="flex size-10 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-zinc-800 dark:text-white">arrow_back</span>
+</div>
+<h2 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-zinc-900 dark:text-white">Lead Details</h2>
+<div class="flex w-10 items-center justify-center">
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-transparent text-zinc-800 dark:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4">
+<!-- Customer Info Card -->
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#1C2532] p-4">
+<div class="flex items-center justify-between gap-4">
+<div class="flex flex-[2_2_0px] flex-col gap-4">
+<div class="flex flex-col gap-1">
+<p class="text-lg font-bold leading-tight text-zinc-900 dark:text-white">John Doe</p>
+<div class="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+<span class="material-symbols-outlined text-base" style="color: #facc15;">star</span>
+<p class="text-sm font-normal leading-normal">4.8 (12 Reviews) • Austin, TX</p>
+</div>
+</div>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-3 text-sm font-medium leading-normal w-fit bg-primary/10 text-primary dark:bg-primary/20">
+<span class="truncate">View Public Profile</span>
+</button>
+</div>
+<div class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full flex-shrink-0" data-alt="Customer avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCOXJ2koIFVJrYoPfsBrmYMZFvb3jShdMRc4WraeYJ5UTHj8Kf9Z4sbUY4ct1mPQHn72MNeK0CTS5qB35XtncvKt66OEWDhRNIW0rHSX3rj-UxKF-iXhXw7Qlo1W722UjHfKmz4lDPAeCTdV23TXiZ92kaOEzSLwC02eH8ETM5mikhd1LQP_zJpzBSKgTZZvxmPImhXPbNcBUeesVB0zC1K1OjEKtiz9_KatDX3Yu4E63UmiPbdHjWvGTCebKurVvhpJQwIBWyrL5DT");'></div>
+</div>
+<div class="flex flex-1 gap-3 flex-wrap justify-between">
+<button class="flex flex-1 min-w-[84px] items-center justify-center gap-2 rounded-lg h-10 px-4 bg-zinc-100 dark:bg-zinc-700/50 text-zinc-900 dark:text-white text-sm font-bold">
+<span class="material-symbols-outlined text-base">call</span>
+<span class="truncate">Call</span>
+</button>
+<button class="flex flex-1 min-w-[84px] items-center justify-center gap-2 rounded-lg h-10 px-4 bg-zinc-100 dark:bg-zinc-700/50 text-zinc-900 dark:text-white text-sm font-bold">
+<span class="material-symbols-outlined text-base">email</span>
+<span class="truncate">Email</span>
+</button>
+<button class="flex flex-1 min-w-[84px] items-center justify-center gap-2 rounded-lg h-10 px-4 bg-zinc-100 dark:bg-zinc-700/50 text-zinc-900 dark:text-white text-sm font-bold">
+<span class="material-symbols-outlined text-base">sms</span>
+<span class="truncate">Text</span>
+</button>
+</div>
+</div>
+<!-- Issue Details Card -->
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#1C2532] p-4">
+<div class="flex w-full grow flex-col items-stretch justify-center gap-1">
+<p class="text-sm font-medium leading-normal text-primary">Engine &amp; Transmission</p>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em] text-zinc-900 dark:text-white">Car won't start, clicking sound</p>
+</div>
+<div class="grid grid-cols-2">
+<div class="flex flex-col gap-1 border-t border-solid border-zinc-200 dark:border-zinc-700 py-4 pr-2">
+<p class="text-sm font-normal leading-normal text-zinc-600 dark:text-zinc-400">Make</p>
+<p class="text-sm font-medium leading-normal text-zinc-900 dark:text-white">Toyota</p>
+</div>
+<div class="flex flex-col gap-1 border-t border-solid border-zinc-200 dark:border-zinc-700 py-4 pl-2">
+<p class="text-sm font-normal leading-normal text-zinc-600 dark:text-zinc-400">Model</p>
+<p class="text-sm font-medium leading-normal text-zinc-900 dark:text-white">Camry</p>
+</div>
+<div class="flex flex-col gap-1 border-t border-solid border-zinc-200 dark:border-zinc-700 py-4 pr-2">
+<p class="text-sm font-normal leading-normal text-zinc-600 dark:text-zinc-400">Year</p>
+<p class="text-sm font-medium leading-normal text-zinc-900 dark:text-white">2018</p>
+</div>
+<div class="flex flex-col gap-1 border-t border-solid border-zinc-200 dark:border-zinc-700 py-4 pl-2">
+<p class="text-sm font-normal leading-normal text-zinc-600 dark:text-zinc-400">Mileage</p>
+<p class="text-sm font-medium leading-normal text-zinc-900 dark:text-white">54,123 mi</p>
+</div>
+<div class="col-span-2 flex flex-col gap-1 border-t border-solid border-zinc-200 dark:border-zinc-700 py-4">
+<p class="text-sm font-normal leading-normal text-zinc-600 dark:text-zinc-400">VIN</p>
+<p class="text-sm font-medium leading-normal text-zinc-900 dark:text-white">JN8AZ...T567</p>
+</div>
+</div>
+</div>
+<!-- Customer Message -->
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#1C2532] p-4">
+<h3 class="text-base font-bold text-zinc-900 dark:text-white">Customer Message</h3>
+<p class="text-sm text-zinc-700 dark:text-zinc-300">"My 2018 Camry has been having trouble starting for the past week. When I turn the key, all I hear is a rapid clicking noise from the engine bay, but the engine doesn't turn over. The dashboard lights and radio still work fine. It happened a few times intermittently, but now it won't start at all."</p>
+<div class="grid grid-cols-3 gap-2">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" data-alt="Photo of a car engine bay" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANJVnkOaMyDw4AhhMx5kLOCQqEMB46t0sDEabU2Hhbbf0JI4RMf0ArGAjNR0tKNt6ycvAA6i2sL4Zn9-QOrxO-ZMNhioODN59t8RxYHXUVr9Ijv196ors59QHspvExmKknKp5yt_Hdj4UFOn1MQzId9iNVSItCMr9g0ApxzCESz_kJ7KlwJWDRRB1N038hZVUnpStSixiIWXi31m49TVLwabqPlikTaxwhr_oskFHSdjLQX364tstbk61s9dpYu7N0y75_17uHBZNB");'></div>
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" data-alt="Photo of a car dashboard with warning lights" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwVln3neiIJQe0UREe3pH9r_FXH-sl-PYSOQ3jeAAHBtyqT_UktaQO7Q5-JepxkZxNJbJ5KK31GTEpL-Mi0Bg9swTRjaMMssStt02_uRkdspqoaeJe5TiRWJ3ixj6csttPtLfPrm4NHrzE4l7rrJNonxZ6Ph2SejfvXOqN-Zlibb-YwR036Ex-OKVnPlkAbwaJsus8bFdBFGdqVL0Na6KsTAnGydCBLp11vef_qGbKGZ5SynkadbmSAO2ne1e7z9MlGAKY2GiMGDJz");'></div>
+</div>
+</div>
+<!-- AI Diagnosis -->
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#1C2532] p-4">
+<h3 class="text-base font-bold text-zinc-900 dark:text-white">AI Diagnosis</h3>
+<div class="flex flex-col gap-1">
+<p class="text-zinc-700 dark:text-zinc-300 text-sm">Based on the symptoms, the most likely issue is a weak or dead battery. The clicking sound is typically the starter solenoid attempting to engage with insufficient power.</p>
+</div>
+<div class="flex items-center justify-between text-sm">
+<span class="font-medium text-zinc-600 dark:text-zinc-400">Confidence</span>
+<span class="font-bold text-green-500">85%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<span class="font-medium text-zinc-600 dark:text-zinc-400">Est. Cost</span>
+<span class="font-bold text-zinc-900 dark:text-white">$150 - $350</span>
+</div>
+<button class="mt-2 flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/10 text-primary dark:bg-primary/20 text-sm font-bold">
+<span class="truncate">View Full Diagnosis</span>
+</button>
+</div>
+<!-- Preferences -->
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#1C2532] p-4">
+<h3 class="text-base font-bold text-zinc-900 dark:text-white">Preferences</h3>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-zinc-500 dark:text-zinc-400">sms</span>
+<p class="text-sm text-zinc-900 dark:text-white">Prefers <span class="font-bold">Text Message</span></p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-zinc-500 dark:text-zinc-400">schedule</span>
+<p class="text-sm text-zinc-900 dark:text-white">Best time: <span class="font-bold">Weekday Afternoons</span></p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-amber-500">priority_high</span>
+<p class="text-sm text-zinc-900 dark:text-white">Urgency: <span class="font-bold text-amber-500">Medium</span></p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-zinc-500 dark:text-zinc-400">directions_car</span>
+<p class="text-sm text-zinc-900 dark:text-white">Car is <span class="font-bold">Available Now</span></p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Actions -->
+<div class="fixed bottom-0 left-0 right-0 z-10 bg-white/80 dark:bg-[#1C2532]/80 p-4 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-700">
+<div class="flex w-full items-center gap-3">
+<button class="flex flex-1 max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary text-white text-base font-bold">
+<span class="truncate">Respond to Lead</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 w-12 px-0 bg-zinc-200 dark:bg-zinc-700/50 text-zinc-900 dark:text-white text-base font-bold">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 w-12 px-0 bg-zinc-200 dark:bg-zinc-700/50 text-red-500 text-base font-bold">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

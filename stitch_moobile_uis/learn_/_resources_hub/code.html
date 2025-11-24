@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Learn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex flex-col bg-background-light dark:bg-background-dark">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center"></div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Learn</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-slate-900 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl">search</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-4">
+<!-- Search Bar -->
+<div class="py-3">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+<div class="text-slate-400 dark:text-slate-500 flex border-none bg-slate-200 dark:bg-slate-800/50 items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined text-2xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-200 dark:bg-slate-800/50 focus:border-none h-full placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search articles, guides, tips..." value=""/>
+</div>
+</label>
+</div>
+<!-- Chips / Trending Searches -->
+<div class="flex gap-3 py-3 overflow-x-auto">
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-slate-800/50 px-4">
+<p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Oil Change</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-slate-800/50 px-4">
+<p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Brake Noise</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-slate-800/50 px-4">
+<p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Tire Pressure</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-slate-800/50 px-4">
+<p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">EV Charging</p>
+</div>
+</div>
+</div>
+<!-- Section Header: Content Categories -->
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6">Content Categories</h3>
+<!-- Text Grid: Content Categories -->
+<div class="grid grid-cols-2 gap-3 p-4 pt-2">
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">signpost</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Road Signs</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">A complete guide.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">build_circle</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Common Issues</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Diagnose problems.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">construction</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Maintenance</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Maintain your vehicle.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">directions_car</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Driving Tips</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Improve your skills.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">ev_station</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Electric Vehicles</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">All about electric cars.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-col">
+<span class="material-symbols-outlined text-primary text-2xl">electric_scooter</span>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">E-Bikes &amp; Scooters</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Guides &amp; tips.</p>
+</div>
+</div>
+</div>
+<!-- Section Header: Featured Content -->
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Featured Content</h3>
+<!-- Featured Content Cards (Horizontal Scroll) -->
+<div class="flex gap-4 overflow-x-auto p-4 pt-2 pb-6">
+<div class="relative flex h-52 w-72 shrink-0 flex-col justify-end overflow-hidden rounded-xl">
+<img class="absolute inset-0 size-full object-cover" data-alt="Close-up of an electric vehicle charging port" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSYRisB-qbpJewzGpK12xBlxdCE5kqYrViB8MJJxX4Ps85QkaO16-0Tk4Cx3Q3fda6lvQcEZ53P5mMH8ijZYGWcVkdC9Hd1AgWxCMgEsaPWrvObDrSQV5hs5MjdfvPJmU0F06I3fPmjPssvMJSzFFX3eGycKOnTUC2X4cvBSzNt_GDRFu5Qwc2gZ7UMKjL7MjUMK69AgJCvV8OCGlL2x_EMt06w7wr5QROWwDHrqRZTkd2ddjMNQG3pnnCA6B0mZmK48rAFUs3WD-M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
+<div class="relative z-10 flex flex-col gap-2 p-4">
+<div class="flex h-6 shrink-0 items-center justify-center gap-x-1.5 self-start rounded-full bg-primary/30 px-3 backdrop-blur-sm">
+<p class="text-white text-xs font-medium leading-normal">EV GUIDES</p>
+</div>
+<h3 class="text-white text-lg font-bold">The Ultimate Guide to Your First EV</h3>
+<p class="text-slate-300 text-sm font-medium">12 min read</p>
+</div>
+</div>
+<div class="relative flex h-52 w-72 shrink-0 flex-col justify-end overflow-hidden rounded-xl">
+<img class="absolute inset-0 size-full object-cover" data-alt="A car driving on a snowy road during winter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB-TQUK5j7QCx2C9hR_djxKG_PR_ouSNwI9ZjgwXWnVXu2JwUBMp6SgCQlp7ZtN6AOcVsfpYjzpJNgJezbsp0I-WW6IzTae1_ICr1Is9jDrUi47oczZLKXiLZmWyFjHTrp2iO5JB3eewVypIDLl8P3Rgug0pIjfeNeLoTyif_sSClIIqtH8YTZiXcWbp1EFdvtdGuozLbxB73WRHQLHxoEXjLMx_RjxqnOgG81iNrgSPTtU5yPo8AJcWe_NhKHOKZEryNGlxy8AA9v"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
+<div class="relative z-10 flex flex-col gap-2 p-4">
+<div class="flex h-6 shrink-0 items-center justify-center gap-x-1.5 self-start rounded-full bg-primary/30 px-3 backdrop-blur-sm">
+<p class="text-white text-xs font-medium leading-normal">SAFETY</p>
+</div>
+<h3 class="text-white text-lg font-bold">Winter Driving Safety Checklist</h3>
+<p class="text-slate-300 text-sm font-medium">8 min read</p>
+</div>
+</div>
+</div>
+<!-- Section Header: Recent Articles -->
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-2">Recent Articles</h3>
+<!-- Recent Articles List -->
+<div class="flex flex-col gap-3 p-4 pt-2">
+<div class="flex items-center gap-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+<img class="h-20 w-20 shrink-0 rounded-md object-cover" data-alt="A person checking the pressure of a car tire with a gauge" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuMrPv8K02HdnvXGIGUqC8yhiyPLLa1tHFKJa6oLAFSsY36DKvaTJ8uiJU046PBhuApmVw44cJZjDkHlnvf-XqimCL6BxutBbsNfc2WP-Nry3iUrfReZ5oakNYO7--wIz4ncgLtlMuRfTKwlCIXUzG7zflrNIi_Da5HrRlX76ybpHUx27dDHqUkmsLGyf1Uu0BI6deU10WYS9kcD4cKzcWbzEMGaaeO0VkSP3Am73CwY1bY4kQg6fdJU2i4oGoKauxTCUo1f05kwLJ"/>
+<div class="flex flex-col gap-1.5">
+<h4 class="text-slate-900 dark:text-white font-bold leading-tight">How to Check Your Tire Pressure</h4>
+<div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+<span>Beginner</span>
+<span class="text-slate-300 dark:text-slate-600">·</span>
+<span>5 min read</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+<img class="h-20 w-20 shrink-0 rounded-md object-cover" data-alt="A glowing check engine light on a car's dashboard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsFD_nRUf5SXQEDctSSWtvoJo0aQnzJ51kP4gIfe_EFanBZpgBvU5TnaIMMOnlWjA-gklG4w_NXdo5Xl2rr7DkTAyXrvApmIN_PJnyJRoyG4LFA01rmgASjKK5YlnH0epnom76nvI0xXXrDYIX__HzV7267hq2EbuHDHT-Hi-bIYQzA2XRmVTU_hUnH3JlqtL5w3Mcc8mcy_4rYr3aQNf9eQJ0OU-SESEpQI4L73ILrpyV_W56uFN-5vLPoJ8u-LSdkG2oBsh1ykJr"/>
+<div class="flex flex-col gap-1.5">
+<h4 class="text-slate-900 dark:text-white font-bold leading-tight">Understanding Dashboard Lights</h4>
+<div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+<span>Beginner</span>
+<span class="text-slate-300 dark:text-slate-600">·</span>
+<span>7 min read</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+<img class="h-20 w-20 shrink-0 rounded-md object-cover" data-alt="A mechanic changing the oil of a car on a lift" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrmsMke3YDPJq_p4d0n3-6fTnNfEpgM232qNrFVuCkLz7slWjWmifCIFo0ie0hCL0K3LFKyz1g1KckdIAeQBGTYlhXoXmMwuFxBmAmejhNL4EictQ-72FJcbnHgEGweSY4rADFMPyl4oOjd7r0NC0gIOphC2L-01gyYFZ7WGbLxjYALj1mMQm8ORCoC-OysNhWZuXwL5YtjBj_aBdZsN8AnzarEchD2_keXdXgLG5d6x-kdihy1pNnmbCXGbe0-hFDusQQGMC776U-"/>
+<div class="flex flex-col gap-1.5">
+<h4 class="text-slate-900 dark:text-white font-bold leading-tight">DIY Oil Change: A Step-by-Step Guide</h4>
+<div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+<span>Intermediate</span>
+<span class="text-slate-300 dark:text-slate-600">·</span>
+<span>15 min read</span>
+</div>
+</div>
+</div>
+</div>
+<div class="h-24"></div>
+<!-- Bottom Tab Navigator -->
+<div class="fixed bottom-0 z-10 w-full max-w-md border-t border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg">
+<div class="flex h-20 items-center justify-around px-2">
+<div class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-2xl">home</span>
+<p class="text-xs font-medium">Home</p>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-2xl">build</span>
+<p class="text-xs font-medium">Diagnostics</p>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
+<p class="text-xs font-bold">Learn</p>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-2xl">person</span>
+<p class="text-xs font-medium">Profile</p>
+</div>
+</div>
+</div>
+</div>
+</body></html>

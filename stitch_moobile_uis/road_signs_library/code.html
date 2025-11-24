@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Road Signs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center size-12 shrink-0">
+<span class="material-symbols-outlined text-black dark:text-white" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="flex-1 text-lg font-bold leading-tight tracking-[-0.015em] text-center text-black dark:text-white">Road Signs</h2>
+<div class="flex items-center justify-end w-12">
+<button class="flex items-center justify-center h-12 min-w-0 p-0 overflow-hidden cursor-pointer rounded-xl bg-transparent gap-2 text-base font-bold leading-normal tracking-[0.015em] max-w-[480px]">
+<span class="material-symbols-outlined text-black dark:text-white" style="font-size: 24px;">search</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-3">
+<label class="flex flex-col w-full h-12 min-w-40">
+<div class="flex items-stretch flex-1 w-full h-full rounded-xl">
+<div class="flex items-center justify-center pl-4 border-none rounded-l-xl bg-black/5 dark:bg-white/5 border-r-0">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400" style="font-size: 24px;">search</span>
+</div>
+<input class="flex-1 w-full min-w-0 px-2 text-base font-normal leading-normal placeholder-gray-500 dark:placeholder-gray-400 bg-black/5 dark:bg-white/5 text-black dark:text-white border-none rounded-r-xl form-input focus:outline-0 focus:ring-0 focus:border-none" placeholder="Search signs..." value=""/>
+</div>
+</label>
+</div>
+<!-- Chips -->
+<div class="flex gap-3 px-4 pb-3 overflow-x-auto">
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-primary pl-4 pr-4">
+<p class="text-white text-sm font-medium leading-normal">All</p>
+</div>
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-black/5 dark:bg-white/5 pl-4 pr-4">
+<p class="text-black dark:text-white text-sm font-medium leading-normal">Warning</p>
+</div>
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-black/5 dark:bg-white/5 pl-4 pr-4">
+<p class="text-black dark:text-white text-sm font-medium leading-normal">Regulatory</p>
+</div>
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-black/5 dark:bg-white/5 pl-4 pr-4">
+<p class="text-black dark:text-white text-sm font-medium leading-normal">Information</p>
+</div>
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-black/5 dark:bg-white/5 pl-4 pr-4">
+<p class="text-black dark:text-white text-sm font-medium leading-normal">Construction</p>
+</div>
+<div class="flex items-center justify-center h-8 gap-x-2 rounded-full shrink-0 bg-black/5 dark:bg-white/5 pl-4 pr-4">
+<p class="text-black dark:text-white text-sm font-medium leading-normal">School Zone</p>
+</div>
+</div>
+<!-- Image Grid -->
+<main class="flex-1 px-4 pb-28">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Red octagonal stop sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCuZu0hb_OHPM7EnDaNmom4Q7ys5PA-ZFxgDDT7nP9zYbCqlxH1SfiQL0CtzsRsJ9ZVkE_R1LxKd07PLmZnYRT1vBefr4IRfRQD8n2liqhnNPadVbUdxPh6A6gbnGY924PGaKll4Kg9F8yV-dr91t_5JESoPsBSiTTuUF4bCO0wQJs8scSjZ3SOK5CDO4jO5tIvACVKbGgvzVppefKmR5DG6BaZ6EAn8Gj5Ke5DYOYsjmiQ5unTDmnoIi1AD1MfNM1v47VYL2vOrc8i");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Stop Sign</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Triangular yield sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrt771wtcZOhqESFy42Kx4j_hsekgYn57ZrJXbqtAZV70_kXFNP5MkG7G52fXtUqO3Kq6wmJ9C4Jb5OkJrRyOBsvZVh71smjxfOFhkW8pl6GRJcrd6bWpVyRVwfxf3rWhcKnHloUhob78gGK4YTrsW_frYvNyqRb-nmI-xJuInicbrlhPL3NDlcQIPrJbb4eIPK80E78aNHj96ZjYr6f0xX-NcXIlbMfhEVzUBN29dDeC31GBRy2fyL2r-e1UNaVRvW3df31dyfFi5");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Yield Sign</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Rectangular speed limit 55 sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAg9GHz2rpO5qVe4b-QTyqNceOnILCU6oQWhx2Tg6MDjDzoDyYCoH-znAD8EN1O5nnglbI8KZGXWyM7xwGvaqPoGQ0ekAD6bfrQ33xujG84PEyT2CbLOzomz_3WdZsFpRra6GzvYU946mqJ38T1mJFfR7YMk7Z7NAN15T4uNprmKt_TBhLGcrBV3nOzE3EtMoNHbUX3He-S73FzkQkx53KIFNMUcRrgV9Qapp2-MTp_m04gfqQAJmHPFGQo_cJlZGTW6BPPY5HbtHcc");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Speed Limit 55</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="No U-Turn sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzBiCsNa8XO0AG51b4dGF174bDBRmCAP0Za6W9AnK3t-KINZSIXWZGcDZqc3ElRERdxralUL1n7azMjSjn6FO6wvs10skbULuhKKyKXrKJfUlW4dVWd1Dke0LizXWUpq9GkUV-N4mCATq9CYO1PiR2b210SRIz3wp0F6De0kKoO4LNDASkHQQsN1M4xWZS3hSeZ_EWpW9HXd_VO7j59ESTss9BotohiqKitPp4hD9IB7PRf33-VDYHyUJeaaIZImrEZCbGOHa3sfvW");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">No U-Turn</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Pentagonal school crossing sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCbD-hGBkz3edv-6yyyZ5u8d4Xqg25AyKNZB3tv3kdH_wvz9u8QJMGmmUHbOo4A-4hG7nZU7elBs5nA-DGQ3eripAxQrtVQo_y7-gTal3A4GXLGK8D8_D_7ORZSYpmIRNdtwD32r5RwXBcY5drlRiIvA7nB11rVwCQcm-si-HHBVg8s_2mv2dN-FENa8ndkplmLQSdCHSIpm0KvX3x5FcnHPX5JhwxSIEUX4cCB-o2CF5D6jbtpTpXgdhcrxGuy9-VMgv4JwNx4mw0W");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">School Crossing</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">School Zone</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Diamond-shaped road work ahead sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCjx7lmqS1N4QdBiOln17hhQ9dZChyoykQ_1rdkW0wzj-uy54aWMVei9-O82kFTdB-3PhgP4MKKkh0DTgHWkF8vDRDDEWzC897PzooU4HUbVgGhTH9EmSc2nWA_3mrnnPnyZYkOtbpdFMrtaJhrq1jNIUpugeDQD7wkDbDrPkR1slwV3oWM5TYiB4MIc9SbSbg-CQN0QkXNoHOj0C4s5wd0wQ3MTszhNnnd0oKY0HPAjZHH7QLgUvLGZfRi5PNiLIc4BSupZoGpTRWE");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Road Work Ahead</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Construction</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="One way sign with arrow" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALbUQeP7JKR6s0aYvFItEexYX7GIqtijP-mqVV34oTyCmXZMDS4KdtQo5pwkFTklW_eZN_91CLaEFnmucSb4eOpKeechWUiGggAVggEeoj80gPJVg6BdnTu1oTXkppab_nn8nUWWA-hy8a9Xw5meIk_C1wsLbfxnp92kZfEhsEsBPGgulO1H0mV7OKH1HyVWBB3d10UNaqhtwd-VCYIPwJRsuIZu769r9XJ8FhDVtnMg7EiYbW2HazaYo60X4jrZY6zLjRhkgvnML4");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">One Way</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Do not enter sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0Yu0r8jlsTBfHn9PL-1GMYRbrKJaoKLGqtCeda9UmO4UmZcmEO1EmMJ1oxe_-LVBUIDh99sWOB5UPIx7ibEr_q6eno1le-frKvzMbEP7rl3R5gCupEJfW4U2V7CxGo6Yo-qgDo_boyPlJXB7u-3Mg2zKg-qRYETVbgHHLMmbc_xSQyFnzG81pL-YzE7H3cAwnoyewGp0_5Hr4-YttNWmGLeukEC2cgf_JZrQ6IEmBUv4tLOYaFKqiBSJn1kRUGXlItyR8n17zreNd");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Do Not Enter</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Regulatory</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Pedestrian crossing sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBJHuaiZF1xe6MMKHkbIIYpCf_BaB7uV-299UmpEMS9AvcjZSSG2anhcqke4og42LMO62FigM4Z243geySAHaN1Kt6B06sk27oiDTCbUDZup1xX8QbWkEhZueozkV0XtafFJky6grtI0lMznZJLk7avTyqyOgNFw_kI_u5-KdsiySI54hkYMSDT31RFwRFf7BDNBXOhoMyZE7e_H813sZGW-GKelKjSZ6HuEDGe7TMp558Im44irlDkHdfI0deF4RGvAJ1sWSdpJnU6");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Pedestrian Crossing</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Warning</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
+<div class="w-full bg-center bg-no-repeat bg-contain rounded-xl aspect-square" data-alt="Slippery when wet sign" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDLDBGrHRXmLIo4kVZSH-zM6zhqnwpmI3oRbPzqv10r2FiRCVYWEUuABN1zLtYJdwTEFrs3w0eLz2ttDNsMwuaQaKjN5i04-VhJGptZqKswIdF9PJrdGxAKheIHDWKz8QT8jCHyms5pFXgmH_pNPIagOAHwHC6afY1MppSZrtbkICW36_qPlDU7BATJkHWPhItld5VqcMda4KiQabTOPmpuxwUDeQpYLrXXl_zMxY8KIyJJw5dL-pIi53SNhWXnXKaAOazy3LfZmoUf");'></div>
+<div>
+<p class="text-base font-medium leading-normal text-black dark:text-white">Slippery When Wet</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Warning</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-0 left-0 right-0 flex justify-center p-4 bg-transparent pointer-events-none">
+<button class="flex items-center justify-center h-14 pl-5 pr-6 overflow-hidden cursor-pointer rounded-full bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] min-w-0 gap-3 shadow-lg pointer-events-auto">
+<span class="material-symbols-outlined" style="font-size: 24px;">quiz</span>
+<span class="truncate">Take Quiz</span>
+</button>
+</div>
+</div>
+</body></html>

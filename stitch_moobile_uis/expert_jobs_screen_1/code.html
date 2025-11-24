@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - My Jobs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#007AFF",
+            "background-light": "#F8F9FA",
+            "background-dark": "#121212",
+            "surface-light": "#FFFFFF",
+            "surface-dark": "#1E1E1E",
+            "text-primary-light": "#212529",
+            "text-primary-dark": "#EFEFEF",
+            "text-secondary-light": "#6C757D",
+            "text-secondary-dark": "#ADB5BD",
+            "border-light": "#E9ECEF",
+            "border-dark": "#343A40",
+            "status-success": "#28A745",
+            "status-warning": "#FD7E14",
+            "status-info": "#007AFF",
+            "status-default": "#6C757D",
+            "status-danger": "#DC3545",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark">
+<header class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:bg-background-dark/80">
+<h1 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">My Jobs</h1>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-text-primary-light dark:text-text-primary-dark">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button>
+</header>
+<main class="flex-1">
+<div class="border-b border-border-light dark:border-border-dark">
+<div class="flex px-4">
+<a class="relative flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-primary py-3" href="#">
+<p class="text-sm font-semibold text-primary">Today</p>
+<span class="absolute right-3 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">3</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-transparent py-3 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold">Upcoming</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-transparent py-3 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold">Completed</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center border-b-[3px] border-b-transparent py-3 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold">All</p>
+</a>
+</div>
+</div>
+<div class="px-4 py-3">
+<div class="flex h-10 flex-1 items-center justify-center rounded-lg bg-surface-light p-1 shadow-sm dark:bg-surface-dark">
+<label class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-sm font-medium leading-normal text-text-secondary-light has-[:checked]:bg-background-light has-[:checked]:text-text-primary-light has-[:checked]:shadow-sm dark:text-text-secondary-dark dark:has-[:checked]:bg-background-dark dark:has-[:checked]:text-text-primary-dark">
+<span class="truncate">List View</span>
+<input class="invisible w-0" name="view-toggle" type="radio" value="List View"/>
+</label>
+<label class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-sm font-medium leading-normal text-text-secondary-light has-[:checked]:bg-background-light has-[:checked]:text-text-primary-light has-[:checked]:shadow-sm dark:text-text-secondary-dark dark:has-[:checked]:bg-background-dark dark:has-[:checked]:text-text-primary-dark">
+<span class="truncate">Calendar View</span>
+<input checked="" class="invisible w-0" name="view-toggle" type="radio" value="Calendar View"/>
+</label>
+</div>
+</div>
+<div class="flex gap-2 overflow-x-auto px-4 pb-4">
+<div class="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-primary/20 px-4 text-primary dark:bg-primary/30">
+<p class="text-sm font-medium">All</p>
+</div>
+<div class="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-light px-4 dark:bg-surface-dark">
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Today</p>
+</div>
+<div class="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-light px-4 dark:bg-surface-dark">
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">This Week</p>
+</div>
+<div class="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-light px-4 dark:bg-surface-dark">
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Needs Attention</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4 pb-24">
+<div class="flex items-center justify-between">
+<button class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-2xl">chevron_left</span>
+</button>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Sep 2 - 8, 2024</h2>
+<button class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-2xl">chevron_right</span>
+</button>
+</div>
+<div class="flex">
+<div class="w-12 shrink-0"></div>
+<div class="grid flex-1 grid-cols-7">
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">M</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">2</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">T</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">3</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-primary">W</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">4</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">T</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">5</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">F</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">6</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">S</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">7</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">S</span>
+<span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium text-text-primary-light dark:text-text-primary-dark">8</span>
+</div>
+</div>
+</div>
+</div>
+<div class="relative -mt-2 flex h-[600px] overflow-y-auto">
+<div class="absolute inset-0 grid grid-cols-1 divide-y divide-border-light dark:divide-border-dark">
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+<div class="h-16"></div>
+</div>
+<div class="grid w-12 shrink-0 grid-rows-11 text-center">
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">8 AM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">9 AM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">10 AM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">11 AM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">12 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">1 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">2 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">3 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">4 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">5 PM</span></div>
+<div class="relative -top-2 h-16"><span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">6 PM</span></div>
+</div>
+<div class="relative grid flex-1 grid-cols-7">
+<div class="col-start-3 row-start-2 row-end-3 m-1">
+<div class="h-full rounded-lg bg-status-info/10 p-1.5 dark:bg-status-info/20">
+<div class="flex h-full flex-col justify-center rounded bg-status-info p-1.5">
+<p class="text-[10px] font-bold leading-tight text-white">Diagnostic</p>
+<p class="text-[9px] leading-tight text-white/80">J. Jones</p>
+</div>
+</div>
+</div>
+<div class="col-start-3 row-start-3 row-end-4 m-1 mt-4">
+<div class="h-full rounded-lg bg-status-warning/10 p-1.5 dark:bg-status-warning/20">
+<div class="flex h-full flex-col justify-center rounded bg-status-warning p-1.5">
+<p class="text-[10px] font-bold leading-tight text-white">Brake Pads</p>
+<p class="text-[9px] leading-tight text-white/80">E. Pena</p>
+</div>
+</div>
+</div>
+<div class="col-start-3 row-start-7 row-end-8 m-1">
+<div class="h-full rounded-lg bg-status-default/10 p-1.5 dark:bg-text-secondary-dark/20">
+<div class="flex h-full flex-col justify-center rounded bg-status-default p-1.5 dark:bg-text-secondary-dark">
+<p class="text-[10px] font-bold leading-tight text-white dark:text-background-dark">Oil Change</p>
+<p class="text-[9px] leading-tight text-white/80 dark:text-background-dark/80">R. Fox</p>
+</div>
+</div>
+</div>
+<div class="col-start-6 row-start-4 row-end-6 m-1">
+<div class="h-full rounded-lg bg-status-danger/10 p-1.5 dark:bg-status-danger/20">
+<div class="flex h-full flex-col justify-center rounded bg-status-danger p-1.5">
+<p class="text-[10px] font-bold leading-tight text-white">Engine Issue</p>
+<p class="text-[9px] leading-tight text-white/80">A. Ward</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 z-10 w-full max-w-md border-t border-border-light bg-surface-light/80 backdrop-blur-sm dark:border-border-dark dark:bg-surface-dark/80">
+<div class="flex h-16 items-center justify-around">
+<a class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="text-xs font-semibold">Jobs</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

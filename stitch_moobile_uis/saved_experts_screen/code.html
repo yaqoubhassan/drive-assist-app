@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saved Experts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                        "driveassist-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 1,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 p-4 pb-3 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex w-12 items-center">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-slate-800 dark:text-slate-200">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0, 'wght' 400;">arrow_back</span>
+</button>
+</div>
+<h1 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Saved Experts</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-slate-800 dark:text-slate-200">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0, 'wght' 400;">search</span>
+</button>
+</div>
+</div>
+<!-- Populated List State -->
+<div class="flex flex-col px-2">
+<!-- Expert List Item 1 -->
+<div class="flex items-center gap-4 rounded-xl p-2 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+<div class="flex flex-1 items-center gap-4">
+<img class="h-16 w-16 shrink-0 rounded-full object-cover" data-alt="Portrait of Alejandro Martinez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgX0-yXPemjVoxJaWAmq5kS5_Ebsom6-EzJ26RXAqufoB2RVa8vttjm_VyebHSh4_yjou_3Gt1s9XmkPp7GeVmZXnD9h9jbgjzyqGEVVDor6Gca-M7vHjt1peVbEb8-tbotgAtA3CRVWcCmTYpi8P8aCl_RHsuFjkrah8ilku8Ft8JxL0JBJ05sn_qFFyplcsPW_n7TqDpUtNpOcHOyDSCB8x2Fo8YAcLHYMHYJljEa-4vARYuif9ng_gK-nty0AqPUNa3iqrQiMly"/>
+<div class="flex flex-col justify-center gap-0.5">
+<p class="text-base font-medium text-slate-900 dark:text-white">Alejandro Martinez</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Master Mechanic • 5 miles away</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<p class="text-sm text-slate-500 dark:text-slate-400">4.8 (212 reviews)</p>
+</div>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-driveassist-red">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+<!-- Expert List Item 2 -->
+<div class="flex items-center gap-4 rounded-xl p-2 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+<div class="flex flex-1 items-center gap-4">
+<img class="h-16 w-16 shrink-0 rounded-full object-cover" data-alt="Portrait of Javier Rodriguez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCK0s5tZTI6L6cn3n05wn4F_eRc2qFuiCqB1uq2u3ZtzY4t4joInKSsRyiTX0bcOg7XcY2xvLuw91dHofKBJmmA0Txk0aAZ64_GXlCI59YVqHGwMeIrNXCbCMvD37tU4qv0tzbzw4e21QJag5DJimyiiWqaEFerMjD5fmy82sbqj1Jtk86oR8GIuZJYEIeF9lFYZT1Ab_62Qz0sbfXW6lNadrDRyEk-kZ5WQ2Ae3Vlehw9wWjXvTjtbfti5IglWfFR0Mf1C2B3mCN5x"/>
+<div class="flex flex-col justify-center gap-0.5">
+<p class="text-base font-medium text-slate-900 dark:text-white">Javier Rodriguez</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Electrical Specialist • 8 miles away</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<p class="text-sm text-slate-500 dark:text-slate-400">4.9 (189 reviews)</p>
+</div>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-driveassist-red">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+<!-- Expert List Item 3 -->
+<div class="flex items-center gap-4 rounded-xl p-2 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+<div class="flex flex-1 items-center gap-4">
+<img class="h-16 w-16 shrink-0 rounded-full object-cover" data-alt="Portrait of Samira Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkebPv2qw247Op012E9_8JmnTQqzL_VRyIpBjVXRD431B090T06w1zxG1GqeeJPdbFLqL6Zcqh672XPN74WfN1PqI-z7BfVjPU762MFR3iPBbmoOB1M26ziXeyaNyxj4NlUQFIEo5MsIdHn_mJHyVAktxgIhKBO9bTmFH1x1OkmILuPZILPW74d8cG8qHFvomoij18_QIZeOPSSjnx4Wi04w-71olGqKEgZ0tBC_KV5UyCPSfbeJRKl6bEu-I5ZqSKvIc92tIEXXMc"/>
+<div class="flex flex-col justify-center gap-0.5">
+<p class="text-base font-medium text-slate-900 dark:text-white">Samira Chen</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Transmission Expert • 12 miles away</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<p class="text-sm text-slate-500 dark:text-slate-400">4.7 (156 reviews)</p>
+</div>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-driveassist-red">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Divider for showcasing Empty State -->
+<div class="my-8 flex items-center px-4">
+<div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+<span class="px-4 text-sm text-slate-500 dark:text-slate-400">Empty State Example</span>
+<div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<!-- Empty State -->
+<div class="flex flex-1 flex-col items-center justify-center p-6 text-center">
+<div class="flex max-w-sm flex-col items-center gap-6">
+<div class="text-primary">
+<svg fill="none" height="80" viewbox="0 0 24 24" width="80" xmlns="http://www.w3.org/2000/svg">
+<path d="M16.5 3C19.5376 3 22 5.5 22 9C22 16 14.5 21 12 21C9.5 21 2 16 2 9C2 5.5 4.5 3 7.5 3C9.35997 3 10.9983 3.99902 12 5.34003C13.0017 3.99902 14.64 3 16.5 3Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<path d="M12 14V10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<path d="M10 12H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex flex-col items-center gap-2">
+<p class="text-xl font-bold text-slate-900 dark:text-white">Your expert list is empty</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Save your favorite mechanics and specialists here for quick access later.</p>
+</div>
+<button class="flex h-12 w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-primary text-base font-bold text-white">
+<span class="truncate">Find Experts</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

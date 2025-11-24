@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist Article</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#5593f6",
+            "background-light": "#f5f7f8",
+            "background-dark": "#101722",
+            "warning": "#FFC107",
+            "tip": "#005A9C",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"],
+            "serif": ["Newsreader", "serif"]
+          },
+          borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between bg-background-light/80 p-4 backdrop-blur-sm dark:bg-background-dark/80">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-slate-800 dark:text-white">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<button class="flex size-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full text-slate-800 dark:text-white">
+<span class="material-symbols-outlined text-2xl">bookmark_border</span>
+</button>
+<button class="flex size-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full text-slate-800 dark:text-white">
+<span class="material-symbols-outlined text-2xl">share</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow pb-32">
+<!-- Article Header -->
+<div class="px-4 pt-2 pb-4">
+<!-- Chips/Category -->
+<div class="flex gap-3 pb-3">
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary/20 px-4">
+<p class="font-display text-sm font-medium text-primary">DIY Repair</p>
+</div>
+</div>
+<!-- Headline -->
+<h1 class="font-serif text-[32px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white">How to Change Your Own Oil in 5 Easy Steps</h1>
+<!-- Meta -->
+<p class="pt-3 pb-3 text-sm font-normal text-slate-500 dark:text-slate-400">By John Doe • Published on Aug 15, 2024 • 5 min read</p>
+</div>
+<!-- Header Image -->
+<div class="w-full">
+<div class="w-full min-h-60 bg-center bg-cover" data-alt="Close-up photo of a car engine bay during an oil change." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBxnJui449Q4meZiqxUzZq_GxaMFtb9d1VYRIsWFqgQlyrE-ShZV4ygTGRA8qO5toXoOrwqJZ8jLWW_pzBoCZ53dOmIHUYoDdHAhXpqlDwbe8xctXWvDK5XFYmMGiQNK6IPa34TSffVr_HM3eSYpGX2mpP_TXesDbYW2XWt4mk0vsvczm2FgIGkiOBho1reM9IfZzctx9EkElxxnQVnPjX8y0b5LWm7H6TX7x2RYWBX3EJX501b_3MTgyqPk36qUfZCuWPyQ9Otw0vx");'></div>
+</div>
+<!-- Article Body -->
+<div class="space-y-6 p-4">
+<!-- Table of Contents -->
+<div class="rounded-xl border border-slate-200 bg-slate-100 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+<details>
+<summary class="flex cursor-pointer list-none items-center justify-between font-bold text-slate-900 dark:text-white">
+              Table of Contents
+              <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<ul class="mt-4 space-y-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+<li><a class="text-primary hover:underline" href="#">1. Gather Your Tools &amp; Materials</a></li>
+<li><a class="text-primary hover:underline" href="#">2. Prepare Your Vehicle</a></li>
+<li><a class="text-primary hover:underline" href="#">3. Drain the Old Oil</a></li>
+<li><a class="text-primary hover:underline" href="#">4. Replace the Oil Filter</a></li>
+<li><a class="text-primary hover:underline" href="#">5. Add New Oil &amp; Final Checks</a></li>
+</ul>
+</details>
+</div>
+<!-- Rich Text Content -->
+<div class="prose prose-slate max-w-none space-y-4 dark:prose-invert">
+<p class="leading-relaxed">Changing your car's oil is one of the most fundamental and important maintenance tasks you can perform. It helps keep your engine running smoothly and extends its life. While it might seem daunting, it's a straightforward process you can do right in your driveway.</p>
+<h3 class="font-serif text-xl font-bold">1. Gather Your Tools &amp; Materials</h3>
+<p>Before you start, make sure you have everything you need. This includes the correct type and amount of new engine oil, a new oil filter, a wrench to remove the drain plug, an oil filter wrench, a drain pan, and some rags.</p>
+<!-- Tip Box -->
+<div class="flex items-start gap-4 rounded-xl bg-tip/10 p-4">
+<span class="material-symbols-outlined mt-1 text-tip">lightbulb</span>
+<div>
+<p class="font-bold text-tip">Pro Tip</p>
+<p class="text-sm text-tip/90">Warm up your engine for 2-3 minutes before draining the oil. This helps the oil flow out more easily and quickly.</p>
+</div>
+</div>
+<h3 class="font-serif text-xl font-bold">3. Drain the Old Oil</h3>
+<p>Once your car is safely elevated, slide underneath and locate the oil drain plug. Place your drain pan beneath it, then use your wrench to loosen the plug. Unscrew it the rest of the way by hand and let the old oil drain completely.</p>
+<!-- Warning Box -->
+<div class="flex items-start gap-4 rounded-xl bg-warning/10 p-4">
+<span class="material-symbols-outlined mt-1 text-warning">warning</span>
+<div>
+<p class="font-bold text-warning">Caution</p>
+<p class="text-sm text-warning/90">Used engine oil is a hazardous material. Dispose of it properly at an auto parts store or recycling center.</p>
+</div>
+</div>
+<!-- Video Embed -->
+<div class="overflow-hidden rounded-xl">
+<div class="aspect-w-16 aspect-h-9 w-full">
+<img class="h-full w-full object-cover" data-alt="Video thumbnail showing a mechanic working on a car." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGtl0sr_djcAb-_g9ee2zQ_FGvRdPQHKWFToyS2_UaHIIgpdG2LLwZlcxAAlX3pmpO-0Qp8jEx8H5kh9i_sE24YRyZR2zq8cqpSoFMlbBLA9Oh9DDzoGTUTWnoBRJRsGnLsmGyDkKvvKnY9KanmA9i44X-4Ki-b6u22n8hWrLnNYgnF_oS4GzrLuZo2N51UVxdc_kd2Lne3I2TQi9NL5zlEFM9tPj_eQ_AQtE21-Sw59IBdMuLOCEzhScxs3VBSh1ZMWdXyUTB5Zfb"/>
+</div>
+</div>
+<!-- FAQ Section -->
+<h3 class="font-serif text-xl font-bold">Frequently Asked Questions</h3>
+<div class="space-y-2">
+<details class="group rounded-lg bg-slate-100 p-4 dark:bg-slate-900/50">
+<summary class="flex cursor-pointer list-none items-center justify-between font-medium text-slate-800 dark:text-slate-200">
+                Can I use synthetic oil?
+                <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Yes, you can use synthetic oil if your vehicle's manufacturer recommends it. Always check your owner's manual for the correct oil type and viscosity grade.</p>
+</details>
+<details class="group rounded-lg bg-slate-100 p-4 dark:bg-slate-900/50">
+<summary class="flex cursor-pointer list-none items-center justify-between font-medium text-slate-800 dark:text-slate-200">
+                How tight should the oil filter be?
+                <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Typically, you should tighten the oil filter by hand until it's snug, then give it an additional quarter-turn with an oil filter wrench. Do not over-tighten.</p>
+</details>
+</div>
+</div>
+</div>
+<!-- Related Articles -->
+<div class="py-6">
+<h2 class="px-4 pb-4 font-serif text-2xl font-bold text-slate-900 dark:text-white">Related Articles</h2>
+<div class="flex snap-x snap-mandatory scroll-p-4 space-x-4 overflow-x-auto px-4 pb-2">
+<div class="flex w-3/4 shrink-0 snap-start flex-col">
+<div class="w-full overflow-hidden rounded-xl">
+<img class="aspect-[4/3] w-full object-cover" data-alt="Bottles of engine oil on a shelf." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbkQFiNK1H6ddVSWdBd3maEbDJDirEIo2BkxqZB5UvuLNHjtNlVwH4jkjJ9FL55kJQvaHDEdFaAbd4x67U-AQ5mj6niqAYuUNTCwBJHSKuWhylTq8GbS_3SuyPBUOjB8rhfrBu3V0vpf3f5xkjMEHxRI-8rkLtzM1xZh_TdFeHwt6LLjInB0HV2Y2Dg93xplnXa4zPsCDZLeat0IvqU1Rlr8mydU6zUa8zMFmRsi3d3Q31PX_aIg0qmpSjf9uJPM3BOdqYAzafeSTt"/>
+</div>
+<div class="pt-2">
+<p class="text-xs font-medium text-primary">Maintenance</p>
+<h4 class="font-bold leading-tight text-slate-900 dark:text-white">Choosing the Right Engine Oil</h4>
+</div>
+</div>
+<div class="flex w-3/4 shrink-0 snap-start flex-col">
+<div class="w-full overflow-hidden rounded-xl">
+<img class="aspect-[4/3] w-full object-cover" data-alt="A mechanic checking tire pressure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqOeJpjNlTwxcnK6o3bGLC2MtdgtjwDlTb_AHCgFYdOC3DOzgl2e8NL9o_HiICIjPLOmp-7nXR67q_48ifRsq995FD9kB0CJK782D8It9vnMKj7WjLj-UI1QQnPiMbcbT_32vNB-SnqYugipUHw_MUN6oFE8GKuu9TXV6EWakXV99Ji6e7svpFG7SYy05YiEupL_D4jnDm6wgGn-sqzc3mVK8lxdCA2mHGE4KR9a1JJayN-N6auME-NICoMjEpg8ZP93OblpZnCRSS"/>
+</div>
+<div class="pt-2">
+<p class="text-xs font-medium text-primary">Guides</p>
+<h4 class="font-bold leading-tight text-slate-900 dark:text-white">Basic Vehicle Maintenance Checklist</h4>
+</div>
+</div>
+<div class="flex w-3/4 shrink-0 snap-start flex-col">
+<div class="w-full overflow-hidden rounded-xl">
+<img class="aspect-[4/3] w-full object-cover" data-alt="Close-up of a car's brake disc and caliper." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9R81L2BDWmP5j_KphkQzyScQnqELapEIcntR_MlkhbmHXztfy2Pgwc-VyC9hBmkPtAdPO-BlbVw_tit-kymLvWigyRJZEDHJrqMv5NXOzVZ98O9JgpEPKODq0wJskb73HAGa-E6jU2PRHUxdwI98D7acLTuXeUCo9gKW1LmdflCTG29tit7n7dO6MF-EXxK8iM5O3dVp2eJWI-eycmi52IfSZPWeaFSGgWWUc3h1ZIEa45qcoRAd2s6dbHayO49ztFvrw8Fi_S5-8"/>
+</div>
+<div class="pt-2">
+<p class="text-xs font-medium text-primary">DIY Repair</p>
+<h4 class="font-bold leading-tight text-slate-900 dark:text-white">How to Replace Brake Pads</h4>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Bar -->
+<footer class="fixed bottom-0 z-50 w-full border-t border-slate-200 bg-background-light/90 p-4 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/90">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<p class="text-sm font-medium">Was this helpful?</p>
+<div class="flex gap-2">
+<button class="flex size-9 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800">
+<span class="material-symbols-outlined text-lg">thumb_up</span>
+</button>
+<button class="flex size-9 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800">
+<span class="material-symbols-outlined text-lg">thumb_down</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-lg">chat_bubble_outline</span>
+<span>32</span>
+</div>
+<button class="flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-white">View Comments</button>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

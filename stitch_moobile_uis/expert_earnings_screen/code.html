@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expert Earnings - DriveAssist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-lg flex-col overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-background-dark/80 p-4 pb-3 backdrop-blur-sm">
+<div class="flex size-12 shrink-0 items-center"></div>
+<h1 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Earnings</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 text-white">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</header>
+<main class="flex-grow pb-24">
+<!-- Stats -->
+<div class="flex flex-wrap gap-4 p-4">
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl bg-white/5 p-5">
+<p class="text-slate-300 text-sm font-medium leading-normal">This Month</p>
+<p class="text-white tracking-tight text-3xl font-bold leading-tight">$8,450.00</p>
+<p class="text-green-500 text-sm font-medium leading-normal">+5.2%</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl bg-white/5 p-5">
+<p class="text-slate-300 text-sm font-medium leading-normal">Year to Date</p>
+<p class="text-white tracking-tight text-3xl font-bold leading-tight">$92,300.00</p>
+<p class="text-slate-400 text-sm font-medium leading-normal">+21 jobs</p>
+</div>
+</div>
+<!-- Chart Section -->
+<div class="px-4">
+<!-- Chips -->
+<div class="flex gap-2 p-1">
+<div class="flex h-9 flex-1 shrink-0 items-center justify-center gap-x-2 rounded-full bg-transparent pl-4 pr-4">
+<p class="text-slate-400 text-sm font-medium leading-normal">Week</p>
+</div>
+<div class="flex h-9 flex-1 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary pl-4 pr-4">
+<p class="text-white text-sm font-bold leading-normal">Month</p>
+</div>
+<div class="flex h-9 flex-1 shrink-0 items-center justify-center gap-x-2 rounded-full bg-transparent pl-4 pr-4">
+<p class="text-slate-400 text-sm font-medium leading-normal">Year</p>
+</div>
+</div>
+<!-- Chart -->
+<div class="flex flex-wrap pt-4">
+<div class="flex min-w-72 flex-1 flex-col gap-2 rounded-xl bg-white/5 p-5">
+<div class="flex items-center justify-between">
+<p class="text-slate-300 text-sm font-medium leading-normal">Monthly Earnings</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<span class="text-slate-400 text-xs">Completed</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-amber-500"></div>
+<span class="text-slate-400 text-xs">Pending</span>
+</div>
+</div>
+</div>
+<p class="text-white tracking-tight text-[32px] font-bold leading-tight truncate">$2,150.75</p>
+<div class="flex min-h-[180px] flex-1 flex-col gap-4 py-4">
+<svg fill="none" height="148" preserveaspectratio="none" viewbox="-3 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#5593f6" stroke-linecap="round" stroke-width="3"></path>
+<path d="M0 130C18.1538 130 18.1538 50 36.3077 50C54.4615 50 54.4615 75 72.6154 75C90.7692 75 90.7692 110 108.923 110C127.077 110 127.077 60 145.231 60C163.385 60 163.385 135 181.538 135C199.692 135 199.692 90 217.846 90C236 90 236 70 254.154 70C272.308 70 272.308 140 290.462 140" stroke="#f59e0b" stroke-dasharray="5 5" stroke-linecap="round" stroke-width="3"></path>
+<circle cx="254.154" cy="45" fill="#101722" r="5" stroke="#5593f6" stroke-width="3"></circle>
+</g>
+</svg>
+<div class="flex justify-between">
+<p class="text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em]">1</p>
+<p class="text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em]">8</p>
+<p class="text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em]">15</p>
+<p class="text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em]">22</p>
+<p class="text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em]">30</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Breakdown Section -->
+<div class="px-4 pt-6">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-1 pb-3 pt-4">Earnings Breakdown</h3>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between rounded-lg bg-white/5 p-4">
+<p class="text-slate-300">Total Jobs</p>
+<p class="text-white font-semibold">21</p>
+</div>
+<div class="flex items-center justify-between rounded-lg bg-white/5 p-4">
+<p class="text-slate-300">Average Earning per Job</p>
+<p class="text-white font-semibold">$402.38</p>
+</div>
+<div class="flex items-center justify-between rounded-lg bg-white/5 p-4">
+<p class="text-slate-300">Highest Earning Job</p>
+<p class="text-white font-semibold">$1,250.00</p>
+</div>
+</div>
+</div>
+<!-- Transaction History -->
+<div class="px-4 pt-6">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-1 pb-3 pt-4">Transaction History</h3>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-4 rounded-lg bg-white/5 p-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">north_east</span>
+</div>
+<div class="flex-1">
+<p class="font-semibold text-white">Engine Diagnostic</p>
+<p class="text-sm text-slate-400">Oct 28, 2023</p>
+</div>
+<div class="text-right">
+<p class="font-semibold text-white">+$350.00</p>
+<div class="flex justify-end pt-1">
+<span class="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">Paid</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg bg-white/5 p-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">north_east</span>
+</div>
+<div class="flex-1">
+<p class="font-semibold text-white">Brake System Repair</p>
+<p class="text-sm text-slate-400">Oct 25, 2023</p>
+</div>
+<div class="text-right">
+<p class="font-semibold text-white">+$620.00</p>
+<div class="flex justify-end pt-1">
+<span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">Pending</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg bg-white/5 p-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">north_east</span>
+</div>
+<div class="flex-1">
+<p class="font-semibold text-white">Pre-Purchase Inspection</p>
+<p class="text-sm text-slate-400">Oct 22, 2023</p>
+</div>
+<div class="text-right">
+<p class="font-semibold text-white">+$250.00</p>
+<div class="flex justify-end pt-1">
+<span class="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-400">Processing</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payout Section -->
+<div class="px-4 pt-6">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-1 pb-3 pt-4">Payouts</h3>
+<div class="rounded-xl bg-white/5 p-5">
+<div class="flex items-start justify-between border-b border-white/10 pb-4">
+<div>
+<p class="text-sm text-slate-300">Next Payout</p>
+<p class="text-xl font-bold text-white">$1,430.50</p>
+</div>
+<p class="text-sm font-medium text-slate-400">Nov 1, 2023</p>
+</div>
+<div class="flex items-center justify-between pt-4">
+<p class="text-sm text-slate-300">Bank Account **** 5678</p>
+<a class="text-sm font-bold text-primary" href="#">Update</a>
+</div>
+</div>
+</div>
+<!-- Footer Links -->
+<div class="px-4 pt-8">
+<div class="flex flex-col gap-2">
+<a class="flex items-center justify-between rounded-lg p-4 transition-colors hover:bg-white/5" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">description</span>
+<span class="font-medium text-white">Download Statement</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</a>
+<a class="flex items-center justify-between rounded-lg p-4 transition-colors hover:bg-white/5" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">receipt_long</span>
+<span class="font-medium text-white">Tax Summary</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</a>
+</div>
+</div>
+</main>
+<!-- Bottom Tab Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-10 mx-auto max-w-lg border-t border-white/10 bg-background-dark/80 backdrop-blur-sm">
+<div class="flex h-20 items-center justify-around px-4">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="text-xs">Jobs</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-xs font-bold">Earnings</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

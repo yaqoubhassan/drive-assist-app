@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Expert Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                        "success": "#28a745",
+                        "warning": "#FFC107",
+                        "error": "#DC3545",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 bg-background-light/80 px-4 py-2 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex flex-col">
+<h1 class="text-lg font-bold text-gray-900 dark:text-white">John's Auto Repair</h1>
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-success"></div>
+<span class="text-xs font-medium text-success">Open for Business</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<label class="relative inline-flex cursor-pointer items-center">
+<input checked="" class="peer sr-only" type="checkbox" value=""/>
+<div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-success peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700"></div>
+</label>
+<button class="relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+<div class="absolute right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-white">2</div>
+</button>
+</div>
+</div>
+<main class="flex-1 space-y-6 overflow-y-auto px-4 pb-28 pt-4">
+<!-- Today's Overview -->
+<section>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white pb-3">Today's Overview</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<span class="material-symbols-outlined text-primary text-2xl">new_releases</span>
+<div class="flex flex-col">
+<h3 class="text-2xl font-bold text-gray-900 dark:text-white">7</h3>
+<p class="text-sm font-normal text-gray-500 dark:text-gray-400">New Leads</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<span class="material-symbols-outlined text-primary text-2xl">build</span>
+<div class="flex flex-col">
+<h3 class="text-2xl font-bold text-gray-900 dark:text-white">4</h3>
+<p class="text-sm font-normal text-gray-500 dark:text-gray-400">Active Jobs</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<span class="material-symbols-outlined text-primary text-2xl">star</span>
+<div class="flex flex-col">
+<h3 class="text-2xl font-bold text-gray-900 dark:text-white">4.8</h3>
+<p class="text-sm font-normal text-gray-500 dark:text-gray-400">Rating</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<span class="material-symbols-outlined text-primary text-2xl">payments</span>
+<div class="flex flex-col">
+<h3 class="text-2xl font-bold text-gray-900 dark:text-white">$350</h3>
+<p class="text-sm font-normal text-gray-500 dark:text-gray-400">Today's Earnings</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions -->
+<section>
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white pb-2">Quick Actions</h3>
+<div class="flex gap-3 overflow-x-auto pb-2">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 px-4 text-sm font-medium text-primary">View New Leads</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 px-4 text-sm font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200">Update Availability</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 px-4 text-sm font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200">View Calendar</button>
+</div>
+</section>
+<!-- New Leads Alert -->
+<div class="flex items-center gap-4 rounded-xl border border-warning/50 bg-warning/20 p-4">
+<span class="material-symbols-outlined text-warning text-2xl">campaign</span>
+<div class="flex-1">
+<h4 class="font-bold text-yellow-900 dark:text-yellow-100">7 New Leads Alert!</h4>
+<p class="text-sm text-yellow-800 dark:text-yellow-200">Respond quickly to secure the jobs.</p>
+</div>
+<button class="text-yellow-900 dark:text-yellow-100">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<!-- Active Jobs -->
+<section>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white pb-3">Active Jobs</h2>
+<div class="space-y-4">
+<div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<img class="h-12 w-12 rounded-full object-cover" data-alt="A portrait of a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWmoQaEvb1ot9jDwwpu0v-d3FZ5HvsdGCCpzo2XyLKwSSlxwN-GtLWtar7v-cUZ5Yx2KAKorCrLMh0VwaFCBq9sxRaTsDTAmliFoibr8bKIMU3fHPwLcAt0fhd-e2k6LExlI_Tz5ZzXPrmFOWSL__a3vfWHmhq7G6uoOVXGeoaHD93Klg-eZxJQknhTqIg71HmR3kXh49EKNo7-sbJHDEqIg21OzamMngnmUouS0ndK7J1vmYKWBle0xxDyfobhzbRywRU-X1v2ho7"/>
+<div>
+<p class="font-bold text-gray-900 dark:text-white">Robert Downey</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">Brake Inspection</p>
+</div>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">10:00 AM</p>
+</div>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white">View Details</button>
+<button class="flex-1 rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-200">Message</button>
+</div>
+</div>
+<div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<img class="h-12 w-12 rounded-full object-cover" data-alt="A portrait of a woman looking away from the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWXe84IONdDmu5qzAZF3g-smgyjNFG78tix8rep6zMy9_3SNFyYYKlR8nD71oJs3JE8BpIvEyLIsA0FpPdAZfx-TSgHO8XWu5n_s5RHmRxir2bQ6aNdbQBKqDJoS5kOEWG5PFNJ0yYXWX0ZP8kBU8aW0t4VPHrjAz9MKKxOedFeJynIGVDTUDk8kSjC-cDMfsA0h1_G89-tDVlrXQr851STigGDm8iLrqf87_4HdAVXktMd78oSDjogFcDGYG1Vn-EOXlN84vxghSz"/>
+<div>
+<p class="font-bold text-gray-900 dark:text-white">Jessica Alba</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">Oil Change</p>
+</div>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">2:30 PM</p>
+</div>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white">View Details</button>
+<button class="flex-1 rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-200">Message</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity -->
+<section>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white pb-3">Recent Activity</h2>
+<div class="space-y-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+<div class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+<span class="material-symbols-outlined text-primary text-xl">star</span>
+</div>
+<p class="flex-1 text-sm text-gray-700 dark:text-gray-300">New 5-star review from Robert D.</p>
+<p class="text-xs text-gray-400">1h ago</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
+<span class="material-symbols-outlined text-success text-xl">paid</span>
+</div>
+<p class="flex-1 text-sm text-gray-700 dark:text-gray-300">Payment of $120 received.</p>
+<p class="text-xs text-gray-400">3h ago</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-500/20">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-xl">check_circle</span>
+</div>
+<p class="flex-1 text-sm text-gray-700 dark:text-gray-300">Job: "Tire Rotation" completed.</p>
+<p class="text-xs text-gray-400">Yesterday</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Tab Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-background-light/80 backdrop-blur-sm dark:border-gray-800 dark:bg-background-dark/80">
+<div class="flex h-20 items-center justify-around px-2">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">new_releases</span>
+<span class="text-xs font-medium">Leads</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="text-xs font-medium">Jobs</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-xs font-medium">Earnings</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>

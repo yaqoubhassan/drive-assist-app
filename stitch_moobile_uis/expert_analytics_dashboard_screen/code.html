@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+              "green-accent": "#34C759",
+              "orange-accent": "#FF9500",
+              "red-accent": "#FF3B30",
+              "card-light": "#ffffff",
+              "card-dark": "#1c1e1e",
+              "text-light-primary": "#1c1c1e",
+              "text-light-secondary": "#636366",
+              "text-dark-primary": "#ffffff",
+              "text-dark-secondary": "#8e8e93",
+              "border-light": "#e5e5ea",
+              "border-dark": "#38383a",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative w-full flex flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 justify-between border-b border-border-light dark:border-border-dark">
+<button class="text-text-light-primary dark:text-dark-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-text-light-primary dark:text-dark-primary text-xl font-bold leading-tight">Analytics</h1>
+<button class="flex w-auto items-center justify-end gap-1 text-primary">
+<p class="text-base font-semibold leading-normal shrink-0">Jun 1-30</p>
+<span class="material-symbols-outlined text-xl">expand_more</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex flex-col gap-6 p-4">
+<!-- Time Range Chips -->
+<div class="flex gap-2 p-1 bg-gray-200 dark:bg-gray-800 rounded-lg">
+<button class="flex-1 h-9 shrink-0 items-center justify-center rounded-md bg-transparent px-4 text-text-light-secondary dark:text-dark-secondary"><p class="text-sm font-semibold leading-normal">Week</p></button>
+<button class="flex-1 h-9 shrink-0 items-center justify-center rounded-md bg-white dark:bg-card-dark px-4 text-primary shadow-sm"><p class="text-sm font-semibold leading-normal">Month</p></button>
+<button class="flex-1 h-9 shrink-0 items-center justify-center rounded-md bg-transparent px-4 text-text-light-secondary dark:text-dark-secondary"><p class="text-sm font-semibold leading-normal">Year</p></button>
+<button class="flex-1 h-9 shrink-0 items-center justify-center rounded-md bg-transparent px-4 text-text-light-secondary dark:text-dark-secondary"><p class="text-sm font-semibold leading-normal">All Time</p></button>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal">Profile Views</p>
+<p class="text-text-light-primary dark:text-dark-primary text-2xl font-bold leading-tight">1.2k</p>
+<p class="text-green-accent text-sm font-medium leading-normal">+23%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal">Response Rate</p>
+<p class="text-text-light-primary dark:text-dark-primary text-2xl font-bold leading-tight">95%</p>
+<p class="text-red-accent text-sm font-medium leading-normal">-2%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal">Lead Conversion</p>
+<p class="text-text-light-primary dark:text-dark-primary text-2xl font-bold leading-tight">30%</p>
+<p class="text-green-accent text-sm font-medium leading-normal">+5%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal">Average Rating</p>
+<div class="flex items-center gap-1">
+<p class="text-text-light-primary dark:text-dark-primary text-2xl font-bold leading-tight">4.8</p>
+<span class="material-symbols-outlined text-orange-accent text-xl" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-green-accent text-sm font-medium leading-normal">+0.1</p>
+</div>
+</div>
+<!-- Profile Views Chart -->
+<div class="flex flex-col gap-4 rounded-xl border border-border-light dark:border-border-dark p-4 bg-card-light dark:bg-card-dark">
+<p class="text-text-light-primary dark:text-dark-primary text-base font-semibold leading-normal">Profile Views</p>
+<div class="flex items-baseline gap-2">
+<p class="text-text-light-primary dark:text-dark-primary text-3xl font-bold leading-tight truncate">1,234</p>
+<p class="text-green-accent text-sm font-medium leading-normal">+23%</p>
+</div>
+<div class="flex h-[150px] w-full flex-col">
+<svg fill="none" height="100%" preserveaspectratio="none" viewbox="0 0 400 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="chartGradient" x1="200" x2="200" y1="0" y2="150">
+<stop stop-color="#5593f6" stop-opacity="0.3"></stop>
+<stop offset="1" stop-color="#5593f6" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 109C15.38 109 15.38 21 30.77 21C46.15 21 46.15 41 61.54 41C76.92 41 76.92 93 92.31 93C107.69 93 107.69 33 123.08 33C138.46 33 138.46 101 153.85 101C169.23 101 169.23 61 184.62 61C200 61 200 45 215.38 45C230.77 45 230.77 121 246.15 121C261.54 121 261.54 149 276.92 149C292.31 149 292.31 1 307.69 1C323.08 1 323.08 81 338.46 81C353.85 81 353.85 129 369.23 129C384.62 129 384.62 25 400 25V150H0V109Z" fill="url(#chartGradient)"></path>
+<path d="M0 109C15.38 109 15.38 21 30.77 21C46.15 21 46.15 41 61.54 41C76.92 41 76.92 93 92.31 93C107.69 93 107.69 33 123.08 33C138.46 33 138.46 101 153.85 101C169.23 101 169.23 61 184.62 61C200 61 200 45 215.38 45C230.77 45 230.77 121 246.15 121C261.54 121 261.54 149 276.92 149C292.31 149 292.31 1 307.69 1C323.08 1 323.08 81 338.46 81C353.85 81 353.85 129 369.23 129C384.62 129 384.62 25 400 25" stroke="#5593f6" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+<div class="flex justify-between -mt-2">
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Week 1</p>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Week 2</p>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Week 3</p>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Week 4</p>
+</div>
+</div>
+<!-- Lead Performance & Response Time -->
+<div class="grid grid-cols-1 @container md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-4 rounded-xl border border-border-light dark:border-border-dark p-4 bg-card-light dark:bg-card-dark">
+<p class="text-text-light-primary dark:text-dark-primary text-base font-semibold leading-normal">Lead Performance</p>
+<div class="grid grid-cols-3 gap-2 items-end h-[150px] w-full">
+<div class="flex flex-col items-center gap-2">
+<div class="w-full bg-primary/20 rounded-t-md" style="height: 100%;"></div>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Received</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-full bg-primary/50 rounded-t-md" style="height: 75%;"></div>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Responded</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-full bg-primary rounded-t-md" style="height: 40%;"></div>
+<p class="text-text-light-secondary dark:text-dark-secondary text-xs font-medium">Converted</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col justify-between rounded-xl border border-border-light dark:border-border-dark p-4 bg-card-light dark:bg-card-dark">
+<p class="text-text-light-primary dark:text-dark-primary text-base font-semibold leading-normal">Response Time</p>
+<div class="flex flex-col items-center justify-center gap-2 my-4">
+<div class="relative w-32 h-16 overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-full border-[16px] border-orange-accent/20 rounded-t-full border-b-0"></div>
+<div class="absolute top-0 left-0 w-full h-full border-[16px] border-transparent rounded-t-full border-b-0" style="transform: rotate(135deg);">
+<div class="absolute w-full h-full border-[16px] border-orange-accent rounded-t-full border-b-0 border-l-0" style="transform: rotate(-135deg);"></div>
+</div>
+</div>
+<p class="text-text-light-primary dark:text-dark-primary text-3xl font-bold -mt-8">1.2h</p>
+</div>
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium text-center">Target: &lt; 1 hour</p>
+</div>
+</div>
+<!-- Customer Satisfaction -->
+<div class="flex flex-col gap-4 rounded-xl border border-border-light dark:border-border-dark p-4 bg-card-light dark:bg-card-dark">
+<p class="text-text-light-primary dark:text-dark-primary text-base font-semibold leading-normal">Customer Satisfaction</p>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 w-12 text-sm text-text-light-secondary dark:text-dark-secondary">5 <span class="material-symbols-outlined text-orange-accent text-sm" style="font-variation-settings: 'FILL' 1;">star</span></div>
+<div class="flex-1 rounded bg-primary/20"><div class="h-2 rounded bg-orange-accent" style="width: 80%;"></div></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 w-12 text-sm text-text-light-secondary dark:text-dark-secondary">4 <span class="material-symbols-outlined text-orange-accent text-sm" style="font-variation-settings: 'FILL' 1;">star</span></div>
+<div class="flex-1 rounded bg-primary/20"><div class="h-2 rounded bg-orange-accent" style="width: 15%;"></div></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 w-12 text-sm text-text-light-secondary dark:text-dark-secondary">3 <span class="material-symbols-outlined text-orange-accent text-sm" style="font-variation-settings: 'FILL' 1;">star</span></div>
+<div class="flex-1 rounded bg-primary/20"><div class="h-2 rounded bg-orange-accent" style="width: 5%;"></div></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 w-12 text-sm text-text-light-secondary dark:text-dark-secondary">2 <span class="material-symbols-outlined text-orange-accent text-sm" style="font-variation-settings: 'FILL' 1;">star</span></div>
+<div class="flex-1 rounded bg-primary/20"><div class="h-2 rounded bg-orange-accent" style="width: 0%;"></div></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 w-12 text-sm text-text-light-secondary dark:text-dark-secondary">1 <span class="material-symbols-outlined text-orange-accent text-sm" style="font-variation-settings: 'FILL' 1;">star</span></div>
+<div class="flex-1 rounded bg-primary/20"><div class="h-2 rounded bg-orange-accent" style="width: 0%;"></div></div>
+</div>
+</div>
+</div>
+<!-- Top Services -->
+<div class="flex flex-col gap-2 rounded-xl border border-border-light dark:border-border-dark p-4 bg-card-light dark:bg-card-dark">
+<p class="text-text-light-primary dark:text-dark-primary text-base font-semibold leading-normal mb-2">Top Services</p>
+<div class="flex flex-col divide-y divide-border-light dark:divide-border-dark">
+<div class="flex items-center py-3">
+<p class="w-8 text-lg font-bold text-text-light-secondary dark:text-dark-secondary">1</p>
+<div class="flex-1"><p class="font-medium text-text-light-primary dark:text-dark-primary">Engine Diagnostic</p></div>
+<p class="text-text-light-secondary dark:text-dark-secondary font-semibold">124 jobs</p>
+</div>
+<div class="flex items-center py-3">
+<p class="w-8 text-lg font-bold text-text-light-secondary dark:text-dark-secondary">2</p>
+<div class="flex-1"><p class="font-medium text-text-light-primary dark:text-dark-primary">Brake Replacement</p></div>
+<p class="text-text-light-secondary dark:text-dark-secondary font-semibold">98 jobs</p>
+</div>
+<div class="flex items-center py-3">
+<p class="w-8 text-lg font-bold text-text-light-secondary dark:text-dark-secondary">3</p>
+<div class="flex-1"><p class="font-medium text-text-light-primary dark:text-dark-primary">Oil Change</p></div>
+<p class="text-text-light-secondary dark:text-dark-secondary font-semibold">76 jobs</p>
+</div>
+</div>
+</div>
+<!-- Growth Insights -->
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">insights</span>
+<p class="text-primary text-base font-semibold leading-normal">Growth Insights</p>
+</div>
+<p class="text-text-light-primary dark:text-dark-primary">Your profile views increased by <span class="font-bold text-green-accent">23%</span> this month, primarily from organic search. Consider updating your service list to attract even more clients.</p>
+</div>
+<!-- Comparison Toggle -->
+<div class="flex items-center justify-between rounded-xl p-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<p class="text-text-light-primary dark:text-dark-primary font-medium">Compare to similar experts</p>
+<button aria-checked="false" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 dark:bg-gray-700 transition-colors duration-200 ease-in-out" role="switch">
+<span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+<!-- CTA Buttons -->
+<div class="flex flex-col gap-3 pt-4">
+<button class="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-6 text-base font-semibold text-white">Download Report</button>
+<button class="flex h-12 w-full items-center justify-center rounded-xl bg-primary/20 px-6 text-base font-semibold text-primary">Schedule Consultation</button>
+</div>
+</main>
+</div>
+</body></html>

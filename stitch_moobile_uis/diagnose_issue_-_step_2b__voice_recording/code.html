@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Diagnose Issue</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5593f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<header class="flex shrink-0 items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<button class="text-slate-800 dark:text-white flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Diagnose Issue</h1>
+<div class="size-12 shrink-0"></div> <!-- Spacer -->
+</header>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-3 px-4 py-2 bg-background-light dark:bg-background-dark">
+<p class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Step 2 of 4</p>
+<div class="rounded-full bg-slate-200 dark:bg-slate-700/50"><div class="h-2 rounded-full bg-primary" style="width: 50%;"></div></div>
+</div>
+<!-- Segmented Buttons -->
+<div class="flex px-4 py-3">
+<div class="flex h-10 flex-1 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-900 has-[:checked]:dark:text-white">
+<span class="truncate">Manual</span>
+<input class="invisible w-0" name="diagnose-type" type="radio" value="Manual"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-900 has-[:checked]:dark:text-white">
+<span class="truncate">Voice</span>
+<input checked="" class="invisible w-0" name="diagnose-type" type="radio" value="Voice"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal has-[:checked]:bg-background-light has-[:checked]:dark:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-slate-900 has-[:checked]:dark:text-white">
+<span class="truncate">Video</span>
+<input class="invisible w-0" name="diagnose-type" type="radio" value="Video"/>
+</label>
+</div>
+</div>
+<!-- Headline & Body Text -->
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight px-4 text-center pb-2 pt-5">Describe the sound</h2>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-normal pb-3 px-4 text-center">Record the noise your vehicle is making for a more accurate diagnosis.</p>
+<!-- Main Content: Recording Interface -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
+<div class="flex flex-col items-center justify-center space-y-6 w-full max-w-sm">
+<!-- Recording state (change visibility with a class) -->
+<div class="flex flex-col items-center justify-center w-full space-y-6">
+<!-- Timer and Visualizer -->
+<div class="h-16 w-full flex flex-col items-center justify-end">
+<img alt="Abstract sound waveform visualization" class="opacity-0" data-alt="Abstract sound waveform visualization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEFQER5zvcE90yzZGCf8cJb4Ivo0H6V0WLCRMl0AwcGYaLiJjNXAwx41Qu_gUQ5NQJUKn8cR7pXls6T0BSCUnz8SwmyPQ43yjucNn3bpnTagt5NSuYMETUyaYRF-2LLQAIyIquXqdRZx4ZijoXCboXOOHW0BuNK4v9XbaGQsegiWHt20A_4Z_i5-Vj1OtmuXmv64p7OgxIPiFMwaO1SK3QzuSHn9e_N2cULADxYdzHZ8_R36hEQf6jrJ4HuQzBx8e37Wa0uhhUwSXR"/>
+<p class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tighter">00:45</p>
+</div>
+<!-- Record Button -->
+<button class="relative flex items-center justify-center w-32 h-32 rounded-full bg-slate-200 dark:bg-slate-700/60 shadow-lg">
+<span class="material-symbols-outlined text-5xl text-slate-800 dark:text-white">mic</span>
+</button>
+<!-- Instructional Text -->
+<p class="text-slate-600 dark:text-slate-400">00:45 recorded. Re-record or continue.</p>
+</div>
+<!-- Recorded State (Preview Card) -->
+<div class="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 w-full flex flex-col space-y-3">
+<div class="flex items-center space-x-3">
+<button class="flex items-center justify-center size-10 rounded-full bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">pause</span>
+</button>
+<div class="flex-1">
+<img alt="Static waveform preview of the recording" class="h-10 w-full object-contain object-left" data-alt="Static waveform preview of the recording" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXrQPkSpKqKzGZmClqjCbNJGZQ_6UoOelFPt4iZMfAsPn41v2wjY_sOz6OOwQbPpZ8DV6HLa05mEDYwFhVtGf7JHo4xJe1Ebp0O7ubf3rEnqPS6RZqZkHZ7N1C83JA7yQrs5bld_eXs9V289U53hRpGjUehBsWjuliiCVdfKvIUyOwzGkwPvy8lyTfN4yM8zMSvQ7t3TIFMUx4wR8RbW2paLYfuQ5kdFeY80Be2qNIMQB1XiUlW4GDqH5c8xW1M0ZLdu6zzswe7Dxe"/>
+</div>
+<p class="text-sm font-medium text-slate-600 dark:text-slate-400">00:45</p>
+</div>
+<div class="border-t border-slate-200 dark:border-slate-700/50"></div>
+<div class="flex justify-between items-center">
+<button class="flex items-center space-x-2 text-primary font-semibold text-sm">
+<span class="material-symbols-outlined text-xl">replay</span>
+<span>Re-record</span>
+</button>
+<button class="flex items-center justify-center size-8 rounded-full text-red-500 hover:bg-red-500/10 active:bg-red-500/20">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer with Continue Button -->
+<footer class="p-4 bg-background-light dark:bg-background-dark sticky bottom-0 z-10">
+<button class="w-full h-14 bg-primary text-white font-bold rounded-xl text-lg flex items-center justify-center">Continue</button>
+</footer>
+</div>
+</body></html>

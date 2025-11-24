@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveAssist - Welcome</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5593f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4">
+<div class="flex w-full max-w-sm flex-col items-center">
+<!-- Brand Section -->
+<div class="flex flex-col items-center gap-2 pb-6">
+<div class="h-20 w-20">
+<img alt="DriveAssist App Logo" class="h-full w-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7_NE7mb3voBf4jtK27OVHMG6PMyXSUR1kjWrRH28sdtpQT1DDaV9quQrw46KR3YXUvR5_m5c6ttV5H2TWY4UH4g3K3_dVUofI_1nCwMb8iGtpKkowERpWnCLl7cKFQCbMKDqYgpwcT9DMinjbtGsla4RjqfJr-nCSJSPWIs8pJ6uv9E2MzDahafLWk-VeWnOKtH0X0UPYrAEITQCsBl71SiSwZnWMCB9fGwqomkIHNbiA0zMfR6gSxXc_wCj_hzOBsL_YSl7cjQt2"/>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-normal text-center">Your AI-Powered Car Companion</p>
+</div>
+<!-- Visual Section -->
+<div class="w-full grow @container py-3">
+<div class="w-full gap-1 overflow-hidden @[480px]:gap-2 aspect-[3/2] flex">
+<div class="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none flex-1" data-alt="Illustration of a modern car with a green checkmark symbol above it, signifying a successful diagnostic check." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDiSF8s7szE1BuidgRrlYxYlSFHHQdIFuXbquWVbrvir8I3ATpiQl3ha2g_bNEf17PSsQ0Alx3wv9Jv-DaZzTuJAI7gXMxAP5x_YHQskVCdpmCnvFp2kBTUHDdBAlWwlcBLmj8W-jJsz0NfTBZmtT90TnDg14F38nky5MP_kaNX0x5aapWWwDnn10r39lmj1dDrPNlB7_bcOhyO9dy9zDXVmLi0Og6yhflg2Tmi_mZ1ebQ1medyx6T2K3_NslKiILex4L5mT4X7G8_O");'></div>
+</div>
+</div>
+<!-- Welcome Text -->
+<div class="py-6 text-center">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight">Welcome to DriveAssist</h2>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-normal pt-1">Sign in or continue as guest</p>
+</div>
+<!-- Action Block -->
+<div class="flex w-full flex-col items-center gap-3">
+<button class="flex h-12 w-full items-center justify-center rounded-lg bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90">
+                    Sign Up
+                </button>
+<button class="flex h-12 w-full items-center justify-center rounded-lg border border-primary/50 bg-transparent px-6 font-bold text-primary transition-colors hover:bg-primary/10">
+                    Sign In
+                </button>
+<div class="flex w-full items-center gap-4 py-2">
+<hr class="w-full border-slate-200 dark:border-slate-800"/>
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">OR</span>
+<hr class="w-full border-slate-200 dark:border-slate-800"/>
+</div>
+<button class="h-10 w-auto px-4 font-bold text-primary transition-colors hover:text-primary/80">
+                    Continue as Guest
+                </button>
+<div class="flex w-full flex-col items-center gap-3 pt-2">
+<button class="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-background-light px-6 font-bold text-slate-800 transition-colors hover:bg-slate-200 dark:border-slate-700 dark:bg-background-dark dark:text-white dark:hover:bg-slate-800">
+<svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.818 10.0455C21.818 9.37273 21.7555 8.76364 21.6309 8.18182H12.2727V11.6364H17.7182C17.4727 12.8 16.8182 13.8182 15.8455 14.5091V16.8909H18.6636C20.5909 15.1455 21.818 12.8364 21.818 10.0455Z" fill="#4285F4"></path>
+<path d="M12.2727 22C15.0909 22 17.4545 21.0818 19.0909 19.5364L16.2727 17.1545C15.3455 17.7727 14.0091 18.1818 12.2727 18.1818C9.56364 18.1818 7.26364 16.3727 6.43636 13.9H3.5V16.3636C5.13636 19.7455 8.44545 22 12.2727 22Z" fill="#34A853"></path>
+<path d="M6.43636 13.9C6.22727 13.2636 6.10909 12.5818 6.10909 11.8818C6.10909 11.1818 6.22727 10.5 6.43636 9.86364V7.4H3.5C2.7 8.94545 2.18182 10.6455 2.18182 12.4C2.18182 14.1545 2.7 15.8545 3.5 17.4L6.43636 14.9636V13.9Z" fill="#FBBC05"></path>
+<path d="M12.2727 5.81818C13.7818 5.81818 15.1273 6.34545 16.2 7.35455L19.1636 4.39091C17.4545 2.78182 15.0909 1.81818 12.2727 1.81818C8.44545 1.81818 5.13636 4.25455 3.5 7.63636L6.43636 10.1C7.26364 7.62727 9.56364 5.81818 12.2727 5.81818Z" fill="#EA4335"></path>
+</svg>
+<span>Continue with Google</span>
+</button>
+<button class="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-background-light px-6 font-bold text-slate-800 transition-colors hover:bg-slate-200 dark:border-slate-700 dark:bg-background-dark dark:text-white dark:hover:bg-slate-800">
+<svg class="h-6 w-6 text-slate-800 dark:text-white" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14.7188 16.3195C14.2204 17.823 12.6334 19.5701 11.2393 19.593C9.82229 19.6151 9.22221 18.7733 8.01953 18.7733C6.81685 18.7733 6.20816 19.5701 4.95874 19.6046C3.68643 19.639 2.76867 18.2324 2.22229 16.6358C1.04248 13.0645 2.45831 8.52551 4.67383 6.64969C5.77426 5.71963 7.15957 5.21664 8.50293 5.2387C9.91992 5.26076 11.0078 6.00248 11.6631 6.00248C12.3184 6.00248 13.6846 5.09395 15.1758 5.48514C15.6971 5.62915 17.1596 6.13214 17.8613 7.82303C17.0625 8.35922 15.5488 9.2126 15.4854 10.8208C15.4082 12.8384 17.3828 13.7333 18.002 13.7333C18.0654 13.7333 18.1152 13.7333 18.1787 13.7217C18.1289 13.7562 18.1064 13.7678 18.084 13.7793C17.9492 13.8584 17.8037 13.926 17.6475 13.982C16.8398 14.2752 16.0322 14.4414 15.2246 14.4759C14.7998 14.498 14.541 14.3318 14.2822 14.1656C13.6914 13.7852 13.1191 13.1883 12.8076 12.4465C12.4326 11.5891 12.5586 10.5983 12.7207 9.6898C12.9297 8.55115 13.5645 7.62109 14.4395 7.02424C13.8809 6.61115 13.1426 6.47713 12.5962 6.51162C11.1631 6.62137 9.87109 7.64402 9.17871 8.65506C8.28027 9.97215 7.95703 11.7538 8.41895 13.3036C8.90381 14.9324 10.0928 16.1424 11.2393 16.1645C12.3525 16.1865 13.0674 15.492 14.1678 15.492C15.2682 15.492 15.9365 16.1865 17.0918 16.1539C18.2945 16.1213 19.1289 15.0879 19.5391 14.1656C19.2803 14.0754 18.998 13.9737 18.6865 13.8615C17.9102 13.58 17.2085 13.0678 16.5645 12.3604C15.6553 11.3613 15.3555 9.94315 15.8271 8.56707C15.9043 8.35822 16.0049 8.16092 16.1162 7.97518C15.0391 4.54924 11.8516 3.01217 9.77148 2.92193C7.94922 2.8202 6.00391 3.90377 4.90352 5.43815C2.42773 8.87555 4.3623 14.4414 6.55469 16.897C7.57422 17.9654 8.83203 18.5256 10.0211 18.514C11.2578 18.5025 12.0654 17.8869 13.2012 17.8869C14.3369 17.8869 15.1133 18.5025 16.3975 18.4467C17.8306 18.3793 18.9082 17.1809 19.4297 15.9152C19.6016 15.4789 19.7471 15.0207 19.8682 14.5407C19.1436 14.7725 18.3848 14.9602 17.5957 15.0879C16.5273 15.2542 15.4814 15.1525 14.7188 16.3195Z"></path>
+</svg>
+<span>Continue with Apple</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>
