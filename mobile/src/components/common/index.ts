@@ -11,3 +11,5 @@ export { SearchBar } from './SearchBar';
 export { Chip } from './Chip';
 export { EmptyState } from './EmptyState';
 export { Loading } from './Loading';
+export { ImageGallery, ImageThumbnailGrid } from './ImageGallery';
+export { LocationPicker, LocationDisplay } from './LocationPicker';
