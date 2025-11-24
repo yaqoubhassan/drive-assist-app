@@ -110,7 +110,7 @@ export default function DriverHomeScreen() {
               </Text>
             </View>
           </View>
-          <IconButton icon="notifications" />
+          <IconButton icon="notifications" onPress={() => router.push('/(shared)/notifications')} />
         </View>
 
         {/* Quick Actions Card */}

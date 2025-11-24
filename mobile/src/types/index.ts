@@ -15,6 +15,7 @@ export interface User {
   location?: Location;
   createdAt: string;
   updatedAt: string;
+  isGuest?: boolean;
 }
 
 export interface DriverProfile extends User {
@@ -65,6 +66,9 @@ export interface Vehicle {
   imageUrl?: string;
   isDefault: boolean;
   createdAt: string;
+  plateNumber?: string;
+  fuelType?: string;
+  transmission?: string;
 }
 
 // Diagnosis

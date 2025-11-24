@@ -6,13 +6,15 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme, ThemeMode } from '../../../src/context/ThemeContext';
 import { Card } from '../../../src/components/common';
 
-export default function SettingsScreen() {
+export default function ExpertSettingsScreen() {
   const router = useRouter();
   const { isDark, mode: themeMode, setMode: setThemeMode } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(true);
   const [locationServices, setLocationServices] = useState(true);
-  const [offlineMode, setOfflineMode] = useState(false);
+  const [instantBooking, setInstantBooking] = useState(false);
+  const [autoAccept, setAutoAccept] = useState(false);
 
   const themeOptions: { value: ThemeMode; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
     { value: 'light', label: 'Light', icon: 'light-mode' },
@@ -86,6 +88,64 @@ export default function SettingsScreen() {
           </Card>
         </View>
 
+        {/* Business Settings */}
+        <View className="mb-6">
+          <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            BUSINESS
+          </Text>
+          <Card variant="default" padding="none">
+            <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                >
+                  <MaterialIcons name="flash-on" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Instant Booking
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Allow customers to book without approval
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={instantBooking}
+                onValueChange={setInstantBooking}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={instantBooking ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            <View className="flex-row items-center justify-between p-4">
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                >
+                  <MaterialIcons name="check-circle" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Auto-accept Leads
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Automatically accept matching leads
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={autoAccept}
+                onValueChange={setAutoAccept}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={autoAccept ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+          </Card>
+        </View>
+
         {/* Notifications */}
         <View className="mb-6">
           <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -105,7 +165,7 @@ export default function SettingsScreen() {
                     Push Notifications
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Get alerts about your diagnoses
+                    New leads and job updates
                   </Text>
                 </View>
               </View>
@@ -117,7 +177,7 @@ export default function SettingsScreen() {
               />
             </View>
 
-            <View className="flex-row items-center justify-between p-4">
+            <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -130,7 +190,7 @@ export default function SettingsScreen() {
                     Email Notifications
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Receive updates via email
+                    Daily summaries and reports
                   </Text>
                 </View>
               </View>
@@ -139,6 +199,31 @@ export default function SettingsScreen() {
                 onValueChange={setEmailNotifications}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
                 thumbColor={emailNotifications ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            <View className="flex-row items-center justify-between p-4">
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                >
+                  <MaterialIcons name="sms" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    SMS Notifications
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Urgent lead alerts
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={smsNotifications}
+                onValueChange={setSmsNotifications}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={smsNotifications ? '#3B82F6' : '#94A3B8'}
               />
             </View>
           </Card>
@@ -150,7 +235,7 @@ export default function SettingsScreen() {
             PRIVACY & DATA
           </Text>
           <Card variant="default" padding="none">
-            <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+            <View className="flex-row items-center justify-between p-4">
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -163,7 +248,7 @@ export default function SettingsScreen() {
                     Location Services
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Find nearby experts
+                    Show distance to customers
                   </Text>
                 </View>
               </View>
@@ -172,31 +257,6 @@ export default function SettingsScreen() {
                 onValueChange={setLocationServices}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
                 thumbColor={locationServices ? '#3B82F6' : '#94A3B8'}
-              />
-            </View>
-
-            <View className="flex-row items-center justify-between p-4">
-              <View className="flex-row items-center flex-1">
-                <View
-                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
-                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
-                >
-                  <MaterialIcons name="cloud-off" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
-                </View>
-                <View className="flex-1">
-                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    Offline Mode
-                  </Text>
-                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Save diagnoses for offline access
-                  </Text>
-                </View>
-              </View>
-              <Switch
-                value={offlineMode}
-                onValueChange={setOfflineMode}
-                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={offlineMode ? '#3B82F6' : '#94A3B8'}
               />
             </View>
           </Card>

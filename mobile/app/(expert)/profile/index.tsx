@@ -50,7 +50,7 @@ const menuItems = [
     title: 'Help & Support',
     subtitle: 'FAQs and contact us',
     icon: 'help' as const,
-    route: '/(expert)/profile/help',
+    route: '/(shared)/help',
   },
 ];
 

@@ -111,7 +111,7 @@ export default function ExpertDashboardScreen() {
             </View>
             <View className="flex-row gap-2">
               <TouchableOpacity
-                onPress={() => router.push('/(expert)/profile/notifications' as any)}
+                onPress={() => router.push('/(shared)/notifications')}
                 className={`h-10 w-10 rounded-full items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-white'}`}
               >
                 <MaterialIcons name="notifications" size={22} color={isDark ? '#FFFFFF' : '#111827'} />
