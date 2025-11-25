@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -69,6 +69,7 @@ export default function DocumentsScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { kycStatus, updateKycStatus } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [documents, setDocuments] = useState<DocumentState>({});
   const [identityDocType, setIdentityDocType] = useState<IdentityDocType>('');
@@ -841,21 +842,23 @@ export default function DocumentsScreen() {
         animationType="fade"
         transparent={true}
         onRequestClose={() => setPreviewImage(null)}
+        statusBarTranslucent
       >
         <View className="flex-1 bg-black">
-          {/* Header */}
-          <SafeAreaView edges={['top']}>
-            <View className="flex-row items-center justify-between px-4 py-4">
-              <TouchableOpacity
-                onPress={() => setPreviewImage(null)}
-                className="h-10 w-10 rounded-full bg-white/20 items-center justify-center"
-              >
-                <MaterialIcons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <Text className="text-white font-semibold">Document Preview</Text>
-              <View className="w-10" />
-            </View>
-          </SafeAreaView>
+          {/* Header with safe area inset */}
+          <View
+            className="flex-row items-center justify-between px-4 py-4"
+            style={{ paddingTop: insets.top + 16 }}
+          >
+            <TouchableOpacity
+              onPress={() => setPreviewImage(null)}
+              className="h-12 w-12 rounded-full bg-white/20 items-center justify-center"
+            >
+              <MaterialIcons name="close" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text className="text-white font-semibold text-lg">Document Preview</Text>
+            <View className="w-12" />
+          </View>
 
           {/* Image */}
           <View className="flex-1 items-center justify-center">
@@ -867,6 +870,9 @@ export default function DocumentsScreen() {
               />
             )}
           </View>
+
+          {/* Bottom safe area */}
+          <View style={{ height: insets.bottom }} />
         </View>
       </Modal>
     </SafeAreaView>
