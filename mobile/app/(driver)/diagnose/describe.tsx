@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,10 +17,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import * as Speech from 'expo-speech';
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from 'expo-speech-recognition';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
 
@@ -58,20 +54,6 @@ export default function DiagnoseDescribeScreen() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Speech recognition event handlers
-  useSpeechRecognitionEvent('start', () => setIsListening(true));
-  useSpeechRecognitionEvent('end', () => setIsListening(false));
-  useSpeechRecognitionEvent('result', (event) => {
-    const transcript = event.results[0]?.transcript || '';
-    if (transcript) {
-      setDescription((prev) => prev ? `${prev} ${transcript}` : transcript);
-    }
-  });
-  useSpeechRecognitionEvent('error', (event) => {
-    console.error('Speech recognition error:', event.error);
-    setIsListening(false);
-  });
 
   // Cleanup on unmount
   useEffect(() => {
@@ -254,29 +236,17 @@ export default function DiagnoseDescribeScreen() {
     setIsPlaying(false);
   };
 
-  // Speech-to-text functions
-  const startListening = async () => {
-    try {
-      const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      if (!result.granted) {
-        Alert.alert('Permission Required', 'Please allow microphone access for speech recognition.');
-        return;
-      }
-
-      ExpoSpeechRecognitionModule.start({
-        lang: 'en-US',
-        interimResults: true,
-        maxAlternatives: 1,
-        continuous: false,
-      });
-    } catch (err) {
-      console.error('Failed to start speech recognition:', err);
-      Alert.alert('Error', 'Speech recognition is not available on this device.');
-    }
+  // Speech-to-text functions (requires development build)
+  const startListening = () => {
+    Alert.alert(
+      'Development Build Required',
+      'Speech-to-text functionality requires a development build. This feature is not available in Expo Go.\n\nTo use this feature, please create a development build of the app.',
+      [{ text: 'OK' }]
+    );
   };
 
   const stopListening = () => {
-    ExpoSpeechRecognitionModule.stop();
+    setIsListening(false);
   };
 
   // Text-to-speech functions
