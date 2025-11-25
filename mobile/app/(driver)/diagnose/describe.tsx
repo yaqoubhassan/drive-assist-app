@@ -92,27 +92,51 @@ export default function DiagnoseDescribeScreen() {
 
   // Track playback status with interval for smooth progress
   useEffect(() => {
-    if (audioPlayer && isPlaying) {
+    // Clear any existing interval first
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    if (audioPlayer && isPlaying && recordedUri) {
       // Update position every 100ms for smooth progress
       playbackTimerRef.current = setInterval(() => {
-        if (audioPlayer.currentTime !== undefined) {
-          setPlaybackPosition(audioPlayer.currentTime);
-        }
-        // Check if playback finished
-        if (audioPlayer.duration && audioPlayer.currentTime >= audioPlayer.duration) {
+        try {
+          // Check if player is still valid
+          if (!audioPlayer || !recordedUri) {
+            if (playbackTimerRef.current) {
+              clearInterval(playbackTimerRef.current);
+              playbackTimerRef.current = null;
+            }
+            return;
+          }
+
+          const currentTime = audioPlayer.currentTime;
+          const duration = audioPlayer.duration;
+
+          if (currentTime !== undefined && currentTime !== null) {
+            setPlaybackPosition(currentTime);
+          }
+
+          // Check if playback finished
+          if (duration && currentTime >= duration) {
+            setIsPlaying(false);
+            setPlaybackPosition(0);
+            if (playbackTimerRef.current) {
+              clearInterval(playbackTimerRef.current);
+              playbackTimerRef.current = null;
+            }
+          }
+        } catch (error) {
+          // Player was likely released, stop the interval
+          console.log('Playback tracking stopped:', error);
           setIsPlaying(false);
-          setPlaybackPosition(0);
           if (playbackTimerRef.current) {
             clearInterval(playbackTimerRef.current);
             playbackTimerRef.current = null;
           }
         }
       }, 100);
-    } else {
-      if (playbackTimerRef.current) {
-        clearInterval(playbackTimerRef.current);
-        playbackTimerRef.current = null;
-      }
     }
 
     return () => {
@@ -121,11 +145,22 @@ export default function DiagnoseDescribeScreen() {
         playbackTimerRef.current = null;
       }
     };
-  }, [audioPlayer, isPlaying]);
+  }, [audioPlayer, isPlaying, recordedUri]);
 
-  // Update duration when audioPlayer changes
+  // Reset playing state and update duration when audioPlayer changes
   useEffect(() => {
+    // When audioPlayer changes (new player created), reset playing state
+    setIsPlaying(false);
+    setPlaybackPosition(0);
+
     if (audioPlayer && audioPlayer.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    }
+  }, [audioPlayer]);
+
+  // Update duration when it becomes available
+  useEffect(() => {
+    if (audioPlayer?.duration) {
       setPlaybackDuration(audioPlayer.duration);
     }
   }, [audioPlayer?.duration]);
@@ -226,14 +261,28 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const deleteRecording = () => {
-    if (audioPlayer) {
-      audioPlayer.pause();
+    // Stop playback tracking first
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
     }
+    setIsPlaying(false);
+
+    // Try to pause the player safely
+    try {
+      if (audioPlayer) {
+        audioPlayer.pause();
+      }
+    } catch (error) {
+      // Player might already be released
+      console.log('Player already released');
+    }
+
+    // Reset all states
     setRecordedUri(null);
     setRecordingDuration(0);
     setPlaybackDuration(0);
     setPlaybackPosition(0);
-    setIsPlaying(false);
   };
 
   // Speech-to-text functions (requires development build)
