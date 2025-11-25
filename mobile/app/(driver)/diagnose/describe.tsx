@@ -15,7 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useAudioRecorder, AudioModule, RecordingPresets, AudioPlayer } from 'expo-audio';
+import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
@@ -49,10 +49,16 @@ export default function DiagnoseDescribeScreen() {
 
   // expo-audio hooks
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioPlayer = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
 
-  // Manual audio player management for Android compatibility
-  const audioPlayerRef = useRef<AudioPlayer | null>(null);
+  // Refs to track latest state for interval callbacks (avoids stale closures)
+  const audioPlayerRef = useRef(audioPlayer);
   const isPlayingRef = useRef(false);
+
+  // Keep ref in sync with hook value
+  useEffect(() => {
+    audioPlayerRef.current = audioPlayer;
+  }, [audioPlayer]);
 
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -67,62 +73,37 @@ export default function DiagnoseDescribeScreen() {
       if (playbackTimerRef.current) {
         clearInterval(playbackTimerRef.current);
       }
-      // Release audio player
-      if (audioPlayerRef.current) {
-        try {
-          audioPlayerRef.current.release();
-        } catch (e) {
-          // Already released
-        }
-        audioPlayerRef.current = null;
-      }
       Speech.stop();
     };
   }, []);
 
-  // Create audio player when recordedUri changes
+  // Reset states when audioPlayer changes (new player or null)
   useEffect(() => {
-    // Cleanup previous player
-    if (audioPlayerRef.current) {
-      try {
-        audioPlayerRef.current.release();
-      } catch (e) {
-        // Already released
-      }
-      audioPlayerRef.current = null;
+    // Clear interval when player changes
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
     }
 
     // Reset states
     setIsPlaying(false);
     isPlayingRef.current = false;
     setPlaybackPosition(0);
-    setPlaybackDuration(0);
 
-    // Create new player if we have a URI
-    if (recordedUri) {
-      try {
-        const player = new AudioPlayer({ uri: recordedUri });
-        audioPlayerRef.current = player;
-
-        // Get duration once player is ready
-        setTimeout(() => {
-          if (audioPlayerRef.current && audioPlayerRef.current.duration) {
-            setPlaybackDuration(audioPlayerRef.current.duration);
-          }
-        }, 100);
-      } catch (error) {
-        console.error('Failed to create audio player:', error);
-      }
+    // Update duration if player has it
+    if (audioPlayer?.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    } else {
+      setPlaybackDuration(recordingDuration);
     }
+  }, [audioPlayer]);
 
-    return () => {
-      // Cleanup on URI change
-      if (playbackTimerRef.current) {
-        clearInterval(playbackTimerRef.current);
-        playbackTimerRef.current = null;
-      }
-    };
-  }, [recordedUri]);
+  // Update duration when it becomes available
+  useEffect(() => {
+    if (audioPlayer?.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    }
+  }, [audioPlayer?.duration]);
 
   // Pulse animation for recording indicator
   useEffect(() => {
@@ -318,19 +299,17 @@ export default function DiagnoseDescribeScreen() {
     setIsPlaying(false);
     isPlayingRef.current = false;
 
-    // Release and cleanup the player
-    if (audioPlayerRef.current) {
-      try {
+    // Try to pause the player (hook manages lifecycle, don't call release)
+    try {
+      if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
-        audioPlayerRef.current.release();
-      } catch (error) {
-        // Player might already be released
-        console.log('Player already released');
       }
-      audioPlayerRef.current = null;
+    } catch (error) {
+      // Player might already be released
+      console.log('Player pause error:', error);
     }
 
-    // Reset all states
+    // Reset all states - setting recordedUri to null will cause hook to release player
     setRecordedUri(null);
     setRecordingDuration(0);
     setPlaybackDuration(0);
