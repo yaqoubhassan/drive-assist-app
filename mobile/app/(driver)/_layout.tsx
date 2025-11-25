@@ -1,11 +1,12 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Platform } from 'react-native';
 
 export default function DriverLayout() {
   const { isDark } = useTheme();
+  const router = useRouter();
 
   const tabBarBackground = isDark ? '#111827' : '#FFFFFF';
   const tabBarBorder = isDark ? '#1F2937' : '#E5E7EB';
@@ -48,6 +49,13 @@ export default function DriverLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="add-circle" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Reset the diagnose stack to the index screen when tab is pressed
+            e.preventDefault();
+            router.replace('/(driver)/diagnose');
+          },
         }}
       />
       <Tabs.Screen

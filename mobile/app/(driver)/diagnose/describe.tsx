@@ -51,6 +51,15 @@ export default function DiagnoseDescribeScreen() {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const audioPlayer = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
 
+  // Refs to track latest state for interval callbacks (avoids stale closures)
+  const audioPlayerRef = useRef(audioPlayer);
+  const isPlayingRef = useRef(false);
+
+  // Keep ref in sync with hook value
+  useEffect(() => {
+    audioPlayerRef.current = audioPlayer;
+  }, [audioPlayer]);
+
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -67,6 +76,34 @@ export default function DiagnoseDescribeScreen() {
       Speech.stop();
     };
   }, []);
+
+  // Reset states when audioPlayer changes (new player or null)
+  useEffect(() => {
+    // Clear interval when player changes
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    // Reset states
+    setIsPlaying(false);
+    isPlayingRef.current = false;
+    setPlaybackPosition(0);
+
+    // Update duration if player has it
+    if (audioPlayer?.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    } else {
+      setPlaybackDuration(recordingDuration);
+    }
+  }, [audioPlayer]);
+
+  // Update duration when it becomes available
+  useEffect(() => {
+    if (audioPlayer?.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    }
+  }, [audioPlayer?.duration]);
 
   // Pulse animation for recording indicator
   useEffect(() => {
@@ -92,27 +129,59 @@ export default function DiagnoseDescribeScreen() {
 
   // Track playback status with interval for smooth progress
   useEffect(() => {
-    if (audioPlayer && isPlaying) {
+    // Clear any existing interval first
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    if (isPlaying && recordedUri && audioPlayerRef.current) {
       // Update position every 100ms for smooth progress
       playbackTimerRef.current = setInterval(() => {
-        if (audioPlayer.currentTime !== undefined) {
-          setPlaybackPosition(audioPlayer.currentTime);
-        }
-        // Check if playback finished
-        if (audioPlayer.duration && audioPlayer.currentTime >= audioPlayer.duration) {
+        try {
+          const player = audioPlayerRef.current;
+          // Check if player is still valid
+          if (!player || !isPlayingRef.current) {
+            if (playbackTimerRef.current) {
+              clearInterval(playbackTimerRef.current);
+              playbackTimerRef.current = null;
+            }
+            return;
+          }
+
+          const currentTime = player.currentTime;
+          const duration = player.duration;
+
+          if (currentTime !== undefined && currentTime !== null) {
+            setPlaybackPosition(currentTime);
+          }
+
+          // Update duration if not set
+          if (duration && duration > 0) {
+            setPlaybackDuration(duration);
+          }
+
+          // Check if playback finished
+          if (duration && duration > 0 && currentTime >= duration - 0.1) {
+            setIsPlaying(false);
+            isPlayingRef.current = false;
+            setPlaybackPosition(0);
+            if (playbackTimerRef.current) {
+              clearInterval(playbackTimerRef.current);
+              playbackTimerRef.current = null;
+            }
+          }
+        } catch (error) {
+          // Player was likely released, stop the interval
+          console.log('Playback tracking stopped:', error);
           setIsPlaying(false);
-          setPlaybackPosition(0);
+          isPlayingRef.current = false;
           if (playbackTimerRef.current) {
             clearInterval(playbackTimerRef.current);
             playbackTimerRef.current = null;
           }
         }
       }, 100);
-    } else {
-      if (playbackTimerRef.current) {
-        clearInterval(playbackTimerRef.current);
-        playbackTimerRef.current = null;
-      }
     }
 
     return () => {
@@ -121,14 +190,7 @@ export default function DiagnoseDescribeScreen() {
         playbackTimerRef.current = null;
       }
     };
-  }, [audioPlayer, isPlaying]);
-
-  // Update duration when audioPlayer changes
-  useEffect(() => {
-    if (audioPlayer && audioPlayer.duration) {
-      setPlaybackDuration(audioPlayer.duration);
-    }
-  }, [audioPlayer?.duration]);
+  }, [isPlaying, recordedUri]);
 
   const formatTime = (seconds: number) => {
     const totalSeconds = Math.floor(seconds);
@@ -198,7 +260,8 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const playRecording = async () => {
-    if (!recordedUri || !audioPlayer) return;
+    const player = audioPlayerRef.current;
+    if (!recordedUri || !player) return;
 
     try {
       // Set audio mode for playback
@@ -208,16 +271,18 @@ export default function DiagnoseDescribeScreen() {
       });
 
       if (isPlaying) {
-        audioPlayer.pause();
+        player.pause();
         setIsPlaying(false);
+        isPlayingRef.current = false;
       } else {
         // Reset to start if at end
         if (playbackPosition >= playbackDuration && playbackDuration > 0) {
-          audioPlayer.seekTo(0);
+          player.seekTo(0);
           setPlaybackPosition(0);
         }
-        audioPlayer.play();
+        player.play();
         setIsPlaying(true);
+        isPlayingRef.current = true;
       }
     } catch (err) {
       console.error('Failed to play recording:', err);
@@ -226,14 +291,29 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const deleteRecording = () => {
-    if (audioPlayer) {
-      audioPlayer.pause();
+    // Stop playback tracking first
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
     }
+    setIsPlaying(false);
+    isPlayingRef.current = false;
+
+    // Try to pause the player (hook manages lifecycle, don't call release)
+    try {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
+    } catch (error) {
+      // Player might already be released
+      console.log('Player pause error:', error);
+    }
+
+    // Reset all states - setting recordedUri to null will cause hook to release player
     setRecordedUri(null);
     setRecordingDuration(0);
     setPlaybackDuration(0);
     setPlaybackPosition(0);
-    setIsPlaying(false);
   };
 
   // Speech-to-text functions (requires development build)
