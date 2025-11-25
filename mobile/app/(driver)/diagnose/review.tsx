@@ -41,7 +41,7 @@ export default function DiagnoseReviewScreen() {
           Step 4 of 4
         </Text>
         <TouchableOpacity
-          onPress={() => router.dismissAll()}
+          onPress={() => router.replace('/(driver)/')}
           className="h-12 w-12 items-center justify-center"
         >
           <MaterialIcons
