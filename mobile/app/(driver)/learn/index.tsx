@@ -90,6 +90,8 @@ export default function LearnScreen() {
                 onPress={() => {
                   if (category.id === 'road-signs') {
                     router.push('/(driver)/learn/road-signs');
+                  } else {
+                    router.push(`/(driver)/learn/category/${category.id}`);
                   }
                 }}
                 className={`flex-row items-center p-4 rounded-xl ${

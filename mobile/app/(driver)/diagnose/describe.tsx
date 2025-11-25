@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { Audio } from 'expo-av';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
 
@@ -36,6 +38,181 @@ export default function DiagnoseDescribeScreen() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recordedUri, setRecordedUri] = useState<string | null>(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackPosition, setPlaybackPosition] = useState(0);
+  const [playbackDuration, setPlaybackDuration] = useState(0);
+
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
+  // Pulse animation for recording indicator
+  useEffect(() => {
+    if (isRecording) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isRecording, pulseAnim]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startRecording = async () => {
+    try {
+      // Request permissions
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please allow microphone access to record audio.');
+        return;
+      }
+
+      // Set audio mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      // Start recording
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(newRecording);
+      setIsRecording(true);
+      setRecordingDuration(0);
+      setRecordedUri(null);
+
+      // Start timer
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+      Alert.alert('Error', 'Failed to start recording. Please try again.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    try {
+      // Stop timer
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+
+      setIsRecording(false);
+      await recording.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+      });
+
+      const uri = recording.getURI();
+      setRecordedUri(uri);
+      setRecording(null);
+
+      // Get duration
+      if (uri) {
+        const { sound: playbackSound, status } = await Audio.Sound.createAsync({ uri });
+        if (status.isLoaded && status.durationMillis) {
+          setPlaybackDuration(Math.floor(status.durationMillis / 1000));
+        }
+        await playbackSound.unloadAsync();
+      }
+    } catch (err) {
+      console.error('Failed to stop recording:', err);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const playRecording = async () => {
+    if (!recordedUri) return;
+
+    try {
+      if (sound) {
+        // If already loaded, just play/pause
+        if (isPlaying) {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await sound.playAsync();
+          setIsPlaying(true);
+        }
+      } else {
+        // Load and play
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          { uri: recordedUri },
+          { shouldPlay: true },
+          onPlaybackStatusUpdate
+        );
+        setSound(newSound);
+        setIsPlaying(true);
+      }
+    } catch (err) {
+      console.error('Failed to play recording:', err);
+    }
+  };
+
+  const onPlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      setPlaybackPosition(Math.floor(status.positionMillis / 1000));
+      if (status.didJustFinish) {
+        setIsPlaying(false);
+        setPlaybackPosition(0);
+      }
+    }
+  };
+
+  const deleteRecording = async () => {
+    if (sound) {
+      await sound.unloadAsync();
+      setSound(null);
+    }
+    setRecordedUri(null);
+    setRecordingDuration(0);
+    setPlaybackDuration(0);
+    setPlaybackPosition(0);
+    setIsPlaying(false);
+  };
 
   const handleContinue = () => {
     router.push({
@@ -90,7 +267,7 @@ export default function DiagnoseDescribeScreen() {
     setDescription((prev) => (prev ? `${prev}\n${suggestion}` : suggestion));
   };
 
-  const isValid = description.length >= 20 || photos.length > 0;
+  const isValid = description.length >= 20 || photos.length > 0 || recordedUri !== null;
 
   return (
     <SafeAreaView
@@ -249,28 +426,117 @@ export default function DiagnoseDescribeScreen() {
           {/* Voice Tab */}
           {activeTab === 'voice' && (
             <View className="items-center py-8">
-              <TouchableOpacity
-                onPress={() => setIsRecording(!isRecording)}
-                className={`h-32 w-32 rounded-full items-center justify-center ${isRecording ? 'bg-red-500' : 'bg-primary-500'
-                  }`}
-              >
-                <MaterialIcons
-                  name={isRecording ? 'stop' : 'mic'}
-                  size={48}
-                  color="#FFFFFF"
-                />
-              </TouchableOpacity>
-              <Text
-                className={`text-lg font-semibold mt-6 ${isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-              >
-                {isRecording ? 'Recording...' : 'Tap to start recording'}
-              </Text>
-              <Text
-                className={`text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-              >
-                00:{recordingDuration.toString().padStart(2, '0')}
-              </Text>
+              {!recordedUri ? (
+                // Recording UI
+                <>
+                  <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                    <TouchableOpacity
+                      onPress={toggleRecording}
+                      className={`h-32 w-32 rounded-full items-center justify-center ${isRecording ? 'bg-red-500' : 'bg-primary-500'}`}
+                    >
+                      <MaterialIcons
+                        name={isRecording ? 'stop' : 'mic'}
+                        size={48}
+                        color="#FFFFFF"
+                      />
+                    </TouchableOpacity>
+                  </Animated.View>
+
+                  {isRecording && (
+                    <View className="flex-row items-center mt-4">
+                      <View className="h-3 w-3 rounded-full bg-red-500 mr-2" />
+                      <Text className="text-red-500 font-semibold">REC</Text>
+                    </View>
+                  )}
+
+                  <Text className={`text-3xl font-bold mt-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {formatTime(recordingDuration)}
+                  </Text>
+
+                  <Text className={`text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
+                  </Text>
+
+                  {isRecording && (
+                    <View className="flex-row items-center mt-6">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <Animated.View
+                          key={i}
+                          className="h-8 w-1 mx-0.5 rounded-full bg-primary-500"
+                          style={{
+                            opacity: 0.3 + Math.random() * 0.7,
+                            height: 16 + Math.random() * 24,
+                          }}
+                        />
+                      ))}
+                    </View>
+                  )}
+                </>
+              ) : (
+                // Playback UI
+                <>
+                  <View className={`w-full rounded-2xl p-6 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <View className="flex-row items-center mb-4">
+                      <MaterialIcons name="mic" size={24} color="#3B82F6" />
+                      <Text className={`ml-2 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        Voice Recording
+                      </Text>
+                      <Text className={`ml-auto text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatTime(playbackDuration)}
+                      </Text>
+                    </View>
+
+                    {/* Progress bar */}
+                    <View className={`h-2 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`}>
+                      <View
+                        className="h-2 rounded-full bg-primary-500"
+                        style={{ width: `${playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0}%` }}
+                      />
+                    </View>
+
+                    <View className="flex-row justify-between mt-2">
+                      <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatTime(playbackPosition)}
+                      </Text>
+                      <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatTime(playbackDuration)}
+                      </Text>
+                    </View>
+
+                    {/* Playback controls */}
+                    <View className="flex-row items-center justify-center mt-4 gap-4">
+                      <TouchableOpacity
+                        onPress={deleteRecording}
+                        className={`h-12 w-12 rounded-full items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}
+                      >
+                        <MaterialIcons name="delete" size={24} color="#EF4444" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={playRecording}
+                        className="h-16 w-16 rounded-full bg-primary-500 items-center justify-center"
+                      >
+                        <MaterialIcons
+                          name={isPlaying ? 'pause' : 'play-arrow'}
+                          size={32}
+                          color="#FFFFFF"
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={toggleRecording}
+                        className={`h-12 w-12 rounded-full items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}
+                      >
+                        <MaterialIcons name="replay" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <Text className={`text-sm mt-4 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Recording saved. You can play it back or re-record.
+                  </Text>
+                </>
+              )}
             </View>
           )}
 
