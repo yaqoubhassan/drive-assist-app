@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Badge, Chip } from '../../../src/components/common';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card, Chip } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
+import { useTheme } from '../../../src/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -104,18 +104,19 @@ export default function EarningsScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             className="rounded-2xl p-5"
+            style={{ borderRadius: 16, overflow: 'hidden' }}
           >
-            <View className="flex-row items-center justify-between mb-2">
+            <View className={`flex-row items-center justify-between mb-2 ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
               <Text className="text-white/80">Available Balance</Text>
               <TouchableOpacity>
                 <MaterialIcons name="visibility" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            <Text className="text-white text-4xl font-bold mb-4">
+            <Text className={`text-white text-4xl font-bold mb-4 ${Platform.OS === 'ios' ? 'px-5' : ''}`}>
               {formatCurrency(stats.totalEarnings)}
             </Text>
 
-            <View className="flex-row gap-3">
+            <View className={`flex-row gap-3 ${Platform.OS === 'ios' ? 'px-5 pb-5' : ''}`}>
               <TouchableOpacity
                 onPress={() => router.push('/(expert)/earnings/withdraw')}
                 className="flex-1 bg-white/20 rounded-xl py-3 flex-row items-center justify-center"
@@ -229,11 +230,10 @@ export default function EarningsScreen() {
             {transactions.map((transaction, index) => (
               <View
                 key={transaction.id}
-                className={`flex-row items-center p-4 ${
-                  index !== transactions.length - 1
-                    ? `border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`
-                    : ''
-                }`}
+                className={`flex-row items-center p-4 ${index !== transactions.length - 1
+                  ? `border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`
+                  : ''
+                  }`}
               >
                 <View
                   className="h-10 w-10 rounded-full items-center justify-center mr-3"
