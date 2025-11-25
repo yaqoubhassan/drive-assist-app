@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { Platform } from 'react-native';
 
 export default function DriverLayout() {
   const { isDark } = useTheme();
+  const { userType, isAuthenticated } = useAuth();
   const router = useRouter();
+
+  // Route protection - redirect experts to expert routes
+  useEffect(() => {
+    if (userType === 'expert') {
+      router.replace('/(expert)');
+    }
+  }, [userType]);
+
+  // Don't render if user is an expert
+  if (userType === 'expert') {
+    return null;
+  }
 
   const tabBarBackground = isDark ? '#111827' : '#FFFFFF';
   const tabBarBorder = isDark ? '#1F2937' : '#E5E7EB';
