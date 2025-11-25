@@ -1,9 +1,31 @@
-import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
+import { Tabs, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useAuth } from '../../src/context/AuthContext';
 
 export default function ExpertLayout() {
   const { isDark } = useTheme();
+  const { userType, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Route protection - only experts can access these routes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/(auth)/welcome');
+      return;
+    }
+
+    if (userType !== 'expert') {
+      // Redirect drivers and guests to driver routes
+      router.replace('/(driver)');
+    }
+  }, [userType, isAuthenticated]);
+
+  // Don't render if not an expert
+  if (userType !== 'expert') {
+    return null;
+  }
 
   return (
     <Tabs

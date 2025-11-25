@@ -8,7 +8,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, Chip, IconButton } from '../../src/components/common';
+import { Badge, Card, Chip, IconButton, Button } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 
@@ -20,7 +20,8 @@ const quickCategories = [
   { id: 'electrical', label: 'Electrical', icon: 'electrical-services' as const },
 ];
 
-const recentDiagnoses = [
+// Mock data for authenticated users (will come from API later)
+const mockRecentDiagnoses = [
   {
     id: '1',
     title: 'P0420 - Catalyst System',
@@ -35,7 +36,7 @@ const recentDiagnoses = [
   },
 ];
 
-const vehicles = [
+const mockVehicles = [
   {
     id: '1',
     name: 'Toyota Camry',
@@ -73,9 +74,14 @@ const educationalContent = [
 export default function DriverHomeScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { user } = useAuth();
+  const { user, userType } = useAuth();
 
-  const firstName = user?.fullName?.split(' ')[0] || 'Driver';
+  const isGuest = userType === 'guest';
+  const firstName = isGuest ? 'Guest' : (user?.fullName?.split(' ')[0] || 'Driver');
+
+  // For guests, show empty arrays. For authenticated users, show mock data
+  const recentDiagnoses = isGuest ? [] : mockRecentDiagnoses;
+  const vehicles = isGuest ? [] : mockVehicles;
 
   return (
     <SafeAreaView
@@ -86,6 +92,27 @@ export default function DriverHomeScreen() {
         showsVerticalScrollIndicator={false}
         className="flex-1"
       >
+        {/* Guest Banner */}
+        {isGuest && (
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/sign-up')}
+            className="mx-4 mt-4 p-4 rounded-xl bg-primary-500/10 flex-row items-center"
+          >
+            <View className="h-10 w-10 rounded-full bg-primary-500/20 items-center justify-center mr-3">
+              <MaterialIcons name="person-add" size={20} color="#3B82F6" />
+            </View>
+            <View className="flex-1">
+              <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Welcome, Guest!
+              </Text>
+              <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Sign up to unlock all features
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#3B82F6" />
+          </TouchableOpacity>
+        )}
+
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-4">
           <View className="flex-row items-center gap-2">
@@ -192,49 +219,86 @@ export default function DriverHomeScreen() {
             >
               Recent Diagnoses
             </Text>
-            <TouchableOpacity onPress={() => router.push('/(driver)/profile/history')}>
-              <Text className="text-primary-500 font-semibold text-sm">
-                View All
-              </Text>
-            </TouchableOpacity>
+            {!isGuest && recentDiagnoses.length > 0 && (
+              <TouchableOpacity onPress={() => router.push('/(driver)/profile/history')}>
+                <Text className="text-primary-500 font-semibold text-sm">
+                  View All
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
           <View className="px-4 gap-3">
-            {recentDiagnoses.map((diagnosis) => (
-              <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/results?id=${diagnosis.id}`)}>
-                <View className="flex-row items-center gap-4">
-                  <View
-                    className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
-                      ? 'bg-green-500/20'
-                      : 'bg-orange-500/20'
-                      }`}
-                  >
-                    <MaterialIcons
-                      name={diagnosis.status === 'completed' ? 'check-circle' : 'error'}
-                      size={24}
-                      color={diagnosis.status === 'completed' ? '#22C55E' : '#F97316'}
+            {recentDiagnoses.length === 0 ? (
+              <Card variant="outlined" padding="lg">
+                <View className="items-center py-4">
+                  <View className={`h-16 w-16 rounded-full items-center justify-center mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <MaterialIcons name="search" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                  </View>
+                  <Text className={`text-base font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    No Diagnoses Yet
+                  </Text>
+                  <Text className={`text-sm text-center mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {isGuest
+                      ? 'Sign up to save your diagnosis history and track your vehicle health.'
+                      : 'Start your first diagnosis to get AI-powered insights about your vehicle.'
+                    }
+                  </Text>
+                  {isGuest ? (
+                    <Button
+                      title="Sign Up Free"
+                      variant="primary"
+                      size="sm"
+                      onPress={() => router.push('/(auth)/sign-up')}
                     />
-                  </View>
-                  <View className="flex-1">
-                    <Text
-                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                    >
-                      {diagnosis.title}
-                    </Text>
-                    <Text
-                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                    >
-                      {diagnosis.date}
-                    </Text>
-                  </View>
-                  <Badge
-                    label={diagnosis.status === 'completed' ? 'Complete' : 'Pending'}
-                    variant={diagnosis.status === 'completed' ? 'success' : 'warning'}
-                  />
+                  ) : (
+                    <Button
+                      title="Start Diagnosis"
+                      variant="primary"
+                      size="sm"
+                      icon="add"
+                      onPress={() => router.push('/(driver)/diagnose')}
+                    />
+                  )}
                 </View>
               </Card>
-            ))}
+            ) : (
+              recentDiagnoses.map((diagnosis) => (
+                <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/results?id=${diagnosis.id}`)}>
+                  <View className="flex-row items-center gap-4">
+                    <View
+                      className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
+                        ? 'bg-green-500/20'
+                        : 'bg-orange-500/20'
+                        }`}
+                    >
+                      <MaterialIcons
+                        name={diagnosis.status === 'completed' ? 'check-circle' : 'error'}
+                        size={24}
+                        color={diagnosis.status === 'completed' ? '#22C55E' : '#F97316'}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text
+                        className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                          }`}
+                      >
+                        {diagnosis.title}
+                      </Text>
+                      <Text
+                        className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`}
+                      >
+                        {diagnosis.date}
+                      </Text>
+                    </View>
+                    <Badge
+                      label={diagnosis.status === 'completed' ? 'Complete' : 'Pending'}
+                      variant={diagnosis.status === 'completed' ? 'success' : 'warning'}
+                    />
+                  </View>
+                </Card>
+              ))
+            )}
           </View>
         </View>
 
@@ -247,60 +311,99 @@ export default function DriverHomeScreen() {
             >
               My Vehicles
             </Text>
-            <TouchableOpacity
-              className="flex-row items-center gap-1"
-              onPress={() => router.push('/(driver)/profile/vehicle-edit')}
-            >
-              <MaterialIcons name="add" size={18} color="#3B82F6" />
-              <Text className="text-primary-500 font-semibold text-sm">
-                Add Vehicle
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-          >
-            {vehicles.map((vehicle) => (
-              <Card
-                key={vehicle.id}
-                variant="default"
-                padding="none"
-                className="w-64"
-                onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+            {!isGuest && (
+              <TouchableOpacity
+                className="flex-row items-center gap-1"
+                onPress={() => router.push('/(driver)/profile/vehicle-edit')}
               >
-                <View className={`h-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                  <Image
-                    source={{ uri: vehicle.image }}
-                    className="h-full w-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <View className="flex-row items-center justify-between p-4">
-                  <View>
-                    <Text
-                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                    >
-                      {vehicle.year} {vehicle.name}
-                    </Text>
-                    <Text
-                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                    >
-                      {vehicle.mileage}
-                    </Text>
+                <MaterialIcons name="add" size={18} color="#3B82F6" />
+                <Text className="text-primary-500 font-semibold text-sm">
+                  Add Vehicle
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {vehicles.length === 0 ? (
+            <View className="px-4">
+              <Card variant="outlined" padding="lg">
+                <View className="items-center py-4">
+                  <View className={`h-16 w-16 rounded-full items-center justify-center mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <MaterialIcons name="directions-car" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
                   </View>
-                  <IconButton
-                    icon="edit"
-                    size="sm"
-                    onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
-                  />
+                  <Text className={`text-base font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    No Vehicles Added
+                  </Text>
+                  <Text className={`text-sm text-center mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {isGuest
+                      ? 'Sign up to add your vehicles and get personalized diagnoses.'
+                      : 'Add your vehicle to get more accurate diagnosis results.'
+                    }
+                  </Text>
+                  {isGuest ? (
+                    <Button
+                      title="Sign Up Free"
+                      variant="primary"
+                      size="sm"
+                      onPress={() => router.push('/(auth)/sign-up')}
+                    />
+                  ) : (
+                    <Button
+                      title="Add Vehicle"
+                      variant="primary"
+                      size="sm"
+                      icon="add"
+                      onPress={() => router.push('/(driver)/profile/vehicle-edit')}
+                    />
+                  )}
                 </View>
               </Card>
-            ))}
-          </ScrollView>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+            >
+              {vehicles.map((vehicle) => (
+                <Card
+                  key={vehicle.id}
+                  variant="default"
+                  padding="none"
+                  className="w-64"
+                  onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+                >
+                  <View className={`h-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                    <Image
+                      source={{ uri: vehicle.image }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View className="flex-row items-center justify-between p-4">
+                    <View>
+                      <Text
+                        className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                          }`}
+                      >
+                        {vehicle.year} {vehicle.name}
+                      </Text>
+                      <Text
+                        className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`}
+                      >
+                        {vehicle.mileage}
+                      </Text>
+                    </View>
+                    <IconButton
+                      icon="edit"
+                      size="sm"
+                      onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+                    />
+                  </View>
+                </Card>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Educational Highlights */}
