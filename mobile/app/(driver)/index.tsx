@@ -1,20 +1,16 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Platform,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../src/context/ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import {
+  Image, Platform, ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Card, Chip, IconButton } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
-import { Card, Badge, IconButton, Chip } from '../../src/components/common';
-import { formatCurrency } from '../../src/constants';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const quickCategories = [
   { id: 'engine', label: 'Engine', icon: 'settings' as const },
@@ -118,31 +114,45 @@ export default function DriverHomeScreen() {
             colors={['#3B82F6', '#10B981']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="rounded-2xl p-6 overflow-hidden"
+            className="p-5"
+            style={{ borderRadius: 16, overflow: 'hidden' }}  // 16 = rounded-2xl
           >
             {/* Decorative circles */}
             <View className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10" />
             <View className="absolute -left-12 -bottom-16 h-40 w-40 rounded-full bg-white/10" />
 
-            <View className="relative z-10">
-              <Text className="text-white text-xl font-bold mb-4">
+            <View className={`relative z-10 ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
+              <Text className="text-white text-lg font-bold mb-3">
                 What can we help with today?
               </Text>
-              <View className={`flex-row gap-3 ${Platform.OS === 'ios' ? '' : 'flex-wrap'}`}>
-                <TouchableOpacity
-                  onPress={() => router.push('/(driver)/diagnose')}
-                  className={`flex-row items-center justify-center gap-2 h-12 bg-white/90 rounded-xl px-4 ${Platform.OS === 'ios' ? 'flex-1' : 'flex-1 min-w-[140px]'}`}
-                >
-                  <MaterialIcons name="photo-camera" size={20} color="#1E293B" />
-                  <Text className="font-bold text-slate-900" numberOfLines={1}>Diagnose Issue</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push('/(driver)/experts')}
-                  className={`flex-row items-center justify-center gap-2 h-12 bg-white/20 rounded-xl px-4 ${Platform.OS === 'ios' ? 'flex-1' : 'flex-1 min-w-[140px]'}`}
-                >
-                  <MaterialIcons name="search" size={20} color="#FFFFFF" />
-                  <Text className="font-bold text-white" numberOfLines={1}>Find Expert</Text>
-                </TouchableOpacity>
+
+              {/* Replace gap with margin-based spacing */}
+              <View className="flex-row flex-wrap" style={{ margin: -4 }}>
+                <View style={{ padding: 4, flexGrow: 1, flexBasis: 140 }}>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(driver)/diagnose')}
+                    className="flex-row items-center justify-center h-11 bg-white/90 rounded-xl px-3"
+                    style={{ gap: 6 }}
+                  >
+                    <MaterialIcons name="photo-camera" size={18} color="#1E293B" />
+                    <Text className="font-semibold text-slate-900 text-sm" numberOfLines={1}>
+                      Diagnose Issue
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={{ padding: 4, flexGrow: 1, flexBasis: 140 }}>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(driver)/experts')}
+                    className="flex-row items-center justify-center h-11 bg-white/20 rounded-xl px-3"
+                    style={{ gap: 6 }}
+                  >
+                    <MaterialIcons name="search" size={18} color="#FFFFFF" />
+                    <Text className="font-semibold text-white text-sm" numberOfLines={1}>
+                      Find Expert
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </LinearGradient>
@@ -194,8 +204,8 @@ export default function DriverHomeScreen() {
                 <View className="flex-row items-center gap-4">
                   <View
                     className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
-                        ? 'bg-green-500/20'
-                        : 'bg-orange-500/20'
+                      ? 'bg-green-500/20'
+                      : 'bg-orange-500/20'
                       }`}
                   >
                     <MaterialIcons
