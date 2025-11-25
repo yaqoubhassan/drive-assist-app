@@ -108,10 +108,17 @@ export default function DiagnoseDescribeScreen() {
         return;
       }
 
+      // Set audio mode for recording (required on iOS)
+      await AudioModule.setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
+      });
+
       setRecordingDuration(0);
       setRecordedUri(null);
 
-      // Start recording using the hook
+      // Prepare and start recording
+      await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
 
       // Start timer

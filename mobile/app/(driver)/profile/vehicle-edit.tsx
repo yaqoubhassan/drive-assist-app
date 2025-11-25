@@ -15,9 +15,9 @@ const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
 export default function VehicleEditScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { vehicleId } = useLocalSearchParams<{ vehicleId?: string }>();
+  const { id } = useLocalSearchParams<{ id?: string }>();
 
-  const isEditing = !!vehicleId;
+  const isEditing = !!id;
 
   // Form state
   const [make, setMake] = useState('');
