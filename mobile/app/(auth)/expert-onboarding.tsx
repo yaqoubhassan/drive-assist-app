@@ -8,6 +8,8 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,6 +55,7 @@ export default function ExpertOnboardingScreen() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showBusinessTypePicker, setShowBusinessTypePicker] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState<ExpertOnboardingData>({
@@ -199,35 +202,46 @@ export default function ExpertOnboardingScreen() {
         <Text className={`text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
           Business Type *
         </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-2">
-          <View className="flex-row gap-2 px-2">
-            {Object.entries(BusinessTypes).map(([key, label]) => (
-              <TouchableOpacity
-                key={key}
-                onPress={() => updateFormData({ businessType: key })}
-                className={`px-4 py-3 rounded-xl border-2 ${
-                  formData.businessType === key
-                    ? 'border-primary-500 bg-primary-500/10'
-                    : isDark
-                    ? 'border-slate-700 bg-slate-800'
-                    : 'border-slate-200 bg-white'
-                }`}
-              >
-                <Text
-                  className={`font-medium ${
-                    formData.businessType === key
-                      ? 'text-primary-500'
-                      : isDark
-                      ? 'text-slate-300'
-                      : 'text-slate-700'
-                  }`}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        <TouchableOpacity
+          onPress={() => setShowBusinessTypePicker(true)}
+          className={`flex-row items-center justify-between p-4 rounded-xl border-2 ${
+            formData.businessType
+              ? 'border-primary-500 bg-primary-500/5'
+              : errors.businessType
+              ? 'border-red-500'
+              : isDark
+              ? 'border-slate-700 bg-slate-800'
+              : 'border-slate-200 bg-white'
+          }`}
+        >
+          <View className="flex-row items-center flex-1">
+            <MaterialIcons
+              name="business"
+              size={22}
+              color={formData.businessType ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
+            />
+            <Text
+              className={`ml-3 ${
+                formData.businessType
+                  ? isDark
+                    ? 'text-white'
+                    : 'text-slate-900'
+                  : isDark
+                  ? 'text-slate-400'
+                  : 'text-slate-400'
+              }`}
+            >
+              {formData.businessType
+                ? BusinessTypes[formData.businessType as keyof typeof BusinessTypes]
+                : 'Select your business type'}
+            </Text>
           </View>
-        </ScrollView>
+          <MaterialIcons
+            name="keyboard-arrow-down"
+            size={24}
+            color={isDark ? '#64748B' : '#94A3B8'}
+          />
+        </TouchableOpacity>
         {errors.businessType && (
           <Text className="text-red-500 text-sm mt-1">{errors.businessType}</Text>
         )}
@@ -705,6 +719,92 @@ export default function ExpertOnboardingScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* Business Type Bottom Sheet Modal */}
+      <Modal
+        visible={showBusinessTypePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowBusinessTypePicker(false)}
+      >
+        <Pressable
+          className="flex-1 bg-black/50"
+          onPress={() => setShowBusinessTypePicker(false)}
+        >
+          <View className="flex-1" />
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <View
+              className={`rounded-t-3xl ${isDark ? 'bg-slate-900' : 'bg-white'}`}
+              style={{ maxHeight: '70%' }}
+            >
+              {/* Handle bar */}
+              <View className="items-center py-3">
+                <View className={`w-10 h-1 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
+              </View>
+
+              {/* Header */}
+              <View className={`flex-row items-center justify-between px-6 pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Select Business Type
+                </Text>
+                <TouchableOpacity onPress={() => setShowBusinessTypePicker(false)}>
+                  <MaterialIcons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Options */}
+              <ScrollView className="px-4 py-2" showsVerticalScrollIndicator={false}>
+                {Object.entries(BusinessTypes).map(([key, label]) => {
+                  const isSelected = formData.businessType === key;
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      onPress={() => {
+                        updateFormData({ businessType: key });
+                        setShowBusinessTypePicker(false);
+                      }}
+                      className={`flex-row items-center p-4 rounded-xl mb-2 ${
+                        isSelected
+                          ? 'bg-primary-500/10 border-2 border-primary-500'
+                          : isDark
+                          ? 'bg-slate-800'
+                          : 'bg-slate-50'
+                      }`}
+                    >
+                      <View
+                        className={`h-10 w-10 rounded-full items-center justify-center mr-4 ${
+                          isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
+                        }`}
+                      >
+                        <MaterialIcons
+                          name="business"
+                          size={20}
+                          color={isSelected ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                        />
+                      </View>
+                      <Text
+                        className={`flex-1 font-medium ${
+                          isSelected
+                            ? 'text-primary-500'
+                            : isDark
+                            ? 'text-white'
+                            : 'text-slate-900'
+                        }`}
+                      >
+                        {label}
+                      </Text>
+                      {isSelected && (
+                        <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+                <View className="h-8" />
+              </ScrollView>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
