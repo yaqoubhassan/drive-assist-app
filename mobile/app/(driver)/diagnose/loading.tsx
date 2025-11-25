@@ -131,7 +131,7 @@ export default function DiagnoseLoadingScreen() {
             }`}
           >
             <View
-              className="h-full bg-primary-500 rounded-full transition-all"
+              className="h-full bg-primary-500 rounded-full"
               style={{ width: `${Math.min(progress, 100)}%` }}
             />
           </View>
