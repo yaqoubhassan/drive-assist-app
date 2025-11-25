@@ -7,8 +7,10 @@ import { Platform } from 'react-native';
 
 export default function DriverLayout() {
   const { isDark } = useTheme();
-  const { userType, isAuthenticated } = useAuth();
+  const { userType } = useAuth();
   const router = useRouter();
+
+  const isGuest = userType === 'guest';
 
   // Route protection - redirect experts to expert routes
   useEffect(() => {
@@ -97,6 +99,15 @@ export default function DriverLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
+          // Hide profile tab for guests
+          href: isGuest ? null : '/(driver)/profile',
+        }}
+      />
+      <Tabs.Screen
+        name="booking"
+        options={{
+          // Hide booking from tab bar (it's accessed via navigation)
+          href: null,
         }}
       />
     </Tabs>
