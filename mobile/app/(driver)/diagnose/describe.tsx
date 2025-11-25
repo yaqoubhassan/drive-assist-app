@@ -15,7 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
 
@@ -36,14 +36,15 @@ export default function DiagnoseDescribeScreen() {
   const [activeTab, setActiveTab] = useState<InputTab>('text');
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordedUri, setRecordedUri] = useState<string | null>(null);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [playbackDuration, setPlaybackDuration] = useState(0);
+
+  // expo-audio hooks
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioPlayer = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
 
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -54,15 +55,12 @@ export default function DiagnoseDescribeScreen() {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
-      if (sound) {
-        sound.unloadAsync();
-      }
     };
-  }, [sound]);
+  }, []);
 
   // Pulse animation for recording indicator
   useEffect(() => {
-    if (isRecording) {
+    if (audioRecorder.isRecording) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
@@ -80,7 +78,20 @@ export default function DiagnoseDescribeScreen() {
     } else {
       pulseAnim.setValue(1);
     }
-  }, [isRecording, pulseAnim]);
+  }, [audioRecorder.isRecording, pulseAnim]);
+
+  // Track playback status
+  useEffect(() => {
+    if (audioPlayer) {
+      setIsPlaying(audioPlayer.playing);
+      if (audioPlayer.duration) {
+        setPlaybackDuration(Math.floor(audioPlayer.duration));
+      }
+      if (audioPlayer.currentTime !== undefined) {
+        setPlaybackPosition(Math.floor(audioPlayer.currentTime));
+      }
+    }
+  }, [audioPlayer?.playing, audioPlayer?.duration, audioPlayer?.currentTime]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -91,27 +102,17 @@ export default function DiagnoseDescribeScreen() {
   const startRecording = async () => {
     try {
       // Request permissions
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
         Alert.alert('Permission Required', 'Please allow microphone access to record audio.');
         return;
       }
 
-      // Set audio mode
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      // Start recording
-      const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      setRecording(newRecording);
-      setIsRecording(true);
       setRecordingDuration(0);
       setRecordedUri(null);
+
+      // Start recording using the hook
+      audioRecorder.record();
 
       // Start timer
       recordingTimerRef.current = setInterval(() => {
@@ -124,7 +125,7 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
+    if (!audioRecorder.isRecording) return;
 
     try {
       // Stop timer
@@ -133,31 +134,18 @@ export default function DiagnoseDescribeScreen() {
         recordingTimerRef.current = null;
       }
 
-      setIsRecording(false);
-      await recording.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-      });
-
-      const uri = recording.getURI();
+      // Stop recording and get URI
+      await audioRecorder.stop();
+      const uri = audioRecorder.uri;
       setRecordedUri(uri);
-      setRecording(null);
-
-      // Get duration
-      if (uri) {
-        const { sound: playbackSound, status } = await Audio.Sound.createAsync({ uri });
-        if (status.isLoaded && status.durationMillis) {
-          setPlaybackDuration(Math.floor(status.durationMillis / 1000));
-        }
-        await playbackSound.unloadAsync();
-      }
+      setPlaybackDuration(recordingDuration);
     } catch (err) {
       console.error('Failed to stop recording:', err);
     }
   };
 
   const toggleRecording = () => {
-    if (isRecording) {
+    if (audioRecorder.isRecording) {
       stopRecording();
     } else {
       startRecording();
@@ -165,47 +153,22 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const playRecording = async () => {
-    if (!recordedUri) return;
+    if (!recordedUri || !audioPlayer) return;
 
     try {
-      if (sound) {
-        // If already loaded, just play/pause
-        if (isPlaying) {
-          await sound.pauseAsync();
-          setIsPlaying(false);
-        } else {
-          await sound.playAsync();
-          setIsPlaying(true);
-        }
+      if (isPlaying) {
+        audioPlayer.pause();
       } else {
-        // Load and play
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          { uri: recordedUri },
-          { shouldPlay: true },
-          onPlaybackStatusUpdate
-        );
-        setSound(newSound);
-        setIsPlaying(true);
+        audioPlayer.play();
       }
     } catch (err) {
       console.error('Failed to play recording:', err);
     }
   };
 
-  const onPlaybackStatusUpdate = (status: any) => {
-    if (status.isLoaded) {
-      setPlaybackPosition(Math.floor(status.positionMillis / 1000));
-      if (status.didJustFinish) {
-        setIsPlaying(false);
-        setPlaybackPosition(0);
-      }
-    }
-  };
-
-  const deleteRecording = async () => {
-    if (sound) {
-      await sound.unloadAsync();
-      setSound(null);
+  const deleteRecording = () => {
+    if (audioPlayer) {
+      audioPlayer.pause();
     }
     setRecordedUri(null);
     setRecordingDuration(0);
@@ -432,17 +395,17 @@ export default function DiagnoseDescribeScreen() {
                   <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
                     <TouchableOpacity
                       onPress={toggleRecording}
-                      className={`h-32 w-32 rounded-full items-center justify-center ${isRecording ? 'bg-red-500' : 'bg-primary-500'}`}
+                      className={`h-32 w-32 rounded-full items-center justify-center ${audioRecorder.isRecording ? 'bg-red-500' : 'bg-primary-500'}`}
                     >
                       <MaterialIcons
-                        name={isRecording ? 'stop' : 'mic'}
+                        name={audioRecorder.isRecording ? 'stop' : 'mic'}
                         size={48}
                         color="#FFFFFF"
                       />
                     </TouchableOpacity>
                   </Animated.View>
 
-                  {isRecording && (
+                  {audioRecorder.isRecording && (
                     <View className="flex-row items-center mt-4">
                       <View className="h-3 w-3 rounded-full bg-red-500 mr-2" />
                       <Text className="text-red-500 font-semibold">REC</Text>
@@ -454,10 +417,10 @@ export default function DiagnoseDescribeScreen() {
                   </Text>
 
                   <Text className={`text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
+                    {audioRecorder.isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
                   </Text>
 
-                  {isRecording && (
+                  {audioRecorder.isRecording && (
                     <View className="flex-row items-center mt-6">
                       {[0, 1, 2, 3, 4].map((i) => (
                         <Animated.View
