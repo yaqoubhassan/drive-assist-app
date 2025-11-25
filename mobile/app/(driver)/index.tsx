@@ -95,16 +95,14 @@ export default function DriverHomeScreen() {
             <MaterialIcons name="location-on" size={20} color="#3B82F6" />
             <View>
               <Text
-                className={`text-lg font-bold ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
+                className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                  }`}
               >
                 Hi, {firstName}!
               </Text>
               <Text
-                className={`text-sm ${
-                  isDark ? 'text-slate-400' : 'text-slate-500'
-                }`}
+                className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}
               >
                 Accra, Ghana
               </Text>
@@ -152,9 +150,8 @@ export default function DriverHomeScreen() {
         {/* Quick Categories */}
         <View className="pt-4">
           <Text
-            className={`text-lg font-bold px-4 pb-3 ${
-              isDark ? 'text-white' : 'text-slate-900'
-            }`}
+            className={`text-lg font-bold px-4 pb-3 ${isDark ? 'text-white' : 'text-slate-900'
+              }`}
           >
             Quick Categories
           </Text>
@@ -179,9 +176,8 @@ export default function DriverHomeScreen() {
         <View className="pt-6">
           <View className="flex-row items-center justify-between px-4 pb-3">
             <Text
-              className={`text-lg font-bold ${
-                isDark ? 'text-white' : 'text-slate-900'
-              }`}
+              className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                }`}
             >
               Recent Diagnoses
             </Text>
@@ -196,11 +192,10 @@ export default function DriverHomeScreen() {
               <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/result?id=${diagnosis.id}`)}>
                 <View className="flex-row items-center gap-4">
                   <View
-                    className={`h-12 w-12 rounded-full items-center justify-center ${
-                      diagnosis.status === 'completed'
+                    className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
                         ? 'bg-green-500/20'
                         : 'bg-orange-500/20'
-                    }`}
+                      }`}
                   >
                     <MaterialIcons
                       name={diagnosis.status === 'completed' ? 'check-circle' : 'error'}
@@ -210,16 +205,14 @@ export default function DriverHomeScreen() {
                   </View>
                   <View className="flex-1">
                     <Text
-                      className={`font-bold ${
-                        isDark ? 'text-white' : 'text-slate-900'
-                      }`}
+                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                        }`}
                     >
                       {diagnosis.title}
                     </Text>
                     <Text
-                      className={`text-sm ${
-                        isDark ? 'text-slate-400' : 'text-slate-500'
-                      }`}
+                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
+                        }`}
                     >
                       {diagnosis.date}
                     </Text>
@@ -238,9 +231,8 @@ export default function DriverHomeScreen() {
         <View className="pt-6">
           <View className="flex-row items-center justify-between px-4 pb-3">
             <Text
-              className={`text-lg font-bold ${
-                isDark ? 'text-white' : 'text-slate-900'
-              }`}
+              className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                }`}
             >
               My Vehicles
             </Text>
@@ -277,16 +269,14 @@ export default function DriverHomeScreen() {
                 <View className="flex-row items-center justify-between p-4">
                   <View>
                     <Text
-                      className={`font-bold ${
-                        isDark ? 'text-white' : 'text-slate-900'
-                      }`}
+                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
+                        }`}
                     >
                       {vehicle.year} {vehicle.name}
                     </Text>
                     <Text
-                      className={`text-sm ${
-                        isDark ? 'text-slate-400' : 'text-slate-500'
-                      }`}
+                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
+                        }`}
                     >
                       {vehicle.mileage}
                     </Text>
@@ -305,9 +295,8 @@ export default function DriverHomeScreen() {
         {/* Educational Highlights */}
         <View className="pt-6 pb-8">
           <Text
-            className={`text-lg font-bold px-4 pb-3 ${
-              isDark ? 'text-white' : 'text-slate-900'
-            }`}
+            className={`text-lg font-bold px-4 pb-3 ${isDark ? 'text-white' : 'text-slate-900'
+              }`}
           >
             Learn Something New
           </Text>
