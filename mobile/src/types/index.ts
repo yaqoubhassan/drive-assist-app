@@ -29,18 +29,120 @@ export interface DriverProfile extends User {
 export interface ExpertProfile extends User {
   userType: 'expert';
   businessName: string;
+  businessType?: string;
   bio?: string;
   specialties: string[];
   services: Service[];
   rating: number;
   reviewCount: number;
-  yearsExperience: number;
+  yearsExperience?: number;
+  employeeCount?: number;
   verified: boolean;
   certifications: string[];
   hours: BusinessHours;
   gallery: string[];
   priceRange: PriceRange;
+  // Expert status flags
+  emailVerified: boolean;
+  onboardingComplete: boolean;
+  kycStatus: KycStatus;
+  // Location
+  businessAddress?: string;
+  serviceRadiusKm?: number;
+  // Accepts emergency calls
+  acceptsEmergency?: boolean;
 }
+
+// Expert KYC Types
+export type KycStatus =
+  | 'not_started'
+  | 'in_progress'
+  | 'submitted'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'resubmission_required';
+
+export interface ExpertKyc {
+  // Business Documents
+  businessLicenseNumber?: string;
+  businessLicenseDocumentPath?: string;
+  businessLicenseExpiry?: string;
+  // Insurance
+  insurancePolicyNumber?: string;
+  insuranceCertificatePath?: string;
+  insuranceExpiry?: string;
+  insuranceProvider?: string;
+  // Identity
+  idType?: 'national_id' | 'drivers_license' | 'passport';
+  idNumber?: string;
+  idDocumentFrontPath?: string;
+  idDocumentBackPath?: string;
+  // Background Check
+  backgroundCheckConsent?: boolean;
+  // Status
+  kycStatus: KycStatus;
+  kycSubmittedAt?: string;
+  kycApprovedAt?: string;
+  rejectionReason?: string;
+  completionPercentage: number;
+  currentStep: number;
+}
+
+// Expert Onboarding Data
+export interface ExpertOnboardingData {
+  // Step 1: Basic Info
+  phone?: string;
+  businessName?: string;
+  businessType?: string;
+  yearsExperience?: number;
+  employeeCount?: number;
+  bio?: string;
+  // Step 2: Location
+  businessAddress?: string;
+  locationLatitude?: number;
+  locationLongitude?: number;
+  serviceRadiusKm?: number;
+  // Step 3: Services
+  specialties: string[];
+  // Step 4: Operating Hours
+  operatingHours?: BusinessHours;
+  acceptsEmergency?: boolean;
+}
+
+// Business Types for Ghana
+export const BusinessTypes: Record<string, string> = {
+  independent_mechanic: 'Independent Mechanic',
+  auto_repair_shop: 'Auto Repair Shop',
+  dealership_service: 'Dealership Service Center',
+  mobile_mechanic: 'Mobile Mechanic',
+  specialty_shop: 'Specialty Shop (Electrical, AC, etc.)',
+  tire_shop: 'Tire & Wheel Shop',
+  body_shop: 'Body & Paint Shop',
+  auto_electrician: 'Auto Electrician',
+  towing_service: 'Towing Service',
+  other: 'Other',
+};
+
+// Expert Specialties
+export const ExpertSpecialties: Record<string, string> = {
+  engine_repair: 'Engine Repair',
+  transmission: 'Transmission',
+  brakes: 'Brakes & Suspension',
+  electrical: 'Electrical Systems',
+  ac_heating: 'AC & Heating',
+  oil_change: 'Oil Change & Fluids',
+  tire_service: 'Tire Service',
+  body_work: 'Body Work',
+  paint: 'Paint & Refinishing',
+  diagnostics: 'Diagnostics',
+  hybrid_ev: 'Hybrid & Electric Vehicles',
+  towing: 'Towing & Recovery',
+  windshield: 'Windshield & Glass',
+  exhaust: 'Exhaust Systems',
+  steering: 'Steering & Alignment',
+  general_maintenance: 'General Maintenance',
+};
 
 // Location
 export interface Location {

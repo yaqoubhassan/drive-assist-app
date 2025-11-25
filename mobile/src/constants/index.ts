@@ -85,6 +85,11 @@ export const AppConstants = {
     theme: '@driveassist/theme',
     savedVehicles: '@driveassist/saved_vehicles',
     savedExperts: '@driveassist/saved_experts',
+    // Expert-specific keys
+    expertProfile: '@driveassist/expert_profile',
+    expertOnboardingComplete: '@driveassist/expert_onboarding_complete',
+    expertKycStatus: '@driveassist/expert_kyc_status',
+    emailVerified: '@driveassist/email_verified',
   },
 };
 

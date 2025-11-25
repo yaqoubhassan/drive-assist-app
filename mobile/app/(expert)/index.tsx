@@ -72,7 +72,9 @@ const activeJobs = [
 export default function ExpertDashboardScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { user } = useAuth();
+  const { user, kycStatus, isExpertOnboardingComplete } = useAuth();
+
+  const showKycBanner = kycStatus !== 'approved';
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -121,6 +123,55 @@ export default function ExpertDashboardScreen() {
             </View>
           </View>
         </View>
+
+        {/* KYC Banner */}
+        {showKycBanner && (
+          <TouchableOpacity
+            onPress={() => router.push('/(expert)/profile/documents')}
+            className="mx-4 mb-4"
+          >
+            <View
+              className={`p-4 rounded-xl border ${
+                kycStatus === 'submitted' || kycStatus === 'under_review'
+                  ? 'bg-yellow-500/10 border-yellow-500/20'
+                  : 'bg-blue-500/10 border-blue-500/20'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <View
+                  className={`h-10 w-10 rounded-full items-center justify-center mr-3 ${
+                    kycStatus === 'submitted' || kycStatus === 'under_review'
+                      ? 'bg-yellow-500/20'
+                      : 'bg-blue-500/20'
+                  }`}
+                >
+                  <MaterialIcons
+                    name={
+                      kycStatus === 'submitted' || kycStatus === 'under_review'
+                        ? 'hourglass-empty'
+                        : 'verified-user'
+                    }
+                    size={20}
+                    color={kycStatus === 'submitted' || kycStatus === 'under_review' ? '#F59E0B' : '#3B82F6'}
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {kycStatus === 'submitted' || kycStatus === 'under_review'
+                      ? 'KYC Under Review'
+                      : 'Complete Your KYC'}
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {kycStatus === 'submitted' || kycStatus === 'under_review'
+                      ? 'Your documents are being reviewed'
+                      : 'Verify your account to unlock all features'}
+                  </Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Earnings Card */}
         <View className="px-4 pb-4">
