@@ -19,6 +19,7 @@ export default function ExpertProfileLayout() {
       <Stack.Screen name="reviews" />
       <Stack.Screen name="availability" />
       <Stack.Screen name="documents" />
+      <Stack.Screen name="payment-accounts" />
       <Stack.Screen name="settings" />
     </Stack>
   );

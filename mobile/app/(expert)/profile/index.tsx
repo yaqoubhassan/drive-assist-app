@@ -39,6 +39,13 @@ const menuItems = [
     route: '/(expert)/profile/documents',
   },
   {
+    id: 'payment-accounts',
+    title: 'Payment Accounts',
+    subtitle: 'Manage your payout methods',
+    icon: 'account-balance-wallet' as const,
+    route: '/(expert)/profile/payment-accounts',
+  },
+  {
     id: 'settings',
     title: 'Settings',
     subtitle: 'App preferences',

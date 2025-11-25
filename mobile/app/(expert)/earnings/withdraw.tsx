@@ -217,9 +217,12 @@ export default function WithdrawScreen() {
             ))}
           </View>
 
-          <TouchableOpacity className="flex-row items-center justify-center mt-4">
+          <TouchableOpacity
+            onPress={() => router.push('/(expert)/profile/payment-accounts')}
+            className="flex-row items-center justify-center mt-4"
+          >
             <MaterialIcons name="add" size={20} color="#3B82F6" />
-            <Text className="text-primary-500 font-semibold ml-1">Add New Account</Text>
+            <Text className="text-primary-500 font-semibold ml-1">Manage Payment Accounts</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
