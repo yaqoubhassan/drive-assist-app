@@ -1,13 +1,12 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../src/context/ThemeContext';
-import { useAuth } from '../../src/context/AuthContext';
-import { Card, Avatar, Badge } from '../../src/components/common';
+import { useRouter } from 'expo-router';
+import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Avatar, Badge, Card } from '../../src/components/common';
 import { formatCurrency } from '../../src/constants';
+import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -130,21 +129,22 @@ export default function ExpertDashboardScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             className="rounded-2xl p-5"
+            style={{ borderRadius: 16, overflow: 'hidden' }}
           >
-            <View className="flex-row items-center justify-between mb-4">
+            <View className={`flex-row items-center justify-between mb-4 ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
               <Text className="text-white/80">This Month's Earnings</Text>
               <TouchableOpacity onPress={() => router.push('/(expert)/earnings')}>
                 <Text className="text-white font-semibold">See Details</Text>
               </TouchableOpacity>
             </View>
-            <Text className="text-white text-3xl font-bold mb-2">
+            <Text className={`text-white text-3xl font-bold mb-2 ${Platform.OS === 'ios' ? 'px-5' : ''}`}>
               {formatCurrency(12450)}
             </Text>
-            <View className="flex-row items-center">
+            <View className={`flex-row items-center ${Platform.OS === 'ios' ? 'px-5' : ''}`}>
               <MaterialIcons name="trending-up" size={18} color="#4ADE80" />
               <Text className="text-green-300 ml-1">+18% from last month</Text>
             </View>
-            <View className="flex-row mt-4 gap-4">
+            <View className={`flex-row mt-4 gap-4 ${Platform.OS === 'ios' ? 'px-5 pb-5' : ''}`}>
               <View className="flex-1 bg-white/20 rounded-xl p-3">
                 <Text className="text-white/70 text-xs">Pending</Text>
                 <Text className="text-white font-bold text-lg">{formatCurrency(2800)}</Text>
