@@ -8,7 +8,7 @@ import { useAuth } from '../../../src/context/AuthContext';
 import { Card, Avatar, Badge, Rating } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
-const menuItems = [
+const getMenuItems = (kycStatus: string) => [
   {
     id: 'services',
     title: 'My Services',
@@ -33,10 +33,15 @@ const menuItems = [
   },
   {
     id: 'documents',
-    title: 'Documents',
-    subtitle: 'Certifications & licenses',
-    icon: 'description' as const,
+    title: 'KYC Verification',
+    subtitle: kycStatus === 'approved'
+      ? 'Verified - All documents approved'
+      : kycStatus === 'submitted' || kycStatus === 'under_review'
+      ? 'Under review'
+      : 'Complete verification to unlock features',
+    icon: 'verified-user' as const,
     route: '/(expert)/profile/documents',
+    kycStatus: kycStatus,
   },
   {
     id: 'payment-accounts',
@@ -72,11 +77,23 @@ const specializations = ['Engine Repair', 'Transmission', 'Brakes', 'Electrical'
 export default function ExpertProfileScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, signOut, kycStatus } = useAuth();
+
+  const menuItems = getMenuItems(kycStatus);
 
   const handleSignOut = () => {
     signOut();
     router.replace('/(auth)/welcome');
+  };
+
+  const getKycBadge = () => {
+    if (kycStatus === 'approved') {
+      return <Badge label="Verified Expert" variant="success" size="sm" />;
+    }
+    if (kycStatus === 'submitted' || kycStatus === 'under_review') {
+      return <Badge label="Verification Pending" variant="warning" size="sm" />;
+    }
+    return <Badge label="Unverified" variant="default" size="sm" />;
   };
 
   return (
@@ -110,7 +127,7 @@ export default function ExpertProfileScreen() {
               {user?.fullName || 'Expert User'}
             </Text>
             <View className="flex-row items-center mt-1">
-              <Badge label="Verified Expert" variant="success" size="sm" />
+              {getKycBadge()}
             </View>
 
             <View className="flex-row items-center mt-2">
@@ -241,6 +258,19 @@ export default function ExpertProfileScreen() {
                   <View className="flex-row items-center mr-2">
                     <MaterialIcons name="star" size={16} color="#F59E0B" />
                     <Text className="text-yellow-500 font-bold ml-1">{item.badge}</Text>
+                  </View>
+                )}
+                {item.id === 'documents' && (
+                  <View className="mr-2">
+                    {(item as any).kycStatus === 'approved' ? (
+                      <MaterialIcons name="check-circle" size={20} color="#10B981" />
+                    ) : (item as any).kycStatus === 'submitted' || (item as any).kycStatus === 'under_review' ? (
+                      <MaterialIcons name="hourglass-empty" size={20} color="#F59E0B" />
+                    ) : (
+                      <View className="h-5 w-5 rounded-full bg-orange-500 items-center justify-center">
+                        <Text className="text-white text-xs font-bold">!</Text>
+                      </View>
+                    )}
                   </View>
                 )}
                 <MaterialIcons

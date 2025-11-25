@@ -10,7 +10,7 @@ import { Button, Input } from '../../src/components/common';
 export default function SignInScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { signIn } = useAuth();
+  const { signIn, userType, isEmailVerified, isExpertOnboardingComplete } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +42,15 @@ export default function SignInScreen() {
     setLoading(true);
     try {
       await signIn(email, password);
-      router.replace('/(driver)');
+      // The signIn function updates the auth state, so we check the email for expert routing
+      const isExpert = email.includes('expert');
+      if (isExpert) {
+        // Expert login - check their verification/onboarding status
+        // These will be updated by signIn, so we navigate after state update
+        router.replace('/(expert)');
+      } else {
+        router.replace('/(driver)');
+      }
     } catch (error) {
       setErrors({ email: 'Invalid email or password' });
     } finally {
@@ -123,7 +131,10 @@ export default function SignInScreen() {
               />
 
               {/* Forgot Password */}
-              <TouchableOpacity className="self-end mb-6">
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/forgot-password')}
+                className="self-end mb-6"
+              >
                 <Text className="text-primary-500 font-semibold text-sm">
                   Forgot Password?
                 </Text>
