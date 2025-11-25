@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import * as React from 'react';
 import {
   View,
   Text,
@@ -57,9 +57,9 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { completeOnboarding } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const flatListRef = React.useRef<FlatList>(null);
+  const scrollX = React.useRef(new Animated.Value(0)).current;
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
