@@ -21,6 +21,7 @@ const mockVehicles: Vehicle[] = [
     transmission: 'automatic',
     mileage: 45000,
     isDefault: true,
+    createdAt: '2022-01-01T10:00:00Z',
   },
   {
     id: '2',
@@ -34,6 +35,7 @@ const mockVehicles: Vehicle[] = [
     transmission: 'automatic',
     mileage: 22000,
     isDefault: false,
+    createdAt: '2023-03-15T15:30:00Z',
   },
 ];
 
@@ -189,7 +191,7 @@ export default function VehiclesScreen() {
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
-                    onPress={() => {}}
+                    onPress={() => { }}
                     className="flex-1 flex-row items-center justify-center py-2"
                   >
                     <MaterialIcons name="edit" size={18} color={isDark ? '#94A3B8' : '#64748B'} />

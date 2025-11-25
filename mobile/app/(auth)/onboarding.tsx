@@ -9,7 +9,8 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+// require the icon set and type as any to avoid missing type declarations
+const MaterialIcons: any = require('react-native-vector-icons/MaterialIcons').default;
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
@@ -19,7 +20,7 @@ const { width } = Dimensions.get('window');
 
 interface OnboardingSlide {
   id: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
+  icon: string;
   title: string;
   description: string;
   backgroundColor: string;
@@ -95,18 +96,16 @@ export default function OnboardingScreen() {
 
       {/* Title */}
       <Text
-        className={`text-3xl font-bold text-center mb-4 ${
-          isDark ? 'text-white' : 'text-slate-900'
-        }`}
+        className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-slate-900'
+          }`}
       >
         {item.title}
       </Text>
 
       {/* Description */}
       <Text
-        className={`text-lg text-center leading-relaxed ${
-          isDark ? 'text-slate-300' : 'text-slate-600'
-        }`}
+        className={`text-lg text-center leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
+          }`}
       >
         {item.description}
       </Text>
