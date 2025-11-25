@@ -117,7 +117,8 @@ export default function DiagnoseDescribeScreen() {
       setRecordingDuration(0);
       setRecordedUri(null);
 
-      // Start recording using the hook
+      // Prepare and start recording
+      await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
 
       // Start timer
