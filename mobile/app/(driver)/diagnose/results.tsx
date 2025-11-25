@@ -58,7 +58,7 @@ export default function DiagnoseResultsScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-4">
           <TouchableOpacity
-            onPress={() => router.dismissAll()}
+            onPress={() => router.replace('/(driver)/')}
             className="h-12 w-12 items-center justify-center"
           >
             <MaterialIcons
