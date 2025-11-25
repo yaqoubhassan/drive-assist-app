@@ -16,8 +16,10 @@ export default function ProfileLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="edit" />
       <Stack.Screen name="vehicles" />
+      <Stack.Screen name="vehicle-edit" />
       <Stack.Screen name="settings" />
       <Stack.Screen name="history" />
+      <Stack.Screen name="bookmarks" />
     </Stack>
   );
 }

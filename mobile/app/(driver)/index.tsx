@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -127,17 +128,17 @@ export default function DriverHomeScreen() {
               <Text className="text-white text-xl font-bold mb-4">
                 What can we help with today?
               </Text>
-              <View className="flex-row flex-wrap gap-3">
+              <View className={`flex-row gap-3 ${Platform.OS === 'ios' ? '' : 'flex-wrap'}`}>
                 <TouchableOpacity
                   onPress={() => router.push('/(driver)/diagnose')}
-                  className="flex-1 min-w-[140px] flex-row items-center justify-center gap-2 h-12 bg-white/90 rounded-xl px-3"
+                  className={`flex-row items-center justify-center gap-2 h-12 bg-white/90 rounded-xl px-4 ${Platform.OS === 'ios' ? 'flex-1' : 'flex-1 min-w-[140px]'}`}
                 >
                   <MaterialIcons name="photo-camera" size={20} color="#1E293B" />
                   <Text className="font-bold text-slate-900" numberOfLines={1}>Diagnose Issue</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => router.push('/(driver)/experts')}
-                  className="flex-1 min-w-[140px] flex-row items-center justify-center gap-2 h-12 bg-white/20 rounded-xl px-3"
+                  className={`flex-row items-center justify-center gap-2 h-12 bg-white/20 rounded-xl px-4 ${Platform.OS === 'ios' ? 'flex-1' : 'flex-1 min-w-[140px]'}`}
                 >
                   <MaterialIcons name="search" size={20} color="#FFFFFF" />
                   <Text className="font-bold text-white" numberOfLines={1}>Find Expert</Text>
@@ -189,7 +190,7 @@ export default function DriverHomeScreen() {
           </View>
           <View className="px-4 gap-3">
             {recentDiagnoses.map((diagnosis) => (
-              <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/result?id=${diagnosis.id}`)}>
+              <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/results?id=${diagnosis.id}`)}>
                 <View className="flex-row items-center gap-4">
                   <View
                     className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'

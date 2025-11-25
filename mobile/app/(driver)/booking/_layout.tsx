@@ -14,7 +14,6 @@ export default function BookingLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="schedule" />
       <Stack.Screen name="confirm" />
     </Stack>
   );
