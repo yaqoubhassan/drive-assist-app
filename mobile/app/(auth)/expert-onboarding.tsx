@@ -317,45 +317,57 @@ export default function ExpertOnboardingScreen() {
 
       <View>
         <Text className={`text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-          Service Radius: {formData.serviceRadiusKm} km
+          Service Radius
         </Text>
         <View className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-          <View className="flex-row justify-between mb-2">
-            <Text className={isDark ? 'text-slate-400' : 'text-slate-600'}>5 km</Text>
-            <Text className={isDark ? 'text-slate-400' : 'text-slate-600'}>100 km</Text>
+          {/* Selected radius display */}
+          <View className="items-center mb-4">
+            <Text className={`text-3xl font-bold text-primary-500`}>
+              {formData.serviceRadiusKm} km
+            </Text>
           </View>
-          <View className="h-2 bg-slate-300 dark:bg-slate-600 rounded-full">
-            <View
-              className="h-full bg-primary-500 rounded-full"
-              style={{ width: `${((formData.serviceRadiusKm || 25) - 5) / 95 * 100}%` }}
-            />
-          </View>
-          <View className="flex-row justify-center gap-4 mt-4">
-            {[10, 25, 50, 75, 100].map((radius) => (
-              <TouchableOpacity
-                key={radius}
-                onPress={() => updateFormData({ serviceRadiusKm: radius })}
-                className={`px-3 py-1 rounded-lg ${
-                  formData.serviceRadiusKm === radius
-                    ? 'bg-primary-500'
-                    : isDark
-                    ? 'bg-slate-700'
-                    : 'bg-slate-200'
-                }`}
-              >
-                <Text
-                  className={
-                    formData.serviceRadiusKm === radius
-                      ? 'text-white font-semibold'
-                      : isDark
-                      ? 'text-slate-300'
-                      : 'text-slate-700'
-                  }
-                >
-                  {radius} km
-                </Text>
-              </TouchableOpacity>
-            ))}
+
+          {/* Slider with minus/plus buttons */}
+          <View className="flex-row items-center gap-3">
+            {/* Minus button */}
+            <TouchableOpacity
+              onPress={() => {
+                const newValue = Math.max(5, (formData.serviceRadiusKm || 25) - 5);
+                updateFormData({ serviceRadiusKm: newValue });
+              }}
+              className={`h-10 w-10 rounded-full items-center justify-center ${
+                isDark ? 'bg-slate-700' : 'bg-slate-200'
+              }`}
+            >
+              <MaterialIcons name="remove" size={24} color={isDark ? '#FFFFFF' : '#374151'} />
+            </TouchableOpacity>
+
+            {/* Progress bar */}
+            <View className="flex-1">
+              <View className={`h-2 rounded-full ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}>
+                <View
+                  className="h-full bg-primary-500 rounded-full"
+                  style={{ width: `${((formData.serviceRadiusKm || 25) - 5) / 95 * 100}%` }}
+                />
+              </View>
+              <View className="flex-row justify-between mt-1">
+                <Text className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>5 km</Text>
+                <Text className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>100 km</Text>
+              </View>
+            </View>
+
+            {/* Plus button */}
+            <TouchableOpacity
+              onPress={() => {
+                const newValue = Math.min(100, (formData.serviceRadiusKm || 25) + 5);
+                updateFormData({ serviceRadiusKm: newValue });
+              }}
+              className={`h-10 w-10 rounded-full items-center justify-center ${
+                isDark ? 'bg-slate-700' : 'bg-slate-200'
+              }`}
+            >
+              <MaterialIcons name="add" size={24} color={isDark ? '#FFFFFF' : '#374151'} />
+            </TouchableOpacity>
           </View>
         </View>
         <Text className={`text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -727,83 +739,82 @@ export default function ExpertOnboardingScreen() {
         transparent={true}
         onRequestClose={() => setShowBusinessTypePicker(false)}
       >
-        <Pressable
-          className="flex-1 bg-black/50"
-          onPress={() => setShowBusinessTypePicker(false)}
-        >
-          <View className="flex-1" />
-          <Pressable onPress={(e) => e.stopPropagation()}>
-            <View
-              className={`rounded-t-3xl ${isDark ? 'bg-slate-900' : 'bg-white'}`}
-              style={{ maxHeight: '70%' }}
-            >
-              {/* Handle bar */}
-              <View className="items-center py-3">
-                <View className={`w-10 h-1 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
-              </View>
+        <View className="flex-1 justify-end">
+          <Pressable
+            className="absolute inset-0 bg-black/50"
+            onPress={() => setShowBusinessTypePicker(false)}
+          />
+          <View
+            className={`rounded-t-3xl ${isDark ? 'bg-slate-900' : 'bg-white'}`}
+            style={{ maxHeight: '70%' }}
+          >
+            {/* Handle bar */}
+            <View className="items-center py-3">
+              <View className={`w-10 h-1 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
+            </View>
 
-              {/* Header */}
-              <View className={`flex-row items-center justify-between px-6 pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Select Business Type
-                </Text>
-                <TouchableOpacity onPress={() => setShowBusinessTypePicker(false)}>
-                  <MaterialIcons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
-                </TouchableOpacity>
-              </View>
+            {/* Header */}
+            <View className={`flex-row items-center justify-between px-6 pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Select Business Type
+              </Text>
+              <TouchableOpacity onPress={() => setShowBusinessTypePicker(false)}>
+                <MaterialIcons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
 
-              {/* Options */}
-              <ScrollView className="px-4 py-2" showsVerticalScrollIndicator={false}>
-                {Object.entries(BusinessTypes).map(([key, label]) => {
-                  const isSelected = formData.businessType === key;
-                  return (
-                    <TouchableOpacity
-                      key={key}
-                      onPress={() => {
-                        updateFormData({ businessType: key });
-                        setShowBusinessTypePicker(false);
-                      }}
-                      className={`flex-row items-center p-4 rounded-xl mb-2 ${
-                        isSelected
-                          ? 'bg-primary-500/10 border-2 border-primary-500'
-                          : isDark
-                          ? 'bg-slate-800'
-                          : 'bg-slate-50'
+            {/* Options */}
+            <ScrollView className="px-4 py-2" showsVerticalScrollIndicator={false}>
+              {Object.entries(BusinessTypes).map(([key, label]) => {
+                const isSelected = formData.businessType === key;
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    onPress={() => {
+                      updateFormData({ businessType: key });
+                      setShowBusinessTypePicker(false);
+                    }}
+                    className={`flex-row items-center p-4 rounded-xl mb-2 ${
+                      isSelected
+                        ? 'bg-primary-500/10 border-2 border-primary-500'
+                        : isDark
+                        ? 'bg-slate-800'
+                        : 'bg-slate-50'
+                    }`}
+                  >
+                    <View
+                      className={`h-10 w-10 rounded-full items-center justify-center mr-4 ${
+                        isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
                       }`}
                     >
-                      <View
-                        className={`h-10 w-10 rounded-full items-center justify-center mr-4 ${
-                          isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
-                        }`}
-                      >
-                        <MaterialIcons
-                          name="business"
-                          size={20}
-                          color={isSelected ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
-                        />
-                      </View>
-                      <Text
-                        className={`flex-1 font-medium ${
-                          isSelected
-                            ? 'text-primary-500'
-                            : isDark
-                            ? 'text-white'
-                            : 'text-slate-900'
-                        }`}
-                      >
-                        {label}
-                      </Text>
-                      {isSelected && (
-                        <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-                <View className="h-8" />
-              </ScrollView>
-            </View>
-          </Pressable>
-        </Pressable>
+                      <MaterialIcons
+                        name="business"
+                        size={20}
+                        color={isSelected ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                      />
+                    </View>
+                    <Text
+                      className={`flex-1 font-medium ${
+                        isSelected
+                          ? 'text-primary-500'
+                          : isDark
+                          ? 'text-white'
+                          : 'text-slate-900'
+                      }`}
+                    >
+                      {label}
+                    </Text>
+                    {isSelected && (
+                      <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+              {/* Safe area padding for bottom */}
+              <View style={{ height: 34 }} />
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
