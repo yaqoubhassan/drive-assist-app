@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+const MaterialIcons: any = require('react-native-vector-icons/MaterialIcons').default;
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Card, SearchBar } from '../../../src/components/common';
 
@@ -183,22 +183,20 @@ export default function HelpScreen() {
               <TouchableOpacity
                 key={category}
                 onPress={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full ${
-                  selectedCategory === category
+                className={`px-4 py-2 rounded-full ${selectedCategory === category
                     ? 'bg-primary-500'
                     : isDark
-                    ? 'bg-slate-800'
-                    : 'bg-white'
-                }`}
+                      ? 'bg-slate-800'
+                      : 'bg-white'
+                  }`}
               >
                 <Text
-                  className={`font-medium ${
-                    selectedCategory === category
+                  className={`font-medium ${selectedCategory === category
                       ? 'text-white'
                       : isDark
-                      ? 'text-slate-300'
-                      : 'text-slate-600'
-                  }`}
+                        ? 'text-slate-300'
+                        : 'text-slate-600'
+                    }`}
                 >
                   {category}
                 </Text>
