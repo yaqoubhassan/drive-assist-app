@@ -15,7 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
+import { useAudioRecorder, AudioModule, RecordingPresets, AudioPlayer } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
@@ -49,7 +49,10 @@ export default function DiagnoseDescribeScreen() {
 
   // expo-audio hooks
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const audioPlayer = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
+
+  // Manual audio player management for Android compatibility
+  const audioPlayerRef = useRef<AudioPlayer | null>(null);
+  const isPlayingRef = useRef(false);
 
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -64,9 +67,62 @@ export default function DiagnoseDescribeScreen() {
       if (playbackTimerRef.current) {
         clearInterval(playbackTimerRef.current);
       }
+      // Release audio player
+      if (audioPlayerRef.current) {
+        try {
+          audioPlayerRef.current.release();
+        } catch (e) {
+          // Already released
+        }
+        audioPlayerRef.current = null;
+      }
       Speech.stop();
     };
   }, []);
+
+  // Create audio player when recordedUri changes
+  useEffect(() => {
+    // Cleanup previous player
+    if (audioPlayerRef.current) {
+      try {
+        audioPlayerRef.current.release();
+      } catch (e) {
+        // Already released
+      }
+      audioPlayerRef.current = null;
+    }
+
+    // Reset states
+    setIsPlaying(false);
+    isPlayingRef.current = false;
+    setPlaybackPosition(0);
+    setPlaybackDuration(0);
+
+    // Create new player if we have a URI
+    if (recordedUri) {
+      try {
+        const player = new AudioPlayer({ uri: recordedUri });
+        audioPlayerRef.current = player;
+
+        // Get duration once player is ready
+        setTimeout(() => {
+          if (audioPlayerRef.current && audioPlayerRef.current.duration) {
+            setPlaybackDuration(audioPlayerRef.current.duration);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Failed to create audio player:', error);
+      }
+    }
+
+    return () => {
+      // Cleanup on URI change
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+        playbackTimerRef.current = null;
+      }
+    };
+  }, [recordedUri]);
 
   // Pulse animation for recording indicator
   useEffect(() => {
@@ -98,12 +154,13 @@ export default function DiagnoseDescribeScreen() {
       playbackTimerRef.current = null;
     }
 
-    if (audioPlayer && isPlaying && recordedUri) {
+    if (isPlaying && recordedUri && audioPlayerRef.current) {
       // Update position every 100ms for smooth progress
       playbackTimerRef.current = setInterval(() => {
         try {
+          const player = audioPlayerRef.current;
           // Check if player is still valid
-          if (!audioPlayer || !recordedUri) {
+          if (!player || !isPlayingRef.current) {
             if (playbackTimerRef.current) {
               clearInterval(playbackTimerRef.current);
               playbackTimerRef.current = null;
@@ -111,16 +168,22 @@ export default function DiagnoseDescribeScreen() {
             return;
           }
 
-          const currentTime = audioPlayer.currentTime;
-          const duration = audioPlayer.duration;
+          const currentTime = player.currentTime;
+          const duration = player.duration;
 
           if (currentTime !== undefined && currentTime !== null) {
             setPlaybackPosition(currentTime);
           }
 
+          // Update duration if not set
+          if (duration && duration > 0) {
+            setPlaybackDuration(duration);
+          }
+
           // Check if playback finished
-          if (duration && currentTime >= duration) {
+          if (duration && duration > 0 && currentTime >= duration - 0.1) {
             setIsPlaying(false);
+            isPlayingRef.current = false;
             setPlaybackPosition(0);
             if (playbackTimerRef.current) {
               clearInterval(playbackTimerRef.current);
@@ -131,6 +194,7 @@ export default function DiagnoseDescribeScreen() {
           // Player was likely released, stop the interval
           console.log('Playback tracking stopped:', error);
           setIsPlaying(false);
+          isPlayingRef.current = false;
           if (playbackTimerRef.current) {
             clearInterval(playbackTimerRef.current);
             playbackTimerRef.current = null;
@@ -145,25 +209,7 @@ export default function DiagnoseDescribeScreen() {
         playbackTimerRef.current = null;
       }
     };
-  }, [audioPlayer, isPlaying, recordedUri]);
-
-  // Reset playing state and update duration when audioPlayer changes
-  useEffect(() => {
-    // When audioPlayer changes (new player created), reset playing state
-    setIsPlaying(false);
-    setPlaybackPosition(0);
-
-    if (audioPlayer && audioPlayer.duration) {
-      setPlaybackDuration(audioPlayer.duration);
-    }
-  }, [audioPlayer]);
-
-  // Update duration when it becomes available
-  useEffect(() => {
-    if (audioPlayer?.duration) {
-      setPlaybackDuration(audioPlayer.duration);
-    }
-  }, [audioPlayer?.duration]);
+  }, [isPlaying, recordedUri]);
 
   const formatTime = (seconds: number) => {
     const totalSeconds = Math.floor(seconds);
@@ -233,7 +279,8 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const playRecording = async () => {
-    if (!recordedUri || !audioPlayer) return;
+    const player = audioPlayerRef.current;
+    if (!recordedUri || !player) return;
 
     try {
       // Set audio mode for playback
@@ -243,16 +290,18 @@ export default function DiagnoseDescribeScreen() {
       });
 
       if (isPlaying) {
-        audioPlayer.pause();
+        player.pause();
         setIsPlaying(false);
+        isPlayingRef.current = false;
       } else {
         // Reset to start if at end
         if (playbackPosition >= playbackDuration && playbackDuration > 0) {
-          audioPlayer.seekTo(0);
+          player.seekTo(0);
           setPlaybackPosition(0);
         }
-        audioPlayer.play();
+        player.play();
         setIsPlaying(true);
+        isPlayingRef.current = true;
       }
     } catch (err) {
       console.error('Failed to play recording:', err);
@@ -267,15 +316,18 @@ export default function DiagnoseDescribeScreen() {
       playbackTimerRef.current = null;
     }
     setIsPlaying(false);
+    isPlayingRef.current = false;
 
-    // Try to pause the player safely
-    try {
-      if (audioPlayer) {
-        audioPlayer.pause();
+    // Release and cleanup the player
+    if (audioPlayerRef.current) {
+      try {
+        audioPlayerRef.current.pause();
+        audioPlayerRef.current.release();
+      } catch (error) {
+        // Player might already be released
+        console.log('Player already released');
       }
-    } catch (error) {
-      // Player might already be released
-      console.log('Player already released');
+      audioPlayerRef.current = null;
     }
 
     // Reset all states
