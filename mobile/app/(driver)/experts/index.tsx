@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,7 +11,20 @@ import {
   Rating,
   Badge,
   Avatar,
+  Button,
 } from '../../../src/components/common';
+
+const ghanaLocations = [
+  'Accra, Greater Accra',
+  'Tema, Greater Accra',
+  'Kumasi, Ashanti',
+  'Takoradi, Western',
+  'Cape Coast, Central',
+  'Tamale, Northern',
+  'Sunyani, Bono',
+  'Ho, Volta',
+  'Koforidua, Eastern',
+];
 
 const filterChips = [
   'All',
@@ -88,9 +101,27 @@ export default function ExpertsSearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState('Accra, Greater Accra');
+
+  // Filter states
+  const [minRating, setMinRating] = useState(0);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [maxDistance, setMaxDistance] = useState(50);
 
   const handleExpertPress = (expertId: string) => {
     router.push(`/(driver)/experts/${expertId}`);
+  };
+
+  const handleApplyFilters = () => {
+    setShowFilterModal(false);
+  };
+
+  const handleSelectLocation = (location: string) => {
+    setSelectedLocation(location);
+    setShowLocationModal(false);
   };
 
   return (
@@ -116,7 +147,10 @@ export default function ExpertsSearchScreen() {
           >
             Find Experts
           </Text>
-          <TouchableOpacity className="h-10 w-10 items-center justify-center">
+          <TouchableOpacity
+            className="h-10 w-10 items-center justify-center"
+            onPress={() => setShowFilterModal(true)}
+          >
             <MaterialIcons
               name="tune"
               size={24}
@@ -132,9 +166,9 @@ export default function ExpertsSearchScreen() {
             <Text
               className={`flex-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              Accra, Ghana
+              {selectedLocation.split(',')[0]}, Ghana
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowLocationModal(true)}>
               <Text className="text-primary-500 font-semibold text-sm">
                 Change
               </Text>
@@ -320,6 +354,168 @@ export default function ExpertsSearchScreen() {
           </Card>
         ))}
       </ScrollView>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          <View className={`flex-row items-center justify-between px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+              <Text className="text-primary-500 font-semibold">Cancel</Text>
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Filters
+            </Text>
+            <TouchableOpacity onPress={() => {
+              setMinRating(0);
+              setOpenNowOnly(false);
+              setVerifiedOnly(false);
+              setMaxDistance(50);
+            }}>
+              <Text className="text-primary-500 font-semibold">Reset</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="flex-1 px-4 py-4">
+            {/* Rating Filter */}
+            <View className="mb-6">
+              <Text className={`font-semibold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Minimum Rating
+              </Text>
+              <View className="flex-row gap-2">
+                {[0, 3, 3.5, 4, 4.5].map((rating) => (
+                  <TouchableOpacity
+                    key={rating}
+                    onPress={() => setMinRating(rating)}
+                    className={`flex-1 py-3 rounded-lg items-center ${
+                      minRating === rating
+                        ? 'bg-primary-500'
+                        : isDark ? 'bg-slate-800' : 'bg-slate-100'
+                    }`}
+                  >
+                    <Text className={minRating === rating ? 'text-white font-semibold' : isDark ? 'text-white' : 'text-slate-700'}>
+                      {rating === 0 ? 'Any' : `${rating}+`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Open Now Toggle */}
+            <View className={`flex-row items-center justify-between py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+              <View>
+                <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Open Now
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Only show currently open shops
+                </Text>
+              </View>
+              <Switch
+                value={openNowOnly}
+                onValueChange={setOpenNowOnly}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={openNowOnly ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            {/* Verified Only Toggle */}
+            <View className={`flex-row items-center justify-between py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+              <View>
+                <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Verified Only
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Only show verified experts
+                </Text>
+              </View>
+              <Switch
+                value={verifiedOnly}
+                onValueChange={setVerifiedOnly}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={verifiedOnly ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            {/* Max Distance */}
+            <View className="my-6">
+              <Text className={`font-semibold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Maximum Distance
+              </Text>
+              <View className="flex-row gap-2">
+                {[5, 10, 25, 50].map((dist) => (
+                  <TouchableOpacity
+                    key={dist}
+                    onPress={() => setMaxDistance(dist)}
+                    className={`flex-1 py-3 rounded-lg items-center ${
+                      maxDistance === dist
+                        ? 'bg-primary-500'
+                        : isDark ? 'bg-slate-800' : 'bg-slate-100'
+                    }`}
+                  >
+                    <Text className={maxDistance === dist ? 'text-white font-semibold' : isDark ? 'text-white' : 'text-slate-700'}>
+                      {dist} km
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+
+          <View className={`px-4 py-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <Button title="Apply Filters" onPress={handleApplyFilters} fullWidth />
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Location Modal */}
+      <Modal
+        visible={showLocationModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          <View className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowLocationModal(false)} className="mr-4">
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Select Location
+            </Text>
+          </View>
+
+          <ScrollView className="flex-1">
+            {ghanaLocations.map((location) => (
+              <TouchableOpacity
+                key={location}
+                onPress={() => handleSelectLocation(location)}
+                className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <MaterialIcons
+                  name="location-on"
+                  size={24}
+                  color={selectedLocation === location ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
+                />
+                <Text className={`flex-1 ml-3 ${
+                  selectedLocation === location
+                    ? 'text-primary-500 font-semibold'
+                    : isDark ? 'text-white' : 'text-slate-900'
+                }`}>
+                  {location}
+                </Text>
+                {selectedLocation === location && (
+                  <MaterialIcons name="check" size={24} color="#3B82F6" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

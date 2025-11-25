@@ -129,20 +129,20 @@ export default function DriverHomeScreen() {
               <Text className="text-white text-xl font-bold mb-4">
                 What can we help with today?
               </Text>
-              <View className="flex-row gap-3">
+              <View className="flex-row flex-wrap gap-3">
                 <TouchableOpacity
                   onPress={() => router.push('/(driver)/diagnose')}
-                  className="flex-1 flex-row items-center justify-center gap-2 h-12 bg-white/90 rounded-xl"
+                  className="flex-1 min-w-[140px] flex-row items-center justify-center gap-2 h-12 bg-white/90 rounded-xl px-3"
                 >
                   <MaterialIcons name="photo-camera" size={20} color="#1E293B" />
-                  <Text className="font-bold text-slate-900">Diagnose Issue</Text>
+                  <Text className="font-bold text-slate-900" numberOfLines={1}>Diagnose Issue</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => router.push('/(driver)/experts')}
-                  className="flex-1 flex-row items-center justify-center gap-2 h-12 bg-white/20 rounded-xl"
+                  className="flex-1 min-w-[140px] flex-row items-center justify-center gap-2 h-12 bg-white/20 rounded-xl px-3"
                 >
                   <MaterialIcons name="search" size={20} color="#FFFFFF" />
-                  <Text className="font-bold text-white">Find Expert</Text>
+                  <Text className="font-bold text-white" numberOfLines={1}>Find Expert</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -185,7 +185,7 @@ export default function DriverHomeScreen() {
             >
               Recent Diagnoses
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(driver)/profile/history')}>
               <Text className="text-primary-500 font-semibold text-sm">
                 View All
               </Text>
@@ -193,7 +193,7 @@ export default function DriverHomeScreen() {
           </View>
           <View className="px-4 gap-3">
             {recentDiagnoses.map((diagnosis) => (
-              <Card key={diagnosis.id} variant="default" onPress={() => {}}>
+              <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/result?id=${diagnosis.id}`)}>
                 <View className="flex-row items-center gap-4">
                   <View
                     className={`h-12 w-12 rounded-full items-center justify-center ${
@@ -244,7 +244,10 @@ export default function DriverHomeScreen() {
             >
               My Vehicles
             </Text>
-            <TouchableOpacity className="flex-row items-center gap-1">
+            <TouchableOpacity
+              className="flex-row items-center gap-1"
+              onPress={() => router.push('/(driver)/profile/vehicle-edit')}
+            >
               <MaterialIcons name="add" size={18} color="#3B82F6" />
               <Text className="text-primary-500 font-semibold text-sm">
                 Add Vehicle
@@ -262,6 +265,7 @@ export default function DriverHomeScreen() {
                 variant="default"
                 padding="none"
                 className="w-64"
+                onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
               >
                 <View className={`h-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
                   <Image
@@ -287,7 +291,11 @@ export default function DriverHomeScreen() {
                       {vehicle.mileage}
                     </Text>
                   </View>
-                  <IconButton icon="edit" size="sm" />
+                  <IconButton
+                    icon="edit"
+                    size="sm"
+                    onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+                  />
                 </View>
               </Card>
             ))}

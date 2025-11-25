@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, Platform, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { SearchBar, Card, Rating, Avatar } from '../../../src/components/common';
@@ -43,6 +43,7 @@ export default function ExpertsMapScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [selectedExpert, setSelectedExpert] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const initialRegion = {
     latitude: 5.6037,
@@ -54,10 +55,10 @@ export default function ExpertsMapScreen() {
   const selected = experts.find((e) => e.id === selectedExpert);
 
   return (
-    <SafeAreaView className="flex-1" edges={['top']}>
+    <View className="flex-1" style={{ backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }}>
       {/* Map */}
       <MapView
-        style={{ flex: 1 }}
+        style={StyleSheet.absoluteFillObject}
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton={false}
@@ -87,11 +88,11 @@ export default function ExpertsMapScreen() {
       </MapView>
 
       {/* Top Controls */}
-      <View className="absolute top-4 left-4 right-4">
+      <View style={{ position: 'absolute', top: insets.top + 16, left: 16, right: 16 }}>
         <View className="flex-row items-center gap-3">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="h-11 w-11 rounded-full bg-white dark:bg-slate-800 items-center justify-center shadow-md"
+            className={`h-11 w-11 rounded-full items-center justify-center shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'}`}
           >
             <MaterialIcons
               name="arrow-back"
@@ -109,7 +110,7 @@ export default function ExpertsMapScreen() {
 
         {/* Radius Selector */}
         <View className="flex-row justify-center mt-3">
-          <View className="bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-md">
+          <View className={`px-4 py-2 rounded-full shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
             <Text className={isDark ? 'text-white' : 'text-slate-900'}>
               Within <Text className="font-bold text-primary-500">10 km</Text>
             </Text>
@@ -119,7 +120,8 @@ export default function ExpertsMapScreen() {
 
       {/* My Location Button */}
       <TouchableOpacity
-        className="absolute right-4 bottom-48 h-11 w-11 rounded-full bg-white dark:bg-slate-800 items-center justify-center shadow-md"
+        style={{ position: 'absolute', right: 16, bottom: insets.bottom + 200 }}
+        className={`h-11 w-11 rounded-full items-center justify-center shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'}`}
       >
         <MaterialIcons
           name="my-location"
@@ -130,7 +132,7 @@ export default function ExpertsMapScreen() {
 
       {/* Selected Expert Card */}
       {selected && (
-        <View className="absolute bottom-8 left-4 right-4">
+        <View style={{ position: 'absolute', bottom: insets.bottom + 32, left: 16, right: 16 }}>
           <Card
             variant="elevated"
             padding="md"
@@ -178,6 +180,6 @@ export default function ExpertsMapScreen() {
           </Card>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
