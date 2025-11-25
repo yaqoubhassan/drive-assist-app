@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
-import { Button, Input } from '../../src/components/common';
+import { Button, Input, AddressAutocomplete, LocationData } from '../../src/components/common';
 import {
   ExpertOnboardingData,
   BusinessTypes,
@@ -56,6 +56,7 @@ export default function ExpertOnboardingScreen() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showBusinessTypePicker, setShowBusinessTypePicker] = useState(false);
+  const [locationData, setLocationData] = useState<LocationData | undefined>();
 
   // Form data
   const [formData, setFormData] = useState<ExpertOnboardingData>({
@@ -82,6 +83,15 @@ export default function ExpertOnboardingScreen() {
   const updateFormData = (updates: Partial<ExpertOnboardingData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
     setErrors({});
+  };
+
+  const handleLocationChange = (location: LocationData) => {
+    setLocationData(location);
+    updateFormData({
+      businessAddress: location.address,
+      locationLatitude: location.latitude,
+      locationLongitude: location.longitude,
+    });
   };
 
   const validateStep = (): boolean => {
@@ -306,13 +316,12 @@ export default function ExpertOnboardingScreen() {
         </Text>
       </View>
 
-      <Input
+      <AddressAutocomplete
         label="Business Address *"
-        placeholder="Enter your full address"
-        value={formData.businessAddress}
-        onChangeText={(value) => updateFormData({ businessAddress: value })}
+        placeholder="Search for your address..."
+        value={locationData}
+        onChange={handleLocationChange}
         error={errors.businessAddress}
-        icon="location-on"
       />
 
       <View>

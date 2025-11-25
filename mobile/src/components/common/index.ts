@@ -12,4 +12,5 @@ export { Chip } from './Chip';
 export { EmptyState } from './EmptyState';
 export { Loading } from './Loading';
 export { ImageGallery, ImageThumbnailGrid } from './ImageGallery';
-export { LocationPicker, LocationDisplay } from './LocationPicker';
+export { LocationPicker, LocationDisplay, AddressAutocomplete } from './LocationPicker';
+export type { LocationData } from './LocationPicker';
