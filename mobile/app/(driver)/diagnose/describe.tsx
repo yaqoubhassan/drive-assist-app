@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
+import * as Speech from 'expo-speech';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { Button, Chip } from '../../../src/components/common';
 
@@ -42,12 +47,31 @@ export default function DiagnoseDescribeScreen() {
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [playbackDuration, setPlaybackDuration] = useState(0);
 
+  // Speech-to-text states
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   // expo-audio hooks
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const audioPlayer = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
 
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Speech recognition event handlers
+  useSpeechRecognitionEvent('start', () => setIsListening(true));
+  useSpeechRecognitionEvent('end', () => setIsListening(false));
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results[0]?.transcript || '';
+    if (transcript) {
+      setDescription((prev) => prev ? `${prev} ${transcript}` : transcript);
+    }
+  });
+  useSpeechRecognitionEvent('error', (event) => {
+    console.error('Speech recognition error:', event.error);
+    setIsListening(false);
+  });
 
   // Cleanup on unmount
   useEffect(() => {
@@ -55,6 +79,10 @@ export default function DiagnoseDescribeScreen() {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+      }
+      Speech.stop();
     };
   }, []);
 
@@ -80,22 +108,50 @@ export default function DiagnoseDescribeScreen() {
     }
   }, [audioRecorder.isRecording, pulseAnim]);
 
-  // Track playback status
+  // Track playback status with interval for smooth progress
   useEffect(() => {
-    if (audioPlayer) {
-      setIsPlaying(audioPlayer.playing);
-      if (audioPlayer.duration) {
-        setPlaybackDuration(Math.floor(audioPlayer.duration));
-      }
-      if (audioPlayer.currentTime !== undefined) {
-        setPlaybackPosition(Math.floor(audioPlayer.currentTime));
+    if (audioPlayer && isPlaying) {
+      // Update position every 100ms for smooth progress
+      playbackTimerRef.current = setInterval(() => {
+        if (audioPlayer.currentTime !== undefined) {
+          setPlaybackPosition(audioPlayer.currentTime);
+        }
+        // Check if playback finished
+        if (audioPlayer.duration && audioPlayer.currentTime >= audioPlayer.duration) {
+          setIsPlaying(false);
+          setPlaybackPosition(0);
+          if (playbackTimerRef.current) {
+            clearInterval(playbackTimerRef.current);
+            playbackTimerRef.current = null;
+          }
+        }
+      }, 100);
+    } else {
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+        playbackTimerRef.current = null;
       }
     }
-  }, [audioPlayer?.playing, audioPlayer?.duration, audioPlayer?.currentTime]);
+
+    return () => {
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+        playbackTimerRef.current = null;
+      }
+    };
+  }, [audioPlayer, isPlaying]);
+
+  // Update duration when audioPlayer changes
+  useEffect(() => {
+    if (audioPlayer && audioPlayer.duration) {
+      setPlaybackDuration(audioPlayer.duration);
+    }
+  }, [audioPlayer?.duration]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const totalSeconds = Math.floor(seconds);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -163,13 +219,27 @@ export default function DiagnoseDescribeScreen() {
     if (!recordedUri || !audioPlayer) return;
 
     try {
+      // Set audio mode for playback
+      await AudioModule.setAudioModeAsync({
+        allowsRecording: false,
+        playsInSilentMode: true,
+      });
+
       if (isPlaying) {
         audioPlayer.pause();
+        setIsPlaying(false);
       } else {
+        // Reset to start if at end
+        if (playbackPosition >= playbackDuration && playbackDuration > 0) {
+          audioPlayer.seekTo(0);
+          setPlaybackPosition(0);
+        }
         audioPlayer.play();
+        setIsPlaying(true);
       }
     } catch (err) {
       console.error('Failed to play recording:', err);
+      Alert.alert('Error', 'Failed to play recording. Please try again.');
     }
   };
 
@@ -182,6 +252,53 @@ export default function DiagnoseDescribeScreen() {
     setPlaybackDuration(0);
     setPlaybackPosition(0);
     setIsPlaying(false);
+  };
+
+  // Speech-to-text functions
+  const startListening = async () => {
+    try {
+      const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Please allow microphone access for speech recognition.');
+        return;
+      }
+
+      ExpoSpeechRecognitionModule.start({
+        lang: 'en-US',
+        interimResults: true,
+        maxAlternatives: 1,
+        continuous: false,
+      });
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
+      Alert.alert('Error', 'Speech recognition is not available on this device.');
+    }
+  };
+
+  const stopListening = () => {
+    ExpoSpeechRecognitionModule.stop();
+  };
+
+  // Text-to-speech functions
+  const speakText = async () => {
+    if (!description.trim()) {
+      Alert.alert('No Text', 'Please enter some text to read aloud.');
+      return;
+    }
+
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+    } else {
+      setIsSpeaking(true);
+      Speech.speak(description, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 0.9,
+        onDone: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    }
   };
 
   const handleContinue = () => {
@@ -345,18 +462,78 @@ export default function DiagnoseDescribeScreen() {
                   onChangeText={setDescription}
                   multiline
                   textAlignVertical="top"
+                  style={{ minHeight: 100 }}
                 />
               </View>
-              <View className="flex-row justify-between mt-2">
-                <Text
-                  className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                >
-                  Min 20 characters
-                </Text>
+
+              {/* Speech Controls */}
+              <View className="flex-row items-center justify-between mt-3">
+                <View className="flex-row items-center gap-2">
+                  {/* Speech-to-text button */}
+                  <TouchableOpacity
+                    onPress={isListening ? stopListening : startListening}
+                    className={`flex-row items-center px-4 py-2 rounded-full ${
+                      isListening
+                        ? 'bg-red-500'
+                        : isDark ? 'bg-slate-700' : 'bg-slate-200'
+                    }`}
+                  >
+                    <MaterialIcons
+                      name={isListening ? 'mic-off' : 'mic'}
+                      size={18}
+                      color={isListening ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                    />
+                    <Text
+                      className={`ml-2 text-sm font-medium ${
+                        isListening
+                          ? 'text-white'
+                          : isDark ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      {isListening ? 'Listening...' : 'Speak'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Text-to-speech button */}
+                  <TouchableOpacity
+                    onPress={speakText}
+                    className={`flex-row items-center px-4 py-2 rounded-full ${
+                      isSpeaking
+                        ? 'bg-primary-500'
+                        : isDark ? 'bg-slate-700' : 'bg-slate-200'
+                    }`}
+                    disabled={!description.trim()}
+                    style={{ opacity: description.trim() ? 1 : 0.5 }}
+                  >
+                    <MaterialIcons
+                      name={isSpeaking ? 'stop' : 'volume-up'}
+                      size={18}
+                      color={isSpeaking ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                    />
+                    <Text
+                      className={`ml-2 text-sm font-medium ${
+                        isSpeaking
+                          ? 'text-white'
+                          : isDark ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      {isSpeaking ? 'Stop' : 'Listen'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 <Text
                   className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                 >
                   {description.length}/500
+                </Text>
+              </View>
+
+              <View className="flex-row justify-between mt-1">
+                <Text
+                  className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                >
+                  Min 20 characters
                 </Text>
               </View>
 
