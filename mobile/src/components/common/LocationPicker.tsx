@@ -673,6 +673,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               row: {
                 backgroundColor: inputBgColor,
                 padding: 13,
+                flexDirection: 'row',
+                alignItems: 'center',
               },
               separator: {
                 backgroundColor: borderColor,
@@ -695,6 +697,27 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             GooglePlacesDetailsQuery={{
               fields: 'formatted_address,geometry,address_components',
             }}
+            // Fix: Disable internal scroll to prevent VirtualizedList nesting warning
+            disableScroll={true}
+            // Fix: Auto-hide list after selection
+            listViewDisplayed="auto"
+            // Fix: Keep keyboard open while searching
+            keepResultsAfterBlur={false}
+            // Custom row rendering to fix icon issues
+            renderRow={(rowData) => (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <MaterialIcons name="place" size={18} color="#64748B" style={{ marginRight: 10 }} />
+                <Text style={{ color: inputTextColor, flex: 1, fontSize: 14 }} numberOfLines={2}>
+                  {rowData.description}
+                </Text>
+              </View>
+            )}
+            // Custom left button to fix icon issues
+            renderLeftButton={() => (
+              <View style={{ justifyContent: 'center', paddingLeft: 8 }}>
+                <MaterialIcons name="search" size={20} color="#64748B" />
+              </View>
+            )}
           />
         </View>
       ) : (
