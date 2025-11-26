@@ -395,6 +395,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [showMapModal, setShowMapModal] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(value || null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [mapRegion, setMapRegion] = useState<Region>(
     value
       ? {
@@ -458,6 +459,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       longitudeDelta: 0.01,
     });
     onChange(location);
+    // Close the suggestions dropdown
+    setShowSuggestions(false);
     Keyboard.dismiss();
   };
 
@@ -689,6 +692,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             textInputProps={{
               placeholderTextColor: placeholderColor,
               editable: !disabled,
+              onFocus: () => setShowSuggestions(true),
             }}
             enablePoweredByContainer={false}
             debounce={300}
@@ -699,8 +703,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             }}
             // Fix: Disable internal scroll to prevent VirtualizedList nesting warning
             disableScroll={true}
-            // Fix: Auto-hide list after selection
-            listViewDisplayed="auto"
+            // Fix: Controlled list visibility - closes on selection
+            listViewDisplayed={showSuggestions}
             // Fix: Keep keyboard open while searching
             keepResultsAfterBlur={false}
             // Custom row rendering to fix icon issues
