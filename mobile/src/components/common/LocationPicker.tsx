@@ -459,7 +459,13 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       longitudeDelta: 0.01,
     });
     onChange(location);
-    // Close the suggestions dropdown
+
+    // Explicitly set the address text in the input field
+    if (autocompleteRef.current && location.address) {
+      autocompleteRef.current.setAddressText(location.address);
+    }
+
+    // Close the suggestions dropdown after setting text
     setShowSuggestions(false);
     Keyboard.dismiss();
   };
