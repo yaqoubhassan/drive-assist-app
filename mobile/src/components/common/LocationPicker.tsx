@@ -452,11 +452,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     });
 
-    // Set the address text in the input field FIRST before any state changes
-    if (autocompleteRef.current) {
-      autocompleteRef.current.setAddressText(addressText);
-    }
-
+    // Update state
     setSelectedLocation(location);
     setMapRegion({
       latitude: location.latitude,
@@ -466,8 +462,17 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     });
     onChange(location);
 
-    // Dismiss keyboard to close dropdown
+    // Dismiss keyboard first to close dropdown
     Keyboard.dismiss();
+
+    // Then set the address text after a small delay to ensure it persists
+    setTimeout(() => {
+      if (autocompleteRef.current) {
+        autocompleteRef.current.setAddressText(addressText);
+        // Also blur the input to ensure dropdown closes
+        autocompleteRef.current.blur();
+      }
+    }, 50);
   };
 
   const handleUseCurrentLocation = async () => {
@@ -529,13 +534,16 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       };
 
       setSelectedLocation(location);
-      setMapRegion({
+      onChange(location);
+
+      // Animate map to current location smoothly
+      const newRegion = {
         latitude,
         longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
-      });
-      onChange(location);
+      };
+      mapRef.current?.animateToRegion(newRegion, 500);
 
       // Update autocomplete text
       if (autocompleteRef.current) {
@@ -598,12 +606,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       };
 
       setSelectedLocation(location);
-      setMapRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
+      // Don't update mapRegion state to avoid glitches - map stays where user tapped
     } catch (err) {
       console.error('Reverse geocode error:', err);
       // Still set the location with coordinates only
@@ -655,13 +658,20 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             query={{
               key: GOOGLE_MAPS_API_KEY,
               language: 'en',
-              components: 'country:gh|country:us|country:gb',
-              // Use 'geocode' for precise addresses or remove for all results including establishments
-              types: 'geocode',
+              // Restrict to Ghana only for the Ghanaian market
+              components: 'country:gh',
             }}
-            // Bias results toward Ghana for better local precision
+            // Bias results toward Ghana's center (Accra area) for better local results
+            predefinedPlaces={[]}
+            predefinedPlacesAlwaysVisible={false}
+            // Location bias for Ghana
             GooglePlacesSearchQuery={{
               rankby: 'distance',
+              location: '5.6037,-0.187', // Accra coordinates
+              radius: 500000, // 500km radius to cover Ghana
+            }}
+            GoogleReverseGeocodingQuery={{
+              language: 'en',
             }}
             styles={{
               container: {
@@ -854,11 +864,13 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               ref={mapRef}
               style={{ flex: 1 }}
               provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-              region={mapRegion}
-              onRegionChangeComplete={setMapRegion}
+              initialRegion={mapRegion}
               onPress={handleMapPress}
               showsUserLocation
               showsMyLocationButton={false}
+              mapPadding={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              rotateEnabled={false}
+              pitchEnabled={false}
             >
               {selectedLocation && (
                 <Marker
