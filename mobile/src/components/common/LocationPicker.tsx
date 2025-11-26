@@ -455,19 +455,22 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     setMapRegion({
       latitude: location.latitude,
       longitude: location.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
+      latitudeDelta: 0.005,
+      longitudeDelta: 0.005,
     });
     onChange(location);
 
-    // Explicitly set the address text in the input field
-    if (autocompleteRef.current && location.address) {
-      autocompleteRef.current.setAddressText(location.address);
-    }
-
-    // Close the suggestions dropdown after setting text
+    // Close suggestions and dismiss keyboard first
     setShowSuggestions(false);
     Keyboard.dismiss();
+
+    // Use setTimeout to set text after state updates are processed
+    // This prevents the dropdown close from interfering with text setting
+    setTimeout(() => {
+      if (autocompleteRef.current && location.address) {
+        autocompleteRef.current.setAddressText(location.address);
+      }
+    }, 100);
   };
 
   const handleUseCurrentLocation = async () => {
@@ -656,7 +659,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               key: GOOGLE_MAPS_API_KEY,
               language: 'en',
               components: 'country:gh|country:us|country:gb',
-              types: 'address',
+              // Use 'geocode' for precise addresses or remove for all results including establishments
+              types: 'geocode',
+            }}
+            // Bias results toward Ghana for better local precision
+            GooglePlacesSearchQuery={{
+              rankby: 'distance',
             }}
             styles={{
               container: {
