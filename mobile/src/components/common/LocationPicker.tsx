@@ -395,7 +395,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [showMapModal, setShowMapModal] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(value || null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [mapRegion, setMapRegion] = useState<Region>(
     value
       ? {
@@ -432,8 +431,10 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const handlePlaceSelect = (data: any, details: any) => {
     if (!details) return;
 
+    const addressText = data.description || details.formatted_address;
+
     const location: LocationData = {
-      address: data.description || details.formatted_address,
+      address: addressText,
       latitude: details.geometry.location.lat,
       longitude: details.geometry.location.lng,
     };
@@ -451,6 +452,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     });
 
+    // Set the address text in the input field FIRST before any state changes
+    if (autocompleteRef.current) {
+      autocompleteRef.current.setAddressText(addressText);
+    }
+
     setSelectedLocation(location);
     setMapRegion({
       latitude: location.latitude,
@@ -460,17 +466,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     });
     onChange(location);
 
-    // Close suggestions and dismiss keyboard first
-    setShowSuggestions(false);
+    // Dismiss keyboard to close dropdown
     Keyboard.dismiss();
-
-    // Use setTimeout to set text after state updates are processed
-    // This prevents the dropdown close from interfering with text setting
-    setTimeout(() => {
-      if (autocompleteRef.current && location.address) {
-        autocompleteRef.current.setAddressText(location.address);
-      }
-    }, 100);
   };
 
   const handleUseCurrentLocation = async () => {
@@ -706,7 +703,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             textInputProps={{
               placeholderTextColor: placeholderColor,
               editable: !disabled,
-              onFocus: () => setShowSuggestions(true),
             }}
             enablePoweredByContainer={false}
             debounce={300}
@@ -717,10 +713,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             }}
             // Fix: Disable internal scroll to prevent VirtualizedList nesting warning
             disableScroll={true}
-            // Fix: Controlled list visibility - closes on selection
-            listViewDisplayed={showSuggestions}
-            // Fix: Keep keyboard open while searching
-            keepResultsAfterBlur={false}
+            // Let component handle list visibility internally
+            keyboardShouldPersistTaps="handled"
             // Custom row rendering to fix icon issues
             renderRow={(rowData) => (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
