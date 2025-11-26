@@ -395,6 +395,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [showMapModal, setShowMapModal] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(value || null);
+  const [isListVisible, setIsListVisible] = useState(true);
   const [mapRegion, setMapRegion] = useState<Region>(
     value
       ? {
@@ -452,6 +453,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     });
 
+    // Hide the dropdown list immediately
+    setIsListVisible(false);
+
     // Update state
     setSelectedLocation(location);
     setMapRegion({
@@ -462,17 +466,17 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     });
     onChange(location);
 
-    // Dismiss keyboard first to close dropdown
+    // Dismiss keyboard
     Keyboard.dismiss();
 
-    // Then set the address text after a small delay to ensure it persists
+    // Set the address text after hiding the list
     setTimeout(() => {
       if (autocompleteRef.current) {
         autocompleteRef.current.setAddressText(addressText);
-        // Also blur the input to ensure dropdown closes
-        autocompleteRef.current.blur();
       }
-    }, 50);
+      // Re-enable list visibility for future searches
+      setIsListVisible(true);
+    }, 100);
   };
 
   const handleUseCurrentLocation = async () => {
@@ -723,7 +727,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             }}
             // Fix: Disable internal scroll to prevent VirtualizedList nesting warning
             disableScroll={true}
-            // Let component handle list visibility internally
+            // Control list visibility - hide after selection, show for new searches
+            listViewDisplayed={isListVisible ? 'auto' : false}
             keyboardShouldPersistTaps="handled"
             // Custom row rendering to fix icon issues
             renderRow={(rowData) => (
