@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme, ThemeMode } from '../../../src/context/ThemeContext';
 import { Card } from '../../../src/components/common';
+
+// TODO: Replace with actual URLs when available
+const LEGAL_URLS = {
+  termsOfService: 'https://driveassist.app/terms',
+  privacyPolicy: 'https://driveassist.app/privacy',
+};
 
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English' },
@@ -43,6 +49,17 @@ export default function SettingsScreen() {
 
   const currentLanguage = languages.find(l => l.code === selectedLanguage);
   const currentRegion = regions.find(r => r.code === selectedRegion);
+
+  const openLegalPage = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      }
+    } catch (error) {
+      console.error('Error opening URL:', error);
+    }
+  };
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -287,6 +304,7 @@ export default function SettingsScreen() {
           </Text>
           <Card variant="default" padding="none">
             <TouchableOpacity
+              onPress={() => openLegalPage(LEGAL_URLS.termsOfService)}
               className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
             >
               <View className="flex-row items-center flex-1">
@@ -300,10 +318,13 @@ export default function SettingsScreen() {
                   Terms of Service
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#475569' : '#94A3B8'} />
+              <MaterialIcons name="open-in-new" size={20} color={isDark ? '#475569' : '#94A3B8'} />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center justify-between p-4">
+            <TouchableOpacity
+              onPress={() => openLegalPage(LEGAL_URLS.privacyPolicy)}
+              className="flex-row items-center justify-between p-4"
+            >
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -315,7 +336,7 @@ export default function SettingsScreen() {
                   Privacy Policy
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#475569' : '#94A3B8'} />
+              <MaterialIcons name="open-in-new" size={20} color={isDark ? '#475569' : '#94A3B8'} />
             </TouchableOpacity>
           </Card>
         </View>
