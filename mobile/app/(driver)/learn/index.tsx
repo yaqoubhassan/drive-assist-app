@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { SearchBar, Card, Badge } from '../../../src/components/common';
+
+const { width } = Dimensions.get('window');
 
 const categories = [
   { id: 'road-signs', title: 'Road Signs Guide', subtitle: '150+ signs explained', icon: 'traffic' as const, color: '#EF4444' },
@@ -116,6 +118,47 @@ export default function LearnScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* Quiz Banner */}
+        <View className="px-4 pb-6">
+          <TouchableOpacity
+            onPress={() => router.push('/(driver)/learn/quiz')}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#8B5CF6', '#EC4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="rounded-2xl p-5"
+              style={{ borderRadius: 16 }}
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1">
+                  <View className="flex-row items-center mb-2">
+                    <View className="h-10 w-10 rounded-full bg-white/20 items-center justify-center mr-3">
+                      <MaterialIcons name="quiz" size={22} color="#FFFFFF" />
+                    </View>
+                    <View>
+                      <Text className="text-white text-lg font-bold">Test Your Knowledge</Text>
+                      <Text className="text-white/80 text-sm">Take the Road Signs Quiz</Text>
+                    </View>
+                  </View>
+                  <View className="flex-row items-center mt-2">
+                    <View className="flex-row items-center bg-white/20 rounded-full px-3 py-1 mr-2">
+                      <MaterialIcons name="help-outline" size={14} color="#FFFFFF" />
+                      <Text className="text-white text-xs ml-1">40 Questions</Text>
+                    </View>
+                    <View className="flex-row items-center bg-white/20 rounded-full px-3 py-1">
+                      <MaterialIcons name="emoji-events" size={14} color="#FFFFFF" />
+                      <Text className="text-white text-xs ml-1">Earn Badges</Text>
+                    </View>
+                  </View>
+                </View>
+                <MaterialIcons name="arrow-forward" size={24} color="#FFFFFF" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
         {/* Featured */}
