@@ -81,14 +81,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       ? {
         latitude: value.latitude,
         longitude: value.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       }
       : {
         latitude: GhanaConstants.defaultLocation.latitude,
         longitude: GhanaConstants.defaultLocation.longitude,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       }
   );
 
@@ -447,7 +447,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               top: 56,
               left: 0,
               right: 0,
-              height: Math.min(predictions.length * 70, 280),
+              height: Math.min(predictions.length * 50, 200),
               backgroundColor: dropdownBgColor,
               borderWidth: 2,
               borderColor: dropdownBorderColor,
@@ -458,6 +458,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               shadowOpacity: 0.15,
               shadowRadius: 8,
               elevation: 8,
+              paddingVertical: 8,
+              paddingHorizontal: 8,
             }}
           >
             <ScrollView
@@ -473,8 +475,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                   key={item.place_id}
                   onPress={() => handleSelectPrediction(item)}
                   style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
                     paddingVertical: 14,
                     paddingHorizontal: 16,
                     borderBottomWidth: index < predictions.length - 1 ? 1 : 0,
@@ -482,48 +482,51 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     backgroundColor: pressed ? hoverBgColor : 'transparent',
                   })}
                 >
-                  {/* Icon Container */}
-                  <View
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 8,
-                      backgroundColor: isDark ? '#334155' : '#EEF2FF',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 12,
-                    }}
-                  >
-                    <MaterialIcons name="place" size={20} color="#3B82F6" />
-                  </View>
-
-                  {/* Text Container */}
-                  <View style={{ flex: 1 }}>
-                    <Text
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {/* Icon Container */}
+                    <View
                       style={{
-                        fontSize: 15,
-                        fontWeight: '600',
-                        color: inputTextColor,
-                        lineHeight: 20,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        backgroundColor: isDark ? '#334155' : '#EEF2FF',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 12,
                       }}
-                      numberOfLines={1}
                     >
-                      {item.structured_formatting?.main_text || item.description}
-                    </Text>
-                    {item.structured_formatting?.secondary_text && (
+                      <MaterialIcons name="place" size={20} color="#3B82F6" />
+                    </View>
+
+                    {/* Text Container */}
+                    <View style={{ flex: 1 }}>
                       <Text
                         style={{
-                          fontSize: 13,
-                          color: secondaryTextColor,
-                          marginTop: 2,
-                          lineHeight: 18,
+                          fontSize: 15,
+                          fontWeight: '600',
+                          color: inputTextColor,
+                          lineHeight: 20,
                         }}
                         numberOfLines={1}
                       >
-                        {item.structured_formatting.secondary_text}
+                        {item.structured_formatting?.main_text || item.description}
                       </Text>
-                    )}
+                      {item.structured_formatting?.secondary_text && (
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                            marginTop: 2,
+                            lineHeight: 18,
+                          }}
+                          numberOfLines={1}
+                        >
+                          {item.structured_formatting.secondary_text}
+                        </Text>
+                      )}
+                    </View>
                   </View>
+
                 </Pressable>
               ))}
             </ScrollView>
