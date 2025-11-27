@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar, Card } from '../../../src/components/common';
+import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData } from '../../../src/components/common';
 
 export default function EditExpertProfileScreen() {
   const router = useRouter();
@@ -17,9 +17,20 @@ export default function EditExpertProfileScreen() {
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState('Experienced mechanic with 10+ years in automotive repair. Specializing in engine diagnostics and transmission repair.');
-  const [location, setLocation] = useState('East Legon, Accra');
+  const [locationData, setLocationData] = useState<LocationData | undefined>({
+    latitude: 5.6037,
+    longitude: -0.187,
+    address: 'East Legon, Accra',
+    city: 'Accra',
+    region: 'Greater Accra',
+    country: 'Ghana',
+  });
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [saving, setSaving] = useState(false);
+
+  const handleLocationChange = (location: LocationData) => {
+    setLocationData(location);
+  };
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -124,15 +135,20 @@ export default function EditExpertProfileScreen() {
               onChangeText={setPhone}
               keyboardType="phone-pad"
             />
-
-            <Input
-              label="Location"
-              placeholder="Enter your location"
-              icon="location-on"
-              value={location}
-              onChangeText={setLocation}
-            />
           </View>
+        </View>
+
+        {/* Location */}
+        <View className="mb-6">
+          <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            LOCATION
+          </Text>
+          <AddressAutocomplete
+            label="Business Address"
+            placeholder="Search for your address..."
+            value={locationData}
+            onChange={handleLocationChange}
+          />
         </View>
 
         {/* Bio */}
