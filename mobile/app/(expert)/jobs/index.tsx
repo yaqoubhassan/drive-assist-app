@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -109,15 +109,56 @@ const filters = [
   { id: 'completed', label: 'Completed' },
 ];
 
+const dateRangeOptions = [
+  { id: 'all', label: 'All Time', icon: 'all-inclusive' as const },
+  { id: 'today', label: 'Today', icon: 'today' as const },
+  { id: 'tomorrow', label: 'Tomorrow', icon: 'event' as const },
+  { id: 'this_week', label: 'This Week', icon: 'date-range' as const },
+  { id: 'this_month', label: 'This Month', icon: 'calendar-today' as const },
+  { id: 'past', label: 'Past Jobs', icon: 'history' as const },
+];
+
 export default function JobsScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState('all');
 
-  const filteredJobs = selectedFilter === 'all'
-    ? mockJobs.filter((j) => j.status !== 'cancelled')
-    : mockJobs.filter((job) => job.status === selectedFilter);
+  // Filter by date range
+  const filterByDate = (job: Job) => {
+    if (selectedDateRange === 'all') return true;
+    const jobDate = job.date.toLowerCase();
+    switch (selectedDateRange) {
+      case 'today':
+        return jobDate === 'today';
+      case 'tomorrow':
+        return jobDate === 'tomorrow';
+      case 'this_week':
+        return ['today', 'tomorrow'].includes(jobDate) || jobDate.includes('nov 2');
+      case 'this_month':
+        return jobDate.includes('nov') || jobDate === 'today' || jobDate === 'tomorrow';
+      case 'past':
+        return !['today', 'tomorrow'].includes(jobDate) && !jobDate.includes('nov 2');
+      default:
+        return true;
+    }
+  };
+
+  const filteredJobs = mockJobs
+    .filter((job) => {
+      const matchesStatus = selectedFilter === 'all'
+        ? job.status !== 'cancelled'
+        : job.status === selectedFilter;
+      const matchesDate = filterByDate(job);
+      return matchesStatus && matchesDate;
+    });
+
+  const getDateRangeLabel = () => {
+    const option = dateRangeOptions.find(o => o.id === selectedDateRange);
+    return option?.label || 'All Time';
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -169,9 +210,13 @@ export default function JobsScreen() {
             </Text>
           </View>
           <TouchableOpacity
+            onPress={() => setShowDateModal(true)}
             className={`h-10 w-10 rounded-full items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-white'}`}
           >
             <MaterialIcons name="calendar-today" size={22} color={isDark ? '#FFFFFF' : '#111827'} />
+            {selectedDateRange !== 'all' && (
+              <View className="absolute -top-1 -right-1 bg-primary-500 h-3 w-3 rounded-full" />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -280,6 +325,83 @@ export default function JobsScreen() {
           />
         )}
       </ScrollView>
+
+      {/* Date Filter Modal */}
+      <Modal
+        visible={showDateModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDateModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          {/* Modal Header */}
+          <View className={`flex-row items-center justify-between px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowDateModal(false)}>
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Filter by Date
+            </Text>
+            <TouchableOpacity onPress={() => setSelectedDateRange('all')}>
+              <Text className="text-primary-500 font-semibold">Clear</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="flex-1 px-4 py-4">
+            <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              SELECT DATE RANGE
+            </Text>
+            <View className="gap-2">
+              {dateRangeOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  onPress={() => {
+                    setSelectedDateRange(option.id);
+                    setShowDateModal(false);
+                  }}
+                  className={`flex-row items-center p-4 rounded-xl border ${
+                    selectedDateRange === option.id
+                      ? 'bg-primary-500/10 border-primary-500'
+                      : isDark
+                      ? 'border-slate-700 bg-slate-800'
+                      : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <View
+                    className={`h-10 w-10 rounded-lg items-center justify-center mr-3 ${
+                      selectedDateRange === option.id
+                        ? 'bg-primary-500'
+                        : isDark
+                        ? 'bg-slate-700'
+                        : 'bg-slate-100'
+                    }`}
+                  >
+                    <MaterialIcons
+                      name={option.icon}
+                      size={22}
+                      color={selectedDateRange === option.id ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                    />
+                  </View>
+                  <Text
+                    className={`flex-1 font-semibold ${
+                      selectedDateRange === option.id
+                        ? 'text-primary-500'
+                        : isDark
+                        ? 'text-white'
+                        : 'text-slate-900'
+                    }`}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedDateRange === option.id && (
+                    <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
