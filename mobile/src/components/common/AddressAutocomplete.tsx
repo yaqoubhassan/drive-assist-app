@@ -490,14 +490,13 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 12,
-                      flexShrink: 0,
                     }}
                   >
                     <MaterialIcons name="place" size={20} color="#3B82F6" />
                   </View>
 
-                  {/* Text Container */}
-                  <View style={{ flex: 1, justifyContent: 'center' }}>
+                  {/* Text Container - Vertically centered with icon */}
+                  <View style={{ flex: 1 }}>
                     <Text
                       style={{
                         fontSize: 15,
@@ -529,7 +528,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     name="chevron-right"
                     size={20}
                     color={secondaryTextColor}
-                    style={{ marginLeft: 8, flexShrink: 0 }}
+                    style={{ marginLeft: 8 }}
                   />
                 </Pressable>
               ))}
