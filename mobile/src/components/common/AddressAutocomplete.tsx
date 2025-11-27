@@ -5,11 +5,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Keyboard,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -439,7 +439,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           </View>
         </View>
 
-        {/* Predictions Dropdown - Using FlatList for proper scrolling */}
+        {/* Predictions Dropdown */}
         {showPredictions && predictions.length > 0 && (
           <View
             style={{
@@ -447,7 +447,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               top: 56,
               left: 0,
               right: 0,
-              maxHeight: 280,
+              height: Math.min(predictions.length * 70, 280),
               backgroundColor: dropdownBgColor,
               borderWidth: 2,
               borderColor: dropdownBorderColor,
@@ -458,18 +458,19 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               shadowOpacity: 0.15,
               shadowRadius: 8,
               elevation: 8,
-              overflow: 'hidden',
             }}
           >
-            <FlatList
-              data={predictions}
-              keyExtractor={(item) => item.place_id}
+            <ScrollView
               keyboardShouldPersistTaps="always"
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={true}
-              bounces={true}
-              renderItem={({ item, index }) => (
+              bounces={false}
+              overScrollMode="always"
+              scrollEventThrottle={16}
+            >
+              {predictions.map((item, index) => (
                 <Pressable
+                  key={item.place_id}
                   onPress={() => handleSelectPrediction(item)}
                   style={({ pressed }) => ({
                     flexDirection: 'row',
@@ -524,8 +525,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     )}
                   </View>
                 </Pressable>
-              )}
-            />
+              ))}
+            </ScrollView>
           </View>
         )}
       </View>
