@@ -49,6 +49,16 @@ export default function EarningsScreen() {
     averagePerJob: 265,
   };
 
+  const performanceStats = {
+    responseRate: 95,
+    avgResponseTime: '15 min',
+    jobCompletion: 98,
+    customerSatisfaction: 4.8,
+  };
+
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const displayedTransactions = showAllTransactions ? transactions : transactions.slice(0, 5);
+
   const weeklyData = [
     { day: 'Mon', amount: 450 },
     { day: 'Tue', amount: 800 },
@@ -165,6 +175,75 @@ export default function EarningsScreen() {
           </View>
         </View>
 
+        {/* Performance Stats */}
+        <View className="px-4 pb-4">
+          <Card variant="default">
+            <Text className={`font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Performance Metrics
+            </Text>
+            <View className="gap-3">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <View className="h-8 w-8 rounded-full bg-green-500/20 items-center justify-center mr-3">
+                    <MaterialIcons name="check-circle" size={18} color="#10B981" />
+                  </View>
+                  <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Response Rate
+                  </Text>
+                </View>
+                <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {performanceStats.responseRate}%
+                </Text>
+              </View>
+
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <View className="h-8 w-8 rounded-full bg-blue-500/20 items-center justify-center mr-3">
+                    <MaterialIcons name="schedule" size={18} color="#3B82F6" />
+                  </View>
+                  <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Avg. Response Time
+                  </Text>
+                </View>
+                <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {performanceStats.avgResponseTime}
+                </Text>
+              </View>
+
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <View className="h-8 w-8 rounded-full bg-yellow-500/20 items-center justify-center mr-3">
+                    <MaterialIcons name="thumb-up" size={18} color="#F59E0B" />
+                  </View>
+                  <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Job Completion
+                  </Text>
+                </View>
+                <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {performanceStats.jobCompletion}%
+                </Text>
+              </View>
+
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <View className="h-8 w-8 rounded-full bg-purple-500/20 items-center justify-center mr-3">
+                    <MaterialIcons name="star" size={18} color="#8B5CF6" />
+                  </View>
+                  <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Customer Rating
+                  </Text>
+                </View>
+                <View className="flex-row items-center">
+                  <MaterialIcons name="star" size={16} color="#F59E0B" />
+                  <Text className={`font-bold ml-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {performanceStats.customerSatisfaction}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Card>
+        </View>
+
         {/* Weekly Chart */}
         <View className="px-4 pb-6">
           <Card variant="default">
@@ -221,16 +300,20 @@ export default function EarningsScreen() {
             <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Recent Transactions
             </Text>
-            <TouchableOpacity>
-              <Text className="text-primary-500 font-semibold">See All</Text>
-            </TouchableOpacity>
+            {transactions.length > 5 && (
+              <TouchableOpacity onPress={() => setShowAllTransactions(!showAllTransactions)}>
+                <Text className="text-primary-500 font-semibold">
+                  {showAllTransactions ? 'Show Less' : 'See All'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <Card variant="default" padding="none">
-            {transactions.map((transaction, index) => (
+            {displayedTransactions.map((transaction, index) => (
               <View
                 key={transaction.id}
-                className={`flex-row items-center p-4 ${index !== transactions.length - 1
+                className={`flex-row items-center p-4 ${index !== displayedTransactions.length - 1
                   ? `border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`
                   : ''
                   }`}
