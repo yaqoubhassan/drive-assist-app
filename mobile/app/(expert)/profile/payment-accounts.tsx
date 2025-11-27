@@ -465,7 +465,7 @@ export default function PaymentAccountsScreen() {
                     <PhoneNumberInput
                       label="Phone Number"
                       placeholder="XX XXX XXXX"
-                      defaultCode="GH"
+                      defaultCountryCode="GH"
                       value={accountNumber}
                       onChangeFormattedText={setAccountNumber}
                     />

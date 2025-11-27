@@ -1,52 +1,32 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import PhoneInput, { PhoneInputProps } from 'react-native-phone-number-input';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
-// Country code mapping for common countries
-const COUNTRY_CODES: Record<string, string> = {
-  '+233': 'GH', // Ghana
-  '+234': 'NG', // Nigeria
-  '+254': 'KE', // Kenya
-  '+27': 'ZA',  // South Africa
-  '+1': 'US',   // USA/Canada
-  '+44': 'GB',  // UK
-  '+49': 'DE',  // Germany
-  '+33': 'FR',  // France
-  '+91': 'IN',  // India
-  '+86': 'CN',  // China
-  '+81': 'JP',  // Japan
-  '+82': 'KR',  // South Korea
-  '+61': 'AU',  // Australia
-  '+55': 'BR',  // Brazil
-  '+52': 'MX',  // Mexico
-  '+228': 'TG', // Togo
-  '+225': 'CI', // Ivory Coast
-  '+226': 'BF', // Burkina Faso
-  '+229': 'BJ', // Benin
-};
+// Country data with flag emoji, dial code, and country code
+interface CountryData {
+  code: string;
+  name: string;
+  dialCode: string;
+  flag: string;
+}
 
-// Dial codes mapping (country code to dial code)
-const DIAL_CODES: Record<string, string> = {
-  'GH': '+233',
-  'NG': '+234',
-  'KE': '+254',
-  'ZA': '+27',
-  'US': '+1',
-  'GB': '+44',
-  'DE': '+49',
-  'FR': '+33',
-  'IN': '+91',
-  'CN': '+86',
-  'JP': '+81',
-  'KR': '+82',
-  'AU': '+61',
-  'BR': '+55',
-  'MX': '+52',
-  'TG': '+228',
-  'CI': '+225',
-  'BF': '+226',
-  'BJ': '+229',
+// For now, we only support Ghana - but this can be expanded later
+const COUNTRIES: CountryData[] = [
+  { code: 'GH', name: 'Ghana', dialCode: '+233', flag: '🇬🇭' },
+  // Add more countries here when needed:
+  // { code: 'NG', name: 'Nigeria', dialCode: '+234', flag: '🇳🇬' },
+  // { code: 'KE', name: 'Kenya', dialCode: '+254', flag: '🇰🇪' },
+];
+
+// Country code to dial code mapping
+const DIAL_CODE_MAP: Record<string, string> = {
+  '+233': 'GH',
+  '+234': 'NG',
+  '+254': 'KE',
+  '+27': 'ZA',
+  '+1': 'US',
+  '+44': 'GB',
 };
 
 interface PhoneNumberInputProps {
@@ -55,39 +35,36 @@ interface PhoneNumberInputProps {
   onChangeText?: (text: string) => void;
   onChangeFormattedText?: (text: string) => void;
   placeholder?: string;
-  defaultCode?: PhoneInputProps['defaultCode'];
+  defaultCountryCode?: string;
   error?: string;
   disabled?: boolean;
 }
 
-// Helper function to parse a phone number and extract country code and national number
-const parsePhoneNumber = (phoneNumber: string): { countryCode: string | null; nationalNumber: string } => {
-  if (!phoneNumber) {
-    return { countryCode: null, nationalNumber: '' };
-  }
+// Helper function to parse existing phone number
+const parsePhoneNumber = (phone: string): { countryCode: string | null; nationalNumber: string } => {
+  if (!phone) return { countryCode: null, nationalNumber: '' };
 
-  // Clean the phone number
-  let cleaned = phoneNumber.replace(/\s+/g, '').trim();
+  let cleaned = phone.replace(/\s+/g, '').trim();
 
-  // Check if it starts with a + and try to extract country code
+  // Check for country code prefix
   if (cleaned.startsWith('+')) {
-    // Try to match known country codes (longer codes first)
-    const sortedCodes = Object.keys(COUNTRY_CODES).sort((a, b) => b.length - a.length);
+    // Sort by length descending to match longer codes first
+    const sortedCodes = Object.keys(DIAL_CODE_MAP).sort((a, b) => b.length - a.length);
 
-    for (const code of sortedCodes) {
-      if (cleaned.startsWith(code)) {
-        const nationalNumber = cleaned.substring(code.length);
-        return {
-          countryCode: COUNTRY_CODES[code],
-          nationalNumber: nationalNumber.replace(/^0+/, ''), // Remove leading zeros
-        };
+    for (const dialCode of sortedCodes) {
+      if (cleaned.startsWith(dialCode)) {
+        let nationalNumber = cleaned.substring(dialCode.length);
+        // Remove leading zero if present
+        if (nationalNumber.startsWith('0')) {
+          nationalNumber = nationalNumber.substring(1);
+        }
+        return { countryCode: DIAL_CODE_MAP[dialCode], nationalNumber };
       }
     }
   }
 
-  // If no country code found, just return the number without leading zeros
-  // But only remove the first zero if it looks like a local number
-  let nationalNumber = cleaned.replace(/^\+/, '');
+  // No country code found - strip leading zero if present
+  let nationalNumber = cleaned;
   if (nationalNumber.startsWith('0') && nationalNumber.length >= 9) {
     nationalNumber = nationalNumber.substring(1);
   }
@@ -95,60 +72,92 @@ const parsePhoneNumber = (phoneNumber: string): { countryCode: string | null; na
   return { countryCode: null, nationalNumber };
 };
 
+// Format number for display (add spaces for readability)
+const formatDisplayNumber = (number: string): string => {
+  // Remove any existing formatting
+  const digits = number.replace(/\D/g, '');
+
+  // Ghana format: XXX XXX XXXX (3-3-4)
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 10)}`;
+};
+
 export function PhoneNumberInput({
   label,
   value,
   onChangeText,
   onChangeFormattedText,
-  placeholder = 'Phone number',
-  defaultCode = 'GH',
+  placeholder = 'XX XXX XXXX',
+  defaultCountryCode = 'GH',
   error,
   disabled = false,
 }: PhoneNumberInputProps) {
   const { isDark } = useTheme();
-  const phoneInput = useRef<PhoneInput>(null);
+  const [selectedCountry, setSelectedCountry] = useState<CountryData>(
+    COUNTRIES.find(c => c.code === defaultCountryCode) || COUNTRIES[0]
+  );
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [internalValue, setInternalValue] = useState('');
-  const [countryCode, setCountryCode] = useState<PhoneInputProps['defaultCode']>(defaultCode);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Parse the initial value to extract country code and national number
+  // Parse initial value
   useEffect(() => {
     if (value && !isInitialized) {
-      const { countryCode: parsedCode, nationalNumber } = parsePhoneNumber(value);
-      if (parsedCode) {
-        setCountryCode(parsedCode as PhoneInputProps['defaultCode']);
+      const { countryCode, nationalNumber } = parsePhoneNumber(value);
+
+      if (countryCode) {
+        const country = COUNTRIES.find(c => c.code === countryCode);
+        if (country) {
+          setSelectedCountry(country);
+        }
       }
-      setInternalValue(nationalNumber);
+
+      setPhoneNumber(nationalNumber);
       setIsInitialized(true);
     } else if (!value && !isInitialized) {
       setIsInitialized(true);
     }
   }, [value, isInitialized]);
 
-  // Handle text changes - strip leading zeros
-  const handleChangeText = useCallback((text: string) => {
-    // Remove leading zeros from the input
-    let cleanedText = text;
-    if (text.startsWith('0')) {
-      cleanedText = text.substring(1);
+  // Handle phone number change
+  const handlePhoneChange = useCallback((text: string) => {
+    // Remove non-digit characters for processing
+    let digits = text.replace(/\D/g, '');
+
+    // Remove leading zero
+    if (digits.startsWith('0')) {
+      digits = digits.substring(1);
     }
 
-    setInternalValue(cleanedText);
+    // Limit to 10 digits (Ghana phone numbers without country code)
+    digits = digits.slice(0, 10);
 
+    setPhoneNumber(digits);
+
+    // Call callbacks
     if (onChangeText) {
-      onChangeText(cleanedText);
+      onChangeText(digits);
     }
-  }, [onChangeText]);
 
-  // Handle formatted text changes
-  const handleChangeFormattedText = useCallback((text: string) => {
     if (onChangeFormattedText) {
-      // The library returns the formatted number with country code
-      // Make sure we're not duplicating country codes
-      onChangeFormattedText(text);
+      // Return full formatted number with country code
+      const formattedNumber = digits ? `${selectedCountry.dialCode}${digits}` : '';
+      onChangeFormattedText(formattedNumber);
     }
-  }, [onChangeFormattedText]);
+  }, [selectedCountry, onChangeText, onChangeFormattedText]);
+
+  // Handle country selection
+  const handleSelectCountry = useCallback((country: CountryData) => {
+    setSelectedCountry(country);
+    setShowCountryPicker(false);
+
+    // Update formatted text with new country code
+    if (onChangeFormattedText && phoneNumber) {
+      onChangeFormattedText(`${country.dialCode}${phoneNumber}`);
+    }
+  }, [phoneNumber, onChangeFormattedText]);
 
   // Theme colors
   const backgroundColor = isDark ? '#1E293B' : '#F8FAFC';
@@ -157,122 +166,160 @@ export function PhoneNumberInput({
   const borderColor = error
     ? '#EF4444'
     : isFocused
-    ? '#3B82F6'
-    : isDark
-    ? '#334155'
-    : '#E2E8F0';
-  const codeTextColor = isDark ? '#CBD5E1' : '#475569';
-  const flagButtonBg = isDark ? '#334155' : '#F1F5F9';
+      ? '#3B82F6'
+      : isDark
+        ? '#334155'
+        : '#E2E8F0';
+  const flagBgColor = isDark ? '#334155' : '#F1F5F9';
+  const separatorColor = isDark ? '#475569' : '#CBD5E1';
 
   return (
     <View style={styles.container}>
       {label && (
-        <Text
-          style={[
-            styles.label,
-            { color: isDark ? '#CBD5E1' : '#374151' },
-          ]}
-        >
+        <Text style={[styles.label, { color: isDark ? '#CBD5E1' : '#374151' }]}>
           {label}
         </Text>
       )}
-      <PhoneInput
-        ref={phoneInput}
-        defaultValue={internalValue}
-        defaultCode={countryCode}
-        layout="first"
-        onChangeText={handleChangeText}
-        onChangeFormattedText={handleChangeFormattedText}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoFocus={false}
-        containerStyle={[
-          styles.phoneContainer,
+
+      <View
+        style={[
+          styles.inputContainer,
           {
             backgroundColor,
             borderColor,
             borderWidth: 2,
           },
         ]}
-        textContainerStyle={[
-          styles.textContainer,
-          { backgroundColor: 'transparent' },
-        ]}
-        textInputStyle={[
-          styles.textInput,
-          { color: textColor },
-        ]}
-        codeTextStyle={[
-          styles.codeText,
-          { color: codeTextColor },
-        ]}
-        flagButtonStyle={[
-          styles.flagButton,
-          { backgroundColor: flagButtonBg },
-        ]}
-        countryPickerButtonStyle={styles.countryPickerButton}
-        textInputProps={{
-          placeholderTextColor: placeholderColor,
-          onFocus: () => setIsFocused(true),
-          onBlur: () => setIsFocused(false),
-        }}
-        countryPickerProps={{
-          withFilter: true,
-          withFlag: true,
-          withCountryNameButton: false,
-          withAlphaFilter: true,
-          withCallingCode: true,
-          withEmoji: true,
-          theme: isDark
-            ? {
-                backgroundColor: '#1E293B',
-                onBackgroundTextColor: '#FFFFFF',
-                fontSize: 16,
-                fontFamily: 'System',
-                filterPlaceholderTextColor: '#64748B',
-                activeOpacity: 0.7,
-                itemHeight: 50,
-              }
-            : undefined,
-        }}
-      />
+      >
+        {/* Country Selector with Flag */}
+        <TouchableOpacity
+          style={[styles.countryButton, { backgroundColor: flagBgColor }]}
+          onPress={() => !disabled && COUNTRIES.length > 1 && setShowCountryPicker(true)}
+          disabled={disabled || COUNTRIES.length <= 1}
+          activeOpacity={COUNTRIES.length > 1 ? 0.7 : 1}
+        >
+          <Text style={styles.flag}>{selectedCountry.flag}</Text>
+          <Text style={[styles.dialCode, { color: textColor }]}>
+            {selectedCountry.dialCode}
+          </Text>
+          {COUNTRIES.length > 1 && (
+            <MaterialIcons
+              name="arrow-drop-down"
+              size={20}
+              color={isDark ? '#94A3B8' : '#64748B'}
+            />
+          )}
+        </TouchableOpacity>
+
+        {/* Separator */}
+        <View style={[styles.separator, { backgroundColor: separatorColor }]} />
+
+        {/* Phone Number Input */}
+        <TextInput
+          style={[styles.input, { color: textColor }]}
+          value={formatDisplayNumber(phoneNumber)}
+          onChangeText={handlePhoneChange}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderColor}
+          keyboardType="phone-pad"
+          editable={!disabled}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          maxLength={12} // Account for spaces in formatting
+        />
+      </View>
+
       {error && (
         <Text style={styles.errorText}>{error}</Text>
+      )}
+
+      {/* Country Picker Modal (only shown if multiple countries) */}
+      {COUNTRIES.length > 1 && (
+        <Modal
+          visible={showCountryPicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowCountryPicker(false)}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowCountryPicker(false)}
+          >
+            <View
+              style={[
+                styles.modalContent,
+                { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.modalTitle,
+                  { color: isDark ? '#FFFFFF' : '#0F172A' },
+                ]}
+              >
+                Select Country
+              </Text>
+
+              <ScrollView style={styles.countryList}>
+                {COUNTRIES.map((country) => (
+                  <TouchableOpacity
+                    key={country.code}
+                    style={[
+                      styles.countryItem,
+                      selectedCountry.code === country.code && {
+                        backgroundColor: isDark ? '#334155' : '#F1F5F9',
+                      },
+                    ]}
+                    onPress={() => handleSelectCountry(country)}
+                  >
+                    <Text style={styles.countryFlag}>{country.flag}</Text>
+                    <Text
+                      style={[
+                        styles.countryName,
+                        { color: isDark ? '#FFFFFF' : '#0F172A' },
+                      ]}
+                    >
+                      {country.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.countryDialCode,
+                        { color: isDark ? '#94A3B8' : '#64748B' },
+                      ]}
+                    >
+                      {country.dialCode}
+                    </Text>
+                    {selectedCountry.code === country.code && (
+                      <MaterialIcons name="check" size={20} color="#3B82F6" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </Pressable>
+        </Modal>
       )}
     </View>
   );
 }
 
-// Helper function to validate phone number
-export const isValidPhoneNumber = (
-  phoneInputRef: React.RefObject<PhoneInput>
-): boolean => {
-  return phoneInputRef.current?.isValidNumber(
-    phoneInputRef.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber || ''
-  ) ?? false;
-};
-
-// Helper function to get formatted number with country code
-export const getFormattedPhoneNumber = (
-  phoneInputRef: React.RefObject<PhoneInput>
-): string => {
-  const checkValid = phoneInputRef.current?.isValidNumber(
-    phoneInputRef.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber || ''
-  );
-  if (checkValid) {
-    return phoneInputRef.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber || '';
+// Helper function to validate Ghana phone number
+export const isValidGhanaPhone = (phone: string): boolean => {
+  const digits = phone.replace(/\D/g, '');
+  // Ghana phone numbers are 9-10 digits (without country code)
+  // With country code (+233), total is 12-13 digits
+  if (digits.startsWith('233')) {
+    return digits.length >= 12 && digits.length <= 13;
   }
-  return '';
+  return digits.length >= 9 && digits.length <= 10;
 };
 
 // Helper to format a phone number for display
-export const formatPhoneForDisplay = (phone: string, countryCode: string = 'GH'): string => {
+export const formatPhoneForDisplay = (phone: string): string => {
   if (!phone) return '';
 
   const { nationalNumber } = parsePhoneNumber(phone);
-  const dialCode = DIAL_CODES[countryCode] || '+233';
-
-  return `${dialCode}${nationalNumber}`;
+  return `+233 ${formatDisplayNumber(nationalNumber)}`;
 };
 
 const styles = StyleSheet.create({
@@ -284,37 +331,83 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
   },
-  phoneContainer: {
-    width: '100%',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 12,
     overflow: 'hidden',
+    height: 56,
   },
-  textContainer: {
-    paddingVertical: 0,
-    borderRadius: 12,
+  countryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: '100%',
+    gap: 4,
   },
-  textInput: {
-    fontSize: 16,
-    height: 50,
-    paddingVertical: 0,
+  flag: {
+    fontSize: 24,
   },
-  codeText: {
+  dialCode: {
     fontSize: 16,
     fontWeight: '500',
   },
-  flagButton: {
-    borderRadius: 8,
-    marginLeft: 8,
-    marginRight: 4,
+  separator: {
+    width: 1,
+    height: 28,
   },
-  countryPickerButton: {
-    marginLeft: 4,
+  input: {
+    flex: 1,
+    fontSize: 16,
+    paddingHorizontal: 12,
+    height: '100%',
   },
   errorText: {
     color: '#EF4444',
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  countryList: {
+    maxHeight: 400,
+  },
+  countryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 12,
+  },
+  countryFlag: {
+    fontSize: 28,
+  },
+  countryName: {
+    flex: 1,
+    fontSize: 16,
+  },
+  countryDialCode: {
+    fontSize: 14,
   },
 });
 

@@ -189,7 +189,7 @@ export default function EditExpertProfileScreen() {
             <PhoneNumberInput
               label="Phone Number"
               placeholder="XX XXX XXXX"
-              defaultCode="GH"
+              defaultCountryCode="GH"
               value={phone}
               onChangeFormattedText={setPhone}
             />

@@ -202,7 +202,7 @@ export default function ExpertOnboardingScreen() {
       <PhoneNumberInput
         label="Phone Number *"
         placeholder="XX XXX XXXX"
-        defaultCode="GH"
+        defaultCountryCode="GH"
         value={formData.phone}
         onChangeFormattedText={(value) => updateFormData({ phone: value })}
         error={errors.phone}

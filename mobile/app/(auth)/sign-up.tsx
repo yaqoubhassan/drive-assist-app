@@ -229,7 +229,7 @@ export default function SignUpScreen() {
               <PhoneNumberInput
                 label="Phone Number (Optional)"
                 placeholder="XX XXX XXXX"
-                defaultCode="GH"
+                defaultCountryCode="GH"
                 value={phone}
                 onChangeText={setPhone}
                 onChangeFormattedText={(text) => {
