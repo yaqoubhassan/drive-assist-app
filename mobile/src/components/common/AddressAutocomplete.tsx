@@ -5,11 +5,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Keyboard,
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -439,7 +439,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           </View>
         </View>
 
-        {/* Predictions Dropdown - Using ScrollView + map instead of FlatList */}
+        {/* Predictions Dropdown - Using FlatList for proper scrolling */}
         {showPredictions && predictions.length > 0 && (
           <View
             style={{
@@ -447,6 +447,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               top: 56,
               left: 0,
               right: 0,
+              maxHeight: 280,
               backgroundColor: dropdownBgColor,
               borderWidth: 2,
               borderColor: dropdownBorderColor,
@@ -457,19 +458,18 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               shadowOpacity: 0.15,
               shadowRadius: 8,
               elevation: 8,
+              overflow: 'hidden',
             }}
           >
-            <ScrollView
+            <FlatList
+              data={predictions}
+              keyExtractor={(item) => item.place_id}
               keyboardShouldPersistTaps="always"
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={true}
               bounces={true}
-              scrollEnabled={true}
-              style={{ maxHeight: 280 }}
-            >
-              {predictions.map((item, index) => (
+              renderItem={({ item, index }) => (
                 <Pressable
-                  key={item.place_id}
                   onPress={() => handleSelectPrediction(item)}
                   style={({ pressed }) => ({
                     flexDirection: 'row',
@@ -481,7 +481,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     backgroundColor: pressed ? hoverBgColor : 'transparent',
                   })}
                 >
-                  {/* Icon Container - Fixed width for proper alignment */}
+                  {/* Icon Container */}
                   <View
                     style={{
                       width: 36,
@@ -496,7 +496,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     <MaterialIcons name="place" size={20} color="#3B82F6" />
                   </View>
 
-                  {/* Text Container - Vertically centered with icon */}
+                  {/* Text Container */}
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
@@ -524,8 +524,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     )}
                   </View>
                 </Pressable>
-              ))}
-            </ScrollView>
+              )}
+            />
           </View>
         )}
       </View>
