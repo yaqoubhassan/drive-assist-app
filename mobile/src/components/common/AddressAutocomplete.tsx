@@ -447,7 +447,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               top: 56,
               left: 0,
               right: 0,
-              height: Math.min(predictions.length * 50, 200),
+              height: Math.min(predictions.length * 50, 230),
               backgroundColor: dropdownBgColor,
               borderWidth: 2,
               borderColor: dropdownBorderColor,
