@@ -314,7 +314,11 @@ export default function EditExpertProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
+          <ScrollView
+            className="flex-1 p-4"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 24 }}
+          >
             {DAYS.map((day, index) => {
               const hours = businessHours[day.key];
               return (
