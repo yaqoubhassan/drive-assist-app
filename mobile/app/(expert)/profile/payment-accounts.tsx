@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Input, SuccessModal } from '../../../src/components/common';
+import { Card, Button, Input, SuccessModal, ConfirmationModal } from '../../../src/components/common';
 
 // Types
 interface PaymentAccount {
@@ -84,6 +84,9 @@ export default function PaymentAccountsScreen() {
   const [accountNumber, setAccountNumber] = useState('');
   const [saving, setSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<PaymentAccount | null>(null);
 
   const resetForm = () => {
     setAccountType(null);
@@ -135,6 +138,10 @@ export default function PaymentAccountsScreen() {
     setAccounts([...accounts, newAccount]);
     setSaving(false);
     handleCloseModal();
+    setSuccessMessage({
+      title: 'Account Added!',
+      message: 'Your payment account has been added successfully.',
+    });
     setShowSuccessModal(true);
   };
 
@@ -147,27 +154,27 @@ export default function PaymentAccountsScreen() {
     );
   };
 
-  const handleDeleteAccount = (accountId: string) => {
-    const account = accounts.find((a) => a.id === accountId);
-    Alert.alert(
-      'Delete Account',
-      `Are you sure you want to remove ${account?.provider} (${account?.accountNumber})?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            const updatedAccounts = accounts.filter((a) => a.id !== accountId);
-            // If deleted account was default, set first remaining as default
-            if (account?.isDefault && updatedAccounts.length > 0) {
-              updatedAccounts[0].isDefault = true;
-            }
-            setAccounts(updatedAccounts);
-          },
-        },
-      ]
-    );
+  const handleDeleteAccount = (account: PaymentAccount) => {
+    setAccountToDelete(account);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (accountToDelete) {
+      const updatedAccounts = accounts.filter((a) => a.id !== accountToDelete.id);
+      // If deleted account was default, set first remaining as default
+      if (accountToDelete.isDefault && updatedAccounts.length > 0) {
+        updatedAccounts[0].isDefault = true;
+      }
+      setAccounts(updatedAccounts);
+      setShowDeleteModal(false);
+      setSuccessMessage({
+        title: 'Account Removed',
+        message: `${accountToDelete.provider} has been removed from your payment accounts.`,
+      });
+      setAccountToDelete(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const maskAccountNumber = (number: string, type: 'mobile_money' | 'bank') => {
@@ -218,7 +225,7 @@ export default function PaymentAccountsScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={() => handleDeleteAccount(account.id)}
+            onPress={() => handleDeleteAccount(account)}
             className={`p-2 rounded-lg ${isDark ? 'bg-red-500/20' : 'bg-red-50'}`}
           >
             <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
@@ -652,12 +659,27 @@ export default function PaymentAccountsScreen() {
 
       {renderAddAccountModal()}
 
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setAccountToDelete(null);
+        }}
+        onConfirm={confirmDeleteAccount}
+        title="Remove Account"
+        message={`Are you sure you want to remove ${accountToDelete?.provider} (${accountToDelete?.accountNumber})? This action cannot be undone.`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
       {/* Success Modal */}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        title="Account Added!"
-        message="Your payment account has been added successfully."
+        title={successMessage.title}
+        message={successMessage.message}
         primaryButtonLabel="Done"
       />
     </SafeAreaView>

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Input, Badge } from '../../../src/components/common';
+import { Card, Button, Input, Badge, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
 interface Service {
@@ -82,6 +82,10 @@ export default function ServicesScreen() {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
 
   // Form state
   const [serviceName, setServiceName] = useState('');
@@ -98,19 +102,22 @@ export default function ServicesScreen() {
     ));
   };
 
-  const handleDeleteService = (serviceId: string) => {
-    Alert.alert(
-      'Delete Service',
-      'Are you sure you want to delete this service?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => setServices(services.filter((s) => s.id !== serviceId)),
-        },
-      ]
-    );
+  const handleDeleteService = (service: Service) => {
+    setServiceToDelete(service);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteService = () => {
+    if (serviceToDelete) {
+      setServices(services.filter((s) => s.id !== serviceToDelete.id));
+      setShowDeleteModal(false);
+      setSuccessMessage({
+        title: 'Service Deleted',
+        message: `"${serviceToDelete.name}" has been removed from your services.`,
+      });
+      setServiceToDelete(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const handleEditService = (service: Service) => {
@@ -354,7 +361,7 @@ export default function ServicesScreen() {
                     <MaterialIcons name="edit" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => handleDeleteService(service.id)}
+                    onPress={() => handleDeleteService(service)}
                     className={`h-8 w-8 rounded-lg items-center justify-center ${isDark ? 'bg-red-500/20' : 'bg-red-50'}`}
                   >
                     <MaterialIcons name="delete" size={18} color="#EF4444" />
@@ -365,6 +372,30 @@ export default function ServicesScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setServiceToDelete(null);
+        }}
+        onConfirm={confirmDeleteService}
+        title="Delete Service"
+        message={`Are you sure you want to delete "${serviceToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title={successMessage.title}
+        message={successMessage.message}
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

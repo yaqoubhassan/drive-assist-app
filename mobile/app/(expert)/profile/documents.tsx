@@ -17,7 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Card, Button, Badge } from '../../../src/components/common';
+import { Card, Button, Badge, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 import { KycStatus } from '../../../src/types';
 
 interface UploadedFile {
@@ -76,6 +76,9 @@ export default function DocumentsScreen() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [showIdTypePicker, setShowIdTypePicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [docKeyToDelete, setDocKeyToDelete] = useState<keyof DocumentState | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const getKycStatusConfig = (status: KycStatus) => {
     switch (status) {
@@ -228,20 +231,38 @@ export default function DocumentsScreen() {
   };
 
   const handleDeleteDocument = (docKey: keyof DocumentState) => {
-    Alert.alert('Delete Document', 'Are you sure you want to delete this document?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          setDocuments((prev) => {
-            const newDocs = { ...prev };
-            delete newDocs[docKey];
-            return newDocs;
-          });
-        },
-      },
-    ]);
+    setDocKeyToDelete(docKey);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteDocument = () => {
+    if (docKeyToDelete) {
+      setDocuments((prev) => {
+        const newDocs = { ...prev };
+        delete newDocs[docKeyToDelete];
+        return newDocs;
+      });
+      setShowDeleteModal(false);
+      setDocKeyToDelete(null);
+      setShowSuccessModal(true);
+    }
+  };
+
+  const getDocumentLabel = (docKey: keyof DocumentState): string => {
+    switch (docKey) {
+      case 'business_license':
+        return 'Business License';
+      case 'identity_front':
+        return 'Identity Document (Front)';
+      case 'identity_back':
+        return 'Identity Document (Back)';
+      case 'insurance':
+        return 'Insurance Certificate';
+      case 'certification':
+        return 'Professional Certification';
+      default:
+        return 'Document';
+    }
   };
 
   const handleSubmitKyc = async () => {
@@ -875,6 +896,30 @@ export default function DocumentsScreen() {
           <View style={{ height: insets.bottom }} />
         </View>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDocKeyToDelete(null);
+        }}
+        onConfirm={confirmDeleteDocument}
+        title="Delete Document"
+        message={`Are you sure you want to delete your ${docKeyToDelete ? getDocumentLabel(docKeyToDelete) : 'document'}? You may need to re-upload it for verification.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Document Deleted"
+        message="The document has been removed. Please upload a new one if required."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

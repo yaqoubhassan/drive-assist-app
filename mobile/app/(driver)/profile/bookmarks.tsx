@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Badge, Chip, EmptyState } from '../../../src/components/common';
+import { Card, Badge, Chip, EmptyState, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 
 interface BookmarkedItem {
   id: string;
@@ -73,24 +73,26 @@ export default function BookmarksScreen() {
   const { isDark } = useTheme();
   const [bookmarks, setBookmarks] = useState<BookmarkedItem[]>(mockBookmarks);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<BookmarkedItem | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const filteredBookmarks = selectedFilter === 'all'
     ? bookmarks
     : bookmarks.filter((b) => b.type === selectedFilter);
 
-  const handleRemoveBookmark = (id: string) => {
-    Alert.alert(
-      'Remove Bookmark',
-      'Are you sure you want to remove this item from your bookmarks?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => setBookmarks(bookmarks.filter((b) => b.id !== id)),
-        },
-      ]
-    );
+  const handleRemoveBookmark = (item: BookmarkedItem) => {
+    setItemToRemove(item);
+    setShowDeleteModal(true);
+  };
+
+  const confirmRemoveBookmark = () => {
+    if (itemToRemove) {
+      setBookmarks(bookmarks.filter((b) => b.id !== itemToRemove.id));
+      setShowDeleteModal(false);
+      setItemToRemove(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const handleItemPress = (item: BookmarkedItem) => {
@@ -186,7 +188,7 @@ export default function BookmarksScreen() {
                       </Text>
                     </View>
                     <TouchableOpacity
-                      onPress={() => handleRemoveBookmark(item.id)}
+                      onPress={() => handleRemoveBookmark(item)}
                       className="p-3 justify-center"
                     >
                       <MaterialIcons name="bookmark" size={24} color="#3B82F6" />
@@ -206,6 +208,30 @@ export default function BookmarksScreen() {
           />
         )}
       </ScrollView>
+
+      {/* Remove Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setItemToRemove(null);
+        }}
+        onConfirm={confirmRemoveBookmark}
+        title="Remove Bookmark"
+        message={`Are you sure you want to remove "${itemToRemove?.title}" from your saved items?`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="warning"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Bookmark Removed"
+        message="The item has been removed from your saved items."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }
