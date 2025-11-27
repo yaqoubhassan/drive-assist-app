@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useTheme } from '../../../src/context/ThemeContext';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AddressAutocomplete, Avatar, Button, Card, Input, LocationData, PhoneNumberInput, SuccessModal } from '../../../src/components/common';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
+import { useTheme } from '../../../src/context/ThemeContext';
 import { BusinessHours, DayHours } from '../../../src/types';
 
 const DAYS: { key: keyof BusinessHours; label: string }[] = [
