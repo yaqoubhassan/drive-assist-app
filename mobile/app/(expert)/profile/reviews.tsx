@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Avatar, Rating, Chip, Button } from '../../../src/components/common';
+import { Card, Avatar, Rating, Chip, Button, SuccessModal } from '../../../src/components/common';
 
 interface Review {
   id: string;
@@ -83,6 +83,7 @@ export default function ReviewsScreen() {
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleReplyPress = (review: Review) => {
     setSelectedReview(review);
@@ -110,7 +111,7 @@ export default function ReviewsScreen() {
     setShowReplyModal(false);
     setSelectedReview(null);
     setReplyText('');
-    Alert.alert('Success', 'Your reply has been posted successfully.');
+    setShowSuccessModal(true);
   };
 
   const filteredReviews = selectedFilter === 'all'
@@ -377,6 +378,15 @@ export default function ReviewsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Reply Posted!"
+        message="Your reply has been posted successfully and is now visible to customers."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Input } from '../../../src/components/common';
+import { Card, Button, Input, SuccessModal } from '../../../src/components/common';
 
 // Types
 interface PaymentAccount {
@@ -83,6 +83,7 @@ export default function PaymentAccountsScreen() {
   const [accountName, setAccountName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const resetForm = () => {
     setAccountType(null);
@@ -134,7 +135,7 @@ export default function PaymentAccountsScreen() {
     setAccounts([...accounts, newAccount]);
     setSaving(false);
     handleCloseModal();
-    Alert.alert('Success', 'Payment account added successfully.');
+    setShowSuccessModal(true);
   };
 
   const handleSetDefault = (accountId: string) => {
@@ -650,6 +651,15 @@ export default function PaymentAccountsScreen() {
       </ScrollView>
 
       {renderAddAccountModal()}
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Account Added!"
+        message="Your payment account has been added successfully."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

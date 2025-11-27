@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData } from '../../../src/components/common';
+import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData, SuccessModal } from '../../../src/components/common';
 import { BusinessHours, DayHours } from '../../../src/types';
 
 const DAYS: { key: keyof BusinessHours; label: string }[] = [
@@ -53,6 +53,7 @@ export default function EditExpertProfileScreen() {
   const [serviceRadius, setServiceRadius] = useState(15);
   const [showBusinessHoursModal, setShowBusinessHoursModal] = useState(false);
   const [showServiceAreaModal, setShowServiceAreaModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleLocationChange = (location: LocationData) => {
     setLocationData(location);
@@ -110,7 +111,11 @@ export default function EditExpertProfileScreen() {
     setSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setSaving(false);
-    Alert.alert('Success', 'Profile updated successfully');
+    setShowSuccessModal(true);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
     router.back();
   };
 
@@ -483,6 +488,15 @@ export default function EditExpertProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={handleSuccessClose}
+        title="Profile Updated!"
+        message="Your profile has been updated successfully."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }
