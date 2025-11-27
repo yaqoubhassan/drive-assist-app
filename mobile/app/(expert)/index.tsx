@@ -127,7 +127,7 @@ export default function ExpertDashboardScreen() {
         {/* KYC Banner */}
         {showKycBanner && (
           <TouchableOpacity
-            onPress={() => router.push('/(expert)/profile/documents')}
+            onPress={() => router.navigate('/(expert)/profile/documents')}
             className="mx-4 mb-4"
           >
             <View

@@ -89,6 +89,8 @@ export default function ExpertLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
+          // Reset the profile stack when navigating away to prevent stale state
+          unmountOnBlur: true,
         }}
       />
     </Tabs>
