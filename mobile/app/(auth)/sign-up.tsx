@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
-import { Button, Input } from '../../src/components/common';
+import { Button, Input, PhoneNumberInput } from '../../src/components/common';
 import { UserType } from '../../src/types';
 
 export default function SignUpScreen() {
@@ -226,13 +226,16 @@ export default function SignUpScreen() {
                 error={errors.email}
               />
 
-              <Input
+              <PhoneNumberInput
                 label="Phone Number (Optional)"
-                placeholder="+233 XX XXX XXXX"
-                icon="phone"
+                placeholder="XX XXX XXXX"
+                defaultCode="GH"
                 value={phone}
                 onChangeText={setPhone}
-                keyboardType="phone-pad"
+                onChangeFormattedText={(text) => {
+                  // This gives us the full formatted number with country code
+                  // e.g., +233249952818
+                }}
               />
 
               <Input

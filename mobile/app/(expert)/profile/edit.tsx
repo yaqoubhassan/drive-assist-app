@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData, SuccessModal } from '../../../src/components/common';
+import { Button, Input, Avatar, Card, AddressAutocomplete, LocationData, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
 import { BusinessHours, DayHours } from '../../../src/types';
 
 const DAYS: { key: keyof BusinessHours; label: string }[] = [
@@ -186,13 +186,12 @@ export default function EditExpertProfileScreen() {
               autoCapitalize="none"
             />
 
-            <Input
+            <PhoneNumberInput
               label="Phone Number"
-              placeholder="+233 XX XXX XXXX"
-              icon="phone"
+              placeholder="XX XXX XXXX"
+              defaultCode="GH"
               value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
+              onChangeFormattedText={setPhone}
             />
           </View>
         </View>

@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Input, SuccessModal, ConfirmationModal } from '../../../src/components/common';
+import { Card, Button, Input, SuccessModal, ConfirmationModal, PhoneNumberInput } from '../../../src/components/common';
 
 // Types
 interface PaymentAccount {
@@ -461,16 +461,24 @@ export default function PaymentAccountsScreen() {
                     autoCapitalize="words"
                   />
 
-                  <Input
-                    label={accountType === 'mobile_money' ? 'Phone Number' : 'Account Number'}
-                    placeholder={
-                      accountType === 'mobile_money' ? 'e.g., 0541234567' : 'Enter account number'
-                    }
-                    value={accountNumber}
-                    onChangeText={setAccountNumber}
-                    keyboardType="numeric"
-                    maxLength={accountType === 'mobile_money' ? 10 : 20}
-                  />
+                  {accountType === 'mobile_money' ? (
+                    <PhoneNumberInput
+                      label="Phone Number"
+                      placeholder="XX XXX XXXX"
+                      defaultCode="GH"
+                      value={accountNumber}
+                      onChangeFormattedText={setAccountNumber}
+                    />
+                  ) : (
+                    <Input
+                      label="Account Number"
+                      placeholder="Enter account number"
+                      value={accountNumber}
+                      onChangeText={setAccountNumber}
+                      keyboardType="numeric"
+                      maxLength={20}
+                    />
+                  )}
 
                   {accountType === 'mobile_money' && (
                     <View

@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
-import { Button, Input, AddressAutocomplete, LocationData } from '../../src/components/common';
+import { Button, Input, AddressAutocomplete, LocationData, PhoneNumberInput } from '../../src/components/common';
 import {
   ExpertOnboardingData,
   BusinessTypes,
@@ -199,12 +199,12 @@ export default function ExpertOnboardingScreen() {
         error={errors.businessName}
       />
 
-      <Input
+      <PhoneNumberInput
         label="Phone Number *"
-        placeholder="+233 XX XXX XXXX"
+        placeholder="XX XXX XXXX"
+        defaultCode="GH"
         value={formData.phone}
-        onChangeText={(value) => updateFormData({ phone: value })}
-        keyboardType="phone-pad"
+        onChangeFormattedText={(value) => updateFormData({ phone: value })}
         error={errors.phone}
       />
 

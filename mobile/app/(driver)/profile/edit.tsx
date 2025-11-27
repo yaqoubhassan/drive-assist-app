@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar, SuccessModal } from '../../../src/components/common';
+import { Button, Input, Avatar, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -115,13 +115,12 @@ export default function EditProfileScreen() {
             autoCapitalize="none"
           />
 
-          <Input
+          <PhoneNumberInput
             label="Phone Number"
-            placeholder="+233 XX XXX XXXX"
-            icon="phone"
+            placeholder="XX XXX XXXX"
+            defaultCode="GH"
             value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
+            onChangeFormattedText={setPhone}
           />
         </View>
 

@@ -19,3 +19,4 @@ export { AddressAutocomplete, LocationDisplay } from './AddressAutocomplete';
 export type { LocationData } from './AddressAutocomplete';
 export { SuccessModal } from './SuccessModal';
 export { ConfirmationModal } from './ConfirmationModal';
+export { PhoneNumberInput } from './PhoneNumberInput';
