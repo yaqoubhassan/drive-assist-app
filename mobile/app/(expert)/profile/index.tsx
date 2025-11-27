@@ -181,7 +181,7 @@ export default function ExpertProfileScreen() {
               <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 This Month's Performance
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(expert)/earnings')}>
                 <Text className="text-primary-500 font-semibold text-sm">View Details</Text>
               </TouchableOpacity>
             </View>
