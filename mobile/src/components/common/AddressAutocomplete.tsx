@@ -451,7 +451,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               borderWidth: 2,
               borderColor: dropdownBorderColor,
               borderRadius: 12,
-              maxHeight: 280,
               zIndex: 1001,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
@@ -465,8 +464,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={true}
               bounces={true}
-              style={{ maxHeight: 276 }}
-              contentContainerStyle={{ flexGrow: 0 }}
+              scrollEnabled={true}
+              style={{ maxHeight: 280 }}
             >
               {predictions.map((item, index) => (
                 <Pressable
@@ -482,49 +481,47 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     backgroundColor: pressed ? hoverBgColor : 'transparent',
                   })}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    {/* Icon Container - Fixed width for proper alignment */}
-                    <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 8,
-                        backgroundColor: isDark ? '#334155' : '#EEF2FF',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: 12,
-                      }}
-                    >
-                      <MaterialIcons name="place" size={20} color="#3B82F6" />
-                    </View>
+                  {/* Icon Container - Fixed width for proper alignment */}
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      backgroundColor: isDark ? '#334155' : '#EEF2FF',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                    }}
+                  >
+                    <MaterialIcons name="place" size={20} color="#3B82F6" />
+                  </View>
 
-                    {/* Text Container - Vertically centered with icon */}
-                    <View style={{ flex: 1 }}>
+                  {/* Text Container - Vertically centered with icon */}
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '600',
+                        color: inputTextColor,
+                        lineHeight: 20,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {item.structured_formatting?.main_text || item.description}
+                    </Text>
+                    {item.structured_formatting?.secondary_text && (
                       <Text
                         style={{
-                          fontSize: 15,
-                          fontWeight: '600',
-                          color: inputTextColor,
-                          lineHeight: 20,
+                          fontSize: 13,
+                          color: secondaryTextColor,
+                          marginTop: 2,
+                          lineHeight: 18,
                         }}
                         numberOfLines={1}
                       >
-                        {item.structured_formatting?.main_text || item.description}
+                        {item.structured_formatting.secondary_text}
                       </Text>
-                      {item.structured_formatting?.secondary_text && (
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            color: secondaryTextColor,
-                            marginTop: 2,
-                            lineHeight: 18,
-                          }}
-                          numberOfLines={1}
-                        >
-                          {item.structured_formatting.secondary_text}
-                        </Text>
-                      )}
-                    </View>
+                    )}
                   </View>
                 </Pressable>
               ))}
