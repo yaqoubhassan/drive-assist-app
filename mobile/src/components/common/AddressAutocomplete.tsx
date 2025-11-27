@@ -458,13 +458,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               shadowOpacity: 0.15,
               shadowRadius: 8,
               elevation: 8,
-              overflow: 'hidden',
             }}
           >
             <ScrollView
               keyboardShouldPersistTaps="always"
-              nestedScrollEnabled
+              nestedScrollEnabled={true}
               showsVerticalScrollIndicator={true}
+              bounces={true}
+              style={{ maxHeight: 276 }}
+              contentContainerStyle={{ flexGrow: 0 }}
             >
               {predictions.map((item, index) => (
                 <Pressable
