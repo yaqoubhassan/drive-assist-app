@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Alert,
-  ActivityIndicator,
-  TextInput,
-  ScrollView,
-  Platform,
-  Keyboard,
-} from 'react-native';
-import MapView, { Marker, Region, PROVIDER_GOOGLE } from 'react-native-maps';
-import { GooglePlacesAutocomplete, GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
 import Constants from 'expo-constants';
+import * as Location from 'expo-location';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { GooglePlacesAutocomplete, GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GhanaConstants } from '../../constants';
 import { useTheme } from '../../context/ThemeContext';
@@ -72,8 +72,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [region, setRegion] = useState<Region>({
     latitude: initialLocation?.latitude || GhanaConstants.defaultLocation.latitude,
     longitude: initialLocation?.longitude || GhanaConstants.defaultLocation.longitude,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
   });
 
   useEffect(() => {
@@ -200,9 +200,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       <View className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
         {/* Header */}
         <View
-          className={`flex-row items-center justify-between px-4 pb-4 border-b ${
-            isDark ? 'border-slate-800' : 'border-slate-200'
-          }`}
+          className={`flex-row items-center justify-between px-4 pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'
+            }`}
           style={{ paddingTop: insets.top + 16 }}
         >
           <TouchableOpacity onPress={onClose} className="h-10 w-10 items-center justify-center">
@@ -217,9 +216,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         {/* Search Bar */}
         <View className={`px-4 py-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
           <View
-            className={`flex-row items-center rounded-xl px-4 py-3 ${
-              isDark ? 'bg-slate-800' : 'bg-slate-100'
-            }`}
+            className={`flex-row items-center rounded-xl px-4 py-3 ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+              }`}
           >
             <MaterialIcons name="search" size={20} color="#64748B" />
             <TextInput
@@ -243,9 +241,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 <TouchableOpacity
                   key={city.name}
                   onPress={() => handleCitySelect(city)}
-                  className={`flex-row items-center py-3 border-b ${
-                    isDark ? 'border-slate-700' : 'border-slate-100'
-                  }`}
+                  className={`flex-row items-center py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'
+                    }`}
                 >
                   <MaterialIcons name="location-city" size={20} color="#3B82F6" />
                   <View className="ml-3">
@@ -311,9 +308,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           {/* Current Location Button */}
           <TouchableOpacity
             onPress={getCurrentLocation}
-            className={`absolute right-4 top-4 h-12 w-12 rounded-full shadow-lg items-center justify-center ${
-              isDark ? 'bg-slate-800' : 'bg-white'
-            }`}
+            className={`absolute right-4 top-4 h-12 w-12 rounded-full shadow-lg items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-white'
+              }`}
             style={{ elevation: 4 }}
           >
             {loading ? (
@@ -326,7 +322,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
         {/* Selected Location Info */}
         <View
-          className={`px-4 py-4 border-t ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}
+          className={`px-4 py-4 border-t ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
+            }`}
           style={{ paddingBottom: insets.bottom + 16 }}
         >
           {selectedLocation ? (
@@ -395,21 +392,22 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [showMapModal, setShowMapModal] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(value || null);
-  const [isListVisible, setIsListVisible] = useState(true);
+  // Flag to temporarily suppress dropdown after selection
+  const justSelectedRef = useRef(false);
   const [mapRegion, setMapRegion] = useState<Region>(
     value
       ? {
-          latitude: value.latitude,
-          longitude: value.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }
+        latitude: value.latitude,
+        longitude: value.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }
       : {
-          latitude: GhanaConstants.defaultLocation.latitude,
-          longitude: GhanaConstants.defaultLocation.longitude,
-          latitudeDelta: 0.1,
-          longitudeDelta: 0.1,
-        }
+        latitude: GhanaConstants.defaultLocation.latitude,
+        longitude: GhanaConstants.defaultLocation.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      }
   );
 
   // Update selected location when value prop changes
@@ -430,9 +428,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   }, [value]);
 
   const handlePlaceSelect = (data: any, details: any) => {
-    if (!details) return;
+    console.log('[DEBUG] handlePlaceSelect called');
+
+    if (!details) {
+      console.log('[DEBUG] details is null');
+      return;
+    }
 
     const addressText = data.description || details.formatted_address;
+    console.log('[DEBUG] addressText:', addressText);
 
     const location: LocationData = {
       address: addressText,
@@ -453,8 +457,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     });
 
-    // Hide the dropdown list immediately
-    setIsListVisible(false);
+    // Set flag to prevent dropdown from reopening
+    justSelectedRef.current = true;
+
+    // Dismiss keyboard
+    Keyboard.dismiss();
 
     // Update state
     setSelectedLocation(location);
@@ -466,16 +473,16 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     });
     onChange(location);
 
-    // Dismiss keyboard
-    Keyboard.dismiss();
-
-    // Set the address text after hiding the list
+    // Set the address text using the ref
+    // The flag will prevent onChangeText from reopening the dropdown
     setTimeout(() => {
       if (autocompleteRef.current) {
         autocompleteRef.current.setAddressText(addressText);
       }
-      // Re-enable list visibility for future searches
-      setIsListVisible(true);
+      // Reset the flag after a delay
+      setTimeout(() => {
+        justSelectedRef.current = false;
+      }, 500);
     }, 100);
   };
 
@@ -540,6 +547,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       setSelectedLocation(location);
       onChange(location);
 
+      // Update autocomplete text
+      if (autocompleteRef.current) {
+        autocompleteRef.current.setAddressText(address);
+      }
+
       // Animate map to current location smoothly
       const newRegion = {
         latitude,
@@ -548,11 +560,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         longitudeDelta: 0.01,
       };
       mapRef.current?.animateToRegion(newRegion, 500);
-
-      // Update autocomplete text
-      if (autocompleteRef.current) {
-        autocompleteRef.current.setAddressText(address);
-      }
     } catch (err) {
       Alert.alert('Error', 'Failed to get your current location. Please try again.');
       console.error('Location error:', err);
@@ -610,10 +617,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       };
 
       setSelectedLocation(location);
-      // Don't update mapRegion state to avoid glitches - map stays where user tapped
     } catch (err) {
       console.error('Reverse geocode error:', err);
-      // Still set the location with coordinates only
       const location: LocationData = {
         address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
         latitude,
@@ -646,7 +651,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   return (
     <View>
       {label && (
-        <Text className={`text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+        <Text
+          className={`text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+        >
           {label}
         </Text>
       )}
@@ -662,17 +669,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             query={{
               key: GOOGLE_MAPS_API_KEY,
               language: 'en',
-              // Restrict to Ghana only for the Ghanaian market
               components: 'country:gh',
             }}
-            // Bias results toward Ghana's center (Accra area) for better local results
             predefinedPlaces={[]}
             predefinedPlacesAlwaysVisible={false}
-            // Location bias for Ghana
             GooglePlacesSearchQuery={{
               rankby: 'distance',
-              location: '5.6037,-0.187', // Accra coordinates
-              radius: 500000, // 500km radius to cover Ghana
+              location: '5.6037,-0.187',
+              radius: 500000,
             }}
             GoogleReverseGeocodingQuery={{
               language: 'en',
@@ -725,12 +729,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             GooglePlacesDetailsQuery={{
               fields: 'formatted_address,geometry,address_components',
             }}
-            // Fix: Disable internal scroll to prevent VirtualizedList nesting warning
             disableScroll={true}
-            // Control list visibility - hide after selection, show for new searches
-            listViewDisplayed={isListVisible ? 'auto' : false}
-            keyboardShouldPersistTaps="handled"
-            // Custom row rendering to fix icon issues
+            listViewDisplayed="auto"
+            keyboardShouldPersistTaps="always"
+            onFail={(error) => console.log('[DEBUG] GooglePlacesAutocomplete onFail:', error)}
+            onNotFound={() => console.log('[DEBUG] GooglePlacesAutocomplete onNotFound')}
+            onTimeout={() => console.log('[DEBUG] GooglePlacesAutocomplete onTimeout')}
             renderRow={(rowData) => (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MaterialIcons name="place" size={18} color="#64748B" style={{ marginRight: 10 }} />
@@ -739,7 +743,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                 </Text>
               </View>
             )}
-            // Custom left button to fix icon issues
             renderLeftButton={() => (
               <View style={{ justifyContent: 'center', paddingLeft: 8 }}>
                 <MaterialIcons name="search" size={20} color="#64748B" />
@@ -748,11 +751,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           />
         </View>
       ) : (
-        // Fallback to simple text input if no API key
         <View
-          className={`rounded-xl overflow-hidden flex-row items-center px-4 ${
-            isDark ? 'bg-slate-800' : 'bg-white'
-          }`}
+          className={`rounded-xl overflow-hidden flex-row items-center px-4 ${isDark ? 'bg-slate-800' : 'bg-white'
+            }`}
           style={{ borderWidth: 2, borderColor }}
         >
           <MaterialIcons name="location-on" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
@@ -776,13 +777,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
       {/* Action Buttons */}
       <View className="flex-row gap-2 mt-3">
-        {/* Use Current Location */}
         <TouchableOpacity
           onPress={handleUseCurrentLocation}
           disabled={disabled || isLoadingLocation}
-          className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-xl ${
-            isDark ? 'bg-blue-500/20' : 'bg-blue-50'
-          }`}
+          className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-xl ${isDark ? 'bg-blue-500/20' : 'bg-blue-50'
+            }`}
         >
           {isLoadingLocation ? (
             <ActivityIndicator size="small" color="#3B82F6" />
@@ -794,13 +793,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* Select on Map */}
         <TouchableOpacity
           onPress={() => setShowMapModal(true)}
           disabled={disabled}
-          className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-xl ${
-            isDark ? 'bg-slate-700' : 'bg-slate-100'
-          }`}
+          className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-xl ${isDark ? 'bg-slate-700' : 'bg-slate-100'
+            }`}
         >
           <MaterialIcons name="map" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
           <Text className={`font-medium ml-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -812,14 +809,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       {/* Selected Location Preview */}
       {selectedLocation && (
         <View
-          className={`mt-3 p-3 rounded-xl ${isDark ? 'bg-green-500/10' : 'bg-green-50'} border ${
-            isDark ? 'border-green-500/20' : 'border-green-200'
-          }`}
+          className={`mt-3 p-3 rounded-xl ${isDark ? 'bg-green-500/10' : 'bg-green-50'} border ${isDark ? 'border-green-500/20' : 'border-green-200'
+            }`}
         >
           <View className="flex-row items-start">
             <MaterialIcons name="check-circle" size={18} color="#10B981" />
             <View className="flex-1 ml-2">
-              <Text className={`text-sm font-medium ${isDark ? 'text-green-400' : 'text-green-700'}`}>
+              <Text
+                className={`text-sm font-medium ${isDark ? 'text-green-400' : 'text-green-700'}`}
+              >
                 Location Set
               </Text>
               <Text
@@ -834,13 +832,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       )}
 
       {/* Map Modal */}
-      <Modal visible={showMapModal} animationType="slide" onRequestClose={() => setShowMapModal(false)}>
+      <Modal
+        visible={showMapModal}
+        animationType="slide"
+        onRequestClose={() => setShowMapModal(false)}
+      >
         <View className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
-          {/* Modal Header */}
           <View
-            className={`flex-row items-center justify-between px-4 py-4 border-b ${
-              isDark ? 'border-slate-800' : 'border-slate-200'
-            }`}
+            className={`flex-row items-center justify-between px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'
+              }`}
             style={{ paddingTop: insets.top + 16 }}
           >
             <TouchableOpacity
@@ -855,15 +855,17 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             <TouchableOpacity
               onPress={handleConfirmMapLocation}
               disabled={!selectedLocation}
-              className={`px-4 py-2 rounded-lg ${selectedLocation ? 'bg-primary-500' : 'bg-slate-300'}`}
+              className={`px-4 py-2 rounded-lg ${selectedLocation ? 'bg-primary-500' : 'bg-slate-300'
+                }`}
             >
-              <Text className={`font-semibold ${selectedLocation ? 'text-white' : 'text-slate-500'}`}>
+              <Text
+                className={`font-semibold ${selectedLocation ? 'text-white' : 'text-slate-500'}`}
+              >
                 Confirm
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Map */}
           <View className="flex-1">
             <MapView
               ref={mapRef}
@@ -889,7 +891,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               )}
             </MapView>
 
-            {/* Loading overlay */}
             {isLoadingLocation && (
               <View className="absolute inset-0 bg-black/30 items-center justify-center">
                 <View className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
@@ -901,12 +902,10 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               </View>
             )}
 
-            {/* My Location Button */}
             <TouchableOpacity
               onPress={handleUseCurrentLocation}
-              className={`absolute right-4 bottom-24 h-12 w-12 rounded-full items-center justify-center shadow-lg ${
-                isDark ? 'bg-slate-800' : 'bg-white'
-              }`}
+              className={`absolute right-4 bottom-24 h-12 w-12 rounded-full items-center justify-center shadow-lg ${isDark ? 'bg-slate-800' : 'bg-white'
+                }`}
               style={{
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
@@ -919,19 +918,23 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Selected Location Info */}
           <View
-            className={`px-4 py-4 border-t ${
-              isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
-            }`}
+            className={`px-4 py-4 border-t ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
+              }`}
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             {selectedLocation ? (
               <View>
-                <Text className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <Text
+                  className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'
+                    }`}
+                >
                   Selected Address
                 </Text>
-                <Text className={`text-base ${isDark ? 'text-white' : 'text-slate-900'}`} numberOfLines={2}>
+                <Text
+                  className={`text-base ${isDark ? 'text-white' : 'text-slate-900'}`}
+                  numberOfLines={2}
+                >
                   {selectedLocation.address}
                 </Text>
               </View>
@@ -967,14 +970,12 @@ export const LocationDisplay: React.FC<LocationDisplayProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center p-4 rounded-xl border ${
-        isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-      }`}
+      className={`flex-row items-center p-4 rounded-xl border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+        }`}
     >
       <View
-        className={`h-10 w-10 rounded-lg items-center justify-center mr-3 ${
-          location ? 'bg-green-500/20' : isDark ? 'bg-slate-700' : 'bg-slate-100'
-        }`}
+        className={`h-10 w-10 rounded-lg items-center justify-center mr-3 ${location ? 'bg-green-500/20' : isDark ? 'bg-slate-700' : 'bg-slate-100'
+          }`}
       >
         <MaterialIcons name="location-on" size={22} color={location ? '#10B981' : '#64748B'} />
       </View>
@@ -984,7 +985,10 @@ export const LocationDisplay: React.FC<LocationDisplayProps> = ({
             <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
               {location.city || 'Selected Location'}
             </Text>
-            <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`} numberOfLines={1}>
+            <Text
+              className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+              numberOfLines={1}
+            >
               {location.address}
             </Text>
           </>
