@@ -105,6 +105,13 @@ const contactOptions = [
   },
 ];
 
+// TODO: Replace with actual URLs when available
+const RESOURCE_URLS = {
+  userGuide: 'https://driveassist.app/guide',
+  feedbackEmail: 'mailto:feedback@driveassist.com?subject=DriveAssist%20App%20Feedback',
+  bugReportEmail: 'mailto:bugs@driveassist.com?subject=DriveAssist%20Bug%20Report&body=Please%20describe%20the%20issue%20you%20encountered%3A%0A%0A%0ASteps%20to%20reproduce%3A%0A1.%0A2.%0A3.%0A%0ADevice%20info%3A%0A',
+};
+
 export default function HelpScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
@@ -260,6 +267,7 @@ export default function HelpScreen() {
           </Text>
           <Card variant="default" padding="none">
             <TouchableOpacity
+              onPress={() => Linking.openURL(RESOURCE_URLS.userGuide)}
               className={`flex-row items-center p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
             >
               <View className="h-10 w-10 rounded-lg bg-primary-500/20 items-center justify-center mr-3">
@@ -273,10 +281,11 @@ export default function HelpScreen() {
                   Learn how to use DriveAssist
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              <MaterialIcons name="open-in-new" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
             </TouchableOpacity>
 
             <TouchableOpacity
+              onPress={() => Linking.openURL(RESOURCE_URLS.feedbackEmail)}
               className={`flex-row items-center p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
             >
               <View className="h-10 w-10 rounded-lg bg-green-500/20 items-center justify-center mr-3">
@@ -290,10 +299,13 @@ export default function HelpScreen() {
                   Help us improve the app
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              <MaterialIcons name="mail" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center p-4">
+            <TouchableOpacity
+              onPress={() => Linking.openURL(RESOURCE_URLS.bugReportEmail)}
+              className="flex-row items-center p-4"
+            >
               <View className="h-10 w-10 rounded-lg bg-orange-500/20 items-center justify-center mr-3">
                 <MaterialIcons name="bug-report" size={22} color="#F59E0B" />
               </View>
@@ -305,7 +317,7 @@ export default function HelpScreen() {
                   Let us know about issues
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              <MaterialIcons name="mail" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
             </TouchableOpacity>
           </Card>
         </View>
