@@ -12,4 +12,11 @@ export { Chip } from './Chip';
 export { EmptyState } from './EmptyState';
 export { Loading } from './Loading';
 export { ImageGallery, ImageThumbnailGrid } from './ImageGallery';
-export { LocationPicker, LocationDisplay } from './LocationPicker';
+// export { LocationPicker, LocationDisplay, AddressAutocomplete } from './LocationPicker';?
+// export type { LocationData } from './LocationPicker';
+
+export { AddressAutocomplete, LocationDisplay } from './AddressAutocomplete';
+export type { LocationData } from './AddressAutocomplete';
+export { SuccessModal } from './SuccessModal';
+export { ConfirmationModal } from './ConfirmationModal';
+export { PhoneNumberInput } from './PhoneNumberInput';

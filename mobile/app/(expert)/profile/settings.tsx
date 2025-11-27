@@ -1,10 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme, ThemeMode } from '../../../src/context/ThemeContext';
 import { Card } from '../../../src/components/common';
+
+const languages = [
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'fr', name: 'French', nativeName: 'Français' },
+  { code: 'tw', name: 'Twi', nativeName: 'Twi' },
+  { code: 'ha', name: 'Hausa', nativeName: 'Hausa' },
+  { code: 'ee', name: 'Ewe', nativeName: 'Eʋegbe' },
+  { code: 'ga', name: 'Ga', nativeName: 'Gã' },
+];
+
+const regions = [
+  { code: 'GH', name: 'Ghana', currency: 'GH₵' },
+  { code: 'NG', name: 'Nigeria', currency: '₦' },
+  { code: 'KE', name: 'Kenya', currency: 'KSh' },
+  { code: 'ZA', name: 'South Africa', currency: 'R' },
+  { code: 'CI', name: "Côte d'Ivoire", currency: 'CFA' },
+];
+
+// TODO: Replace with actual URLs when available
+const LEGAL_URLS = {
+  termsOfService: 'https://driveassist.app/terms',
+  privacyPolicy: 'https://driveassist.app/privacy',
+};
 
 export default function ExpertSettingsScreen() {
   const router = useRouter();
@@ -15,6 +38,24 @@ export default function ExpertSettingsScreen() {
   const [locationServices, setLocationServices] = useState(true);
   const [instantBooking, setInstantBooking] = useState(false);
   const [autoAccept, setAutoAccept] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showRegionModal, setShowRegionModal] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedRegion, setSelectedRegion] = useState('GH');
+
+  const currentLanguage = languages.find(l => l.code === selectedLanguage);
+  const currentRegion = regions.find(r => r.code === selectedRegion);
+
+  const openLegalPage = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      }
+    } catch (error) {
+      console.error('Error opening URL:', error);
+    }
+  };
 
   const themeOptions: { value: ThemeMode; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
     { value: 'light', label: 'Light', icon: 'light-mode' },
@@ -269,6 +310,7 @@ export default function ExpertSettingsScreen() {
           </Text>
           <Card variant="default" padding="none">
             <TouchableOpacity
+              onPress={() => setShowLanguageModal(true)}
               className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
             >
               <View className="flex-row items-center flex-1">
@@ -283,14 +325,17 @@ export default function ExpertSettingsScreen() {
                     Language
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    English
+                    {currentLanguage?.name || 'English'}
                   </Text>
                 </View>
               </View>
               <MaterialIcons name="chevron-right" size={24} color={isDark ? '#475569' : '#94A3B8'} />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center justify-between p-4">
+            <TouchableOpacity
+              onPress={() => setShowRegionModal(true)}
+              className="flex-row items-center justify-between p-4"
+            >
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -303,7 +348,7 @@ export default function ExpertSettingsScreen() {
                     Region
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Ghana
+                    {currentRegion?.name || 'Ghana'} ({currentRegion?.currency || 'GH₵'})
                   </Text>
                 </View>
               </View>
@@ -319,6 +364,7 @@ export default function ExpertSettingsScreen() {
           </Text>
           <Card variant="default" padding="none">
             <TouchableOpacity
+              onPress={() => openLegalPage(LEGAL_URLS.termsOfService)}
               className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
             >
               <View className="flex-row items-center flex-1">
@@ -332,10 +378,13 @@ export default function ExpertSettingsScreen() {
                   Terms of Service
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#475569' : '#94A3B8'} />
+              <MaterialIcons name="open-in-new" size={20} color={isDark ? '#475569' : '#94A3B8'} />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center justify-between p-4">
+            <TouchableOpacity
+              onPress={() => openLegalPage(LEGAL_URLS.privacyPolicy)}
+              className="flex-row items-center justify-between p-4"
+            >
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -347,11 +396,107 @@ export default function ExpertSettingsScreen() {
                   Privacy Policy
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={isDark ? '#475569' : '#94A3B8'} />
+              <MaterialIcons name="open-in-new" size={20} color={isDark ? '#475569' : '#94A3B8'} />
             </TouchableOpacity>
           </Card>
         </View>
       </ScrollView>
+
+      {/* Language Modal */}
+      <Modal
+        visible={showLanguageModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          <View className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowLanguageModal(false)} className="mr-4">
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Select Language
+            </Text>
+          </View>
+
+          <ScrollView className="flex-1">
+            {languages.map((language) => (
+              <TouchableOpacity
+                key={language.code}
+                onPress={() => {
+                  setSelectedLanguage(language.code);
+                  setShowLanguageModal(false);
+                }}
+                className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="flex-1">
+                  <Text className={`font-semibold ${
+                    selectedLanguage === language.code
+                      ? 'text-primary-500'
+                      : isDark ? 'text-white' : 'text-slate-900'
+                  }`}>
+                    {language.name}
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {language.nativeName}
+                  </Text>
+                </View>
+                {selectedLanguage === language.code && (
+                  <MaterialIcons name="check" size={24} color="#3B82F6" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Region Modal */}
+      <Modal
+        visible={showRegionModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowRegionModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          <View className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowRegionModal(false)} className="mr-4">
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Select Region
+            </Text>
+          </View>
+
+          <ScrollView className="flex-1">
+            {regions.map((region) => (
+              <TouchableOpacity
+                key={region.code}
+                onPress={() => {
+                  setSelectedRegion(region.code);
+                  setShowRegionModal(false);
+                }}
+                className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="flex-1">
+                  <Text className={`font-semibold ${
+                    selectedRegion === region.code
+                      ? 'text-primary-500'
+                      : isDark ? 'text-white' : 'text-slate-900'
+                  }`}>
+                    {region.name}
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Currency: {region.currency}
+                  </Text>
+                </View>
+                {selectedRegion === region.code && (
+                  <MaterialIcons name="check" size={24} color="#3B82F6" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

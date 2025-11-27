@@ -1,71 +1,84 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  Pressable,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Card, Button, Badge } from '../../../src/components/common';
+import { Card, Button, Badge, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 import { KycStatus } from '../../../src/types';
 
-interface Document {
-  id: string;
-  name: string;
-  type: 'business_license' | 'identity' | 'insurance' | 'certification' | 'other';
-  status: 'pending' | 'verified' | 'rejected' | 'expired';
+interface UploadedFile {
+  uri: string;
+  fileName: string;
   uploadedAt: string;
-  expiresAt?: string;
-  fileUri?: string;
-  fileName?: string;
+  status: 'pending' | 'verified' | 'rejected';
   rejectionReason?: string;
 }
 
-const documentTypes = [
+interface DocumentState {
+  business_license?: UploadedFile;
+  identity_front?: UploadedFile;
+  identity_back?: UploadedFile;
+  insurance?: UploadedFile;
+  certification?: UploadedFile;
+}
+
+type IdentityDocType = 'ghana_card' | 'passport' | 'drivers_license' | '';
+
+const identityDocTypes = [
   {
-    id: 'business_license',
-    name: 'Business License',
-    description: 'Your business registration or license',
-    icon: 'business' as const,
-    required: true,
-    step: 1,
+    id: 'ghana_card' as IdentityDocType,
+    label: 'Ghana Card',
+    icon: 'credit-card',
+    requiresBack: true,
+    frontLabel: 'Front of Ghana Card',
+    backLabel: 'Back of Ghana Card',
   },
   {
-    id: 'identity',
-    name: 'Identity Document',
-    description: 'Ghana Card, Passport, or Driver\'s License',
-    icon: 'badge' as const,
-    required: true,
-    step: 2,
+    id: 'passport' as IdentityDocType,
+    label: 'Passport',
+    icon: 'book',
+    requiresBack: false,
+    frontLabel: 'Passport Bio Page',
+    backLabel: '',
   },
   {
-    id: 'insurance',
-    name: 'Liability Insurance',
-    description: 'Business or professional liability insurance',
-    icon: 'security' as const,
-    required: false,
-    step: 3,
-  },
-  {
-    id: 'certification',
-    name: 'Professional Certification',
-    description: 'Trade or professional certifications',
-    icon: 'workspace-premium' as const,
-    required: false,
-    step: 4,
+    id: 'drivers_license' as IdentityDocType,
+    label: "Driver's License",
+    icon: 'directions-car',
+    requiresBack: true,
+    frontLabel: "Front of Driver's License",
+    backLabel: "Back of Driver's License",
   },
 ];
-
-// Mock initial documents (would come from API)
-const initialDocuments: Document[] = [];
 
 export default function DocumentsScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { kycStatus, updateKycStatus } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
-  const [uploading, setUploading] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const [documents, setDocuments] = useState<DocumentState>({});
+  const [identityDocType, setIdentityDocType] = useState<IdentityDocType>('');
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [showIdTypePicker, setShowIdTypePicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [docKeyToDelete, setDocKeyToDelete] = useState<keyof DocumentState | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const getKycStatusConfig = (status: KycStatus) => {
     switch (status) {
@@ -128,144 +141,154 @@ export default function DocumentsScreen() {
         return '#F59E0B';
       case 'rejected':
         return '#EF4444';
-      case 'expired':
-        return '#64748B';
       default:
         return '#64748B';
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return <Badge label="Verified" variant="success" size="sm" />;
-      case 'pending':
-        return <Badge label="Pending Review" variant="warning" size="sm" />;
-      case 'rejected':
-        return <Badge label="Rejected" variant="error" size="sm" />;
-      case 'expired':
-        return <Badge label="Expired" variant="default" size="sm" />;
-      default:
-        return null;
-    }
+  const handlePickDocument = async (docKey: keyof DocumentState) => {
+    Alert.alert('Upload Document', 'Choose how to upload your document', [
+      { text: 'Take Photo', onPress: () => handleCameraUpload(docKey) },
+      { text: 'Choose from Gallery', onPress: () => handleGalleryUpload(docKey) },
+      { text: 'Choose File', onPress: () => handleFileUpload(docKey) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
-  const handlePickDocument = async (type: string) => {
-    Alert.alert(
-      'Upload Document',
-      'Choose how to upload your document',
-      [
-        { text: 'Take Photo', onPress: () => handleCameraUpload(type) },
-        { text: 'Choose from Gallery', onPress: () => handleGalleryUpload(type) },
-        { text: 'Choose File', onPress: () => handleFileUpload(type) },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
-  const handleCameraUpload = async (type: string) => {
+  const handleCameraUpload = async (docKey: keyof DocumentState) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow camera access to take photos.');
       return;
     }
+    setUploading(docKey);
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
-      addDocument(type, result.assets[0].uri, 'photo.jpg');
+      await addDocument(docKey, result.assets[0].uri, 'photo.jpg');
     }
+    setUploading(null);
   };
 
-  const handleGalleryUpload = async (type: string) => {
+  const handleGalleryUpload = async (docKey: keyof DocumentState) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow photo library access.');
       return;
     }
+    setUploading(docKey);
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
       const fileName = result.assets[0].uri.split('/').pop() || 'document.jpg';
-      addDocument(type, result.assets[0].uri, fileName);
+      await addDocument(docKey, result.assets[0].uri, fileName);
     }
+    setUploading(null);
   };
 
-  const handleFileUpload = async (type: string) => {
+  const handleFileUpload = async (docKey: keyof DocumentState) => {
     try {
+      setUploading(docKey);
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/*'],
         copyToCacheDirectory: true,
       });
       if (!result.canceled && result.assets[0]) {
-        addDocument(type, result.assets[0].uri, result.assets[0].name);
+        await addDocument(docKey, result.assets[0].uri, result.assets[0].name);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to pick document. Please try again.');
+    } finally {
+      setUploading(null);
     }
   };
 
-  const addDocument = async (type: string, uri: string, fileName: string) => {
-    setUploading(true);
+  const addDocument = async (docKey: keyof DocumentState, uri: string, fileName: string) => {
+    // Simulate upload delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const docType = documentTypes.find((d) => d.id === type);
-    const newDoc: Document = {
-      id: Date.now().toString(),
-      name: docType?.name || 'Document',
-      type: type as Document['type'],
-      status: 'pending',
+    const newDoc: UploadedFile = {
+      uri,
+      fileName,
       uploadedAt: new Date().toLocaleDateString('en-GB', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
       }),
-      fileUri: uri,
-      fileName,
+      status: 'pending',
     };
 
-    // Remove existing document of same type if exists
-    const filteredDocs = documents.filter((d) => d.type !== type);
-    setDocuments([...filteredDocs, newDoc]);
-    setUploading(false);
+    setDocuments((prev) => ({ ...prev, [docKey]: newDoc }));
 
     // Update KYC status to in_progress if not already submitted
     if (kycStatus === 'not_started') {
       await updateKycStatus('in_progress');
     }
-
-    Alert.alert('Success', 'Document uploaded successfully. It will be reviewed within 24-48 hours.');
   };
 
-  const handleDeleteDocument = (docId: string) => {
-    Alert.alert(
-      'Delete Document',
-      'Are you sure you want to delete this document?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => setDocuments(documents.filter((d) => d.id !== docId)),
-        },
-      ]
-    );
+  const handleDeleteDocument = (docKey: keyof DocumentState) => {
+    setDocKeyToDelete(docKey);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteDocument = () => {
+    if (docKeyToDelete) {
+      setDocuments((prev) => {
+        const newDocs = { ...prev };
+        delete newDocs[docKeyToDelete];
+        return newDocs;
+      });
+      setShowDeleteModal(false);
+      setDocKeyToDelete(null);
+      setShowSuccessModal(true);
+    }
+  };
+
+  const getDocumentLabel = (docKey: keyof DocumentState): string => {
+    switch (docKey) {
+      case 'business_license':
+        return 'Business License';
+      case 'identity_front':
+        return 'Identity Document (Front)';
+      case 'identity_back':
+        return 'Identity Document (Back)';
+      case 'insurance':
+        return 'Insurance Certificate';
+      case 'certification':
+        return 'Professional Certification';
+      default:
+        return 'Document';
+    }
   };
 
   const handleSubmitKyc = async () => {
-    const requiredDocs = documentTypes.filter((d) => d.required);
-    const uploadedRequired = requiredDocs.filter((d) =>
-      documents.some((doc) => doc.type === d.id)
-    );
+    // Check required documents
+    const hasBusinessLicense = !!documents.business_license;
+    const hasIdentityFront = !!documents.identity_front;
+    const selectedIdType = identityDocTypes.find((t) => t.id === identityDocType);
+    const hasIdentityBack = !selectedIdType?.requiresBack || !!documents.identity_back;
 
-    if (uploadedRequired.length < requiredDocs.length) {
-      Alert.alert(
-        'Missing Documents',
-        'Please upload all required documents before submitting for verification.'
-      );
+    if (!hasBusinessLicense) {
+      Alert.alert('Missing Document', 'Please upload your Business License.');
+      return;
+    }
+
+    if (!identityDocType) {
+      Alert.alert('Missing Selection', 'Please select your identity document type.');
+      return;
+    }
+
+    if (!hasIdentityFront) {
+      Alert.alert('Missing Document', `Please upload the ${selectedIdType?.frontLabel}.`);
+      return;
+    }
+
+    if (!hasIdentityBack) {
+      Alert.alert('Missing Document', `Please upload the ${selectedIdType?.backLabel}.`);
       return;
     }
 
@@ -280,7 +303,7 @@ export default function DocumentsScreen() {
             await updateKycStatus('submitted');
             Alert.alert(
               'Submitted',
-              'Your KYC documents have been submitted for review. We\'ll notify you once the review is complete.'
+              "Your KYC documents have been submitted for review. We'll notify you once the review is complete."
             );
           },
         },
@@ -288,17 +311,181 @@ export default function DocumentsScreen() {
     );
   };
 
-  const verifiedCount = documents.filter((d) => d.status === 'verified').length;
-  const requiredCount = documentTypes.filter((d) => d.required).length;
-  const uploadedRequiredCount = documentTypes
-    .filter((d) => d.required)
-    .filter((d) => documents.some((doc) => doc.type === d.id)).length;
-  const completionPercentage = Math.round((uploadedRequiredCount / requiredCount) * 100);
+  // Calculate completion
+  const selectedIdType = identityDocTypes.find((t) => t.id === identityDocType);
+  const requiredDocs = selectedIdType?.requiresBack ? 3 : 2; // business + front + (back if needed)
+  let uploadedRequired = 0;
+  if (documents.business_license) uploadedRequired++;
+  if (documents.identity_front) uploadedRequired++;
+  if (selectedIdType?.requiresBack && documents.identity_back) uploadedRequired++;
+  const completionPercentage = identityDocType
+    ? Math.round((uploadedRequired / requiredDocs) * 100)
+    : documents.business_license
+      ? 33
+      : 0;
+
+  const renderDocumentCard = (
+    docKey: keyof DocumentState,
+    title: string,
+    description: string,
+    icon: keyof typeof MaterialIcons.glyphMap,
+    isRequired: boolean = true
+  ) => {
+    const doc = documents[docKey];
+    const isUploadingThis = uploading === docKey;
+    const isImage = doc?.uri && (doc.uri.endsWith('.jpg') || doc.uri.endsWith('.jpeg') || doc.uri.endsWith('.png') || doc.uri.includes('ImagePicker'));
+
+    return (
+      <View
+        className={`p-4 rounded-xl mb-3 ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+        style={{
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 1,
+        }}
+      >
+        <View className="flex-row items-start">
+          {/* Icon */}
+          <View
+            className="h-12 w-12 rounded-xl items-center justify-center mr-3"
+            style={{
+              backgroundColor: doc ? getStatusColor(doc.status) + '20' : isDark ? '#1E293B' : '#F1F5F9',
+            }}
+          >
+            <MaterialIcons
+              name={icon}
+              size={24}
+              color={doc ? getStatusColor(doc.status) : '#64748B'}
+            />
+          </View>
+
+          {/* Content */}
+          <View className="flex-1">
+            <View className="flex-row items-center mb-1">
+              <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                {title}
+              </Text>
+              {isRequired && (
+                <Text className="text-red-500 ml-1">*</Text>
+              )}
+              {doc && (
+                <View className="ml-2">
+                  <Badge
+                    label={doc.status === 'verified' ? 'Verified' : doc.status === 'rejected' ? 'Rejected' : 'Pending'}
+                    variant={doc.status === 'verified' ? 'success' : doc.status === 'rejected' ? 'error' : 'warning'}
+                    size="sm"
+                  />
+                </View>
+              )}
+            </View>
+            <Text className={`text-sm mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              {description}
+            </Text>
+
+            {/* Uploaded Document Preview */}
+            {doc ? (
+              <View>
+                {/* Preview Area */}
+                <TouchableOpacity
+                  onPress={() => isImage && setPreviewImage(doc.uri)}
+                  className={`rounded-lg overflow-hidden mb-2 ${isImage ? '' : 'opacity-80'}`}
+                  disabled={!isImage}
+                >
+                  {isImage ? (
+                    <Image
+                      source={{ uri: doc.uri }}
+                      className="w-full h-32 rounded-lg"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      className={`h-20 rounded-lg items-center justify-center ${
+                        isDark ? 'bg-slate-700' : 'bg-slate-100'
+                      }`}
+                    >
+                      <MaterialIcons name="description" size={32} color="#64748B" />
+                      <Text className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {doc.fileName}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* File info and actions */}
+                <View className="flex-row items-center justify-between">
+                  <Text className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Uploaded {doc.uploadedAt}
+                  </Text>
+                  <View className="flex-row gap-2">
+                    {isImage && (
+                      <TouchableOpacity
+                        onPress={() => setPreviewImage(doc.uri)}
+                        className={`px-3 py-1.5 rounded-lg ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
+                      >
+                        <Text className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                          View
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      onPress={() => handleDeleteDocument(docKey)}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10"
+                    >
+                      <Text className="text-sm text-red-500">Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Rejection reason */}
+                {doc.status === 'rejected' && doc.rejectionReason && (
+                  <View className="mt-2 p-2 rounded-lg bg-red-500/10">
+                    <Text className="text-red-500 text-sm">{doc.rejectionReason}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              /* Upload Button */
+              <TouchableOpacity
+                onPress={() => handlePickDocument(docKey)}
+                disabled={isUploadingThis}
+                className={`flex-row items-center justify-center py-3 px-4 rounded-lg ${
+                  isRequired ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-100'
+                }`}
+              >
+                {isUploadingThis ? (
+                  <ActivityIndicator size="small" color={isRequired ? '#FFFFFF' : '#64748B'} />
+                ) : (
+                  <>
+                    <MaterialIcons
+                      name="cloud-upload"
+                      size={20}
+                      color={isRequired ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                    />
+                    <Text
+                      className={`font-semibold ml-2 ${
+                        isRequired ? 'text-white' : isDark ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      Upload
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
       {/* Header */}
-      <View className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+      <View
+        className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           className="h-10 w-10 items-center justify-center mr-2"
@@ -341,7 +528,7 @@ export default function DocumentsScreen() {
               <View className="mt-4">
                 <View className="flex-row justify-between mb-2">
                   <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {uploadedRequiredCount} of {requiredCount} required documents
+                    {uploadedRequired} of {requiredDocs} required documents
                   </Text>
                   <Text className="text-sm font-semibold" style={{ color: kycConfig.color }}>
                     {completionPercentage}%
@@ -358,7 +545,7 @@ export default function DocumentsScreen() {
           </View>
         </View>
 
-        {/* Benefits of KYC */}
+        {/* Benefits */}
         {kycStatus !== 'approved' && (
           <View className="px-4 pt-4">
             <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -400,168 +587,145 @@ export default function DocumentsScreen() {
           <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             REQUIRED DOCUMENTS
           </Text>
-          <View className="gap-3">
-            {documentTypes.filter((t) => t.required).map((docType) => {
-              const existingDoc = documents.find((d) => d.type === docType.id);
 
-              return (
-                <Card key={docType.id} variant="default">
-                  <View className="flex-row items-start">
-                    <View
-                      className="h-12 w-12 rounded-xl items-center justify-center mr-3"
-                      style={{
-                        backgroundColor: existingDoc
-                          ? getStatusColor(existingDoc.status) + '20'
-                          : isDark
-                          ? '#1E293B'
-                          : '#F1F5F9',
-                      }}
-                    >
-                      <MaterialIcons
-                        name={docType.icon}
-                        size={24}
-                        color={existingDoc ? getStatusColor(existingDoc.status) : '#64748B'}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {docType.name}
+          {/* Business License */}
+          {renderDocumentCard(
+            'business_license',
+            'Business License',
+            'Your business registration or license document',
+            'business',
+            true
+          )}
+
+          {/* Identity Document Type Selector */}
+          <View
+            className={`p-4 rounded-xl mb-3 ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="flex-row items-start">
+              <View
+                className="h-12 w-12 rounded-xl items-center justify-center mr-3"
+                style={{ backgroundColor: identityDocType ? '#3B82F620' : isDark ? '#1E293B' : '#F1F5F9' }}
+              >
+                <MaterialIcons
+                  name="badge"
+                  size={24}
+                  color={identityDocType ? '#3B82F6' : '#64748B'}
+                />
+              </View>
+              <View className="flex-1">
+                <View className="flex-row items-center mb-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Identity Document
+                  </Text>
+                  <Text className="text-red-500 ml-1">*</Text>
+                </View>
+                <Text className={`text-sm mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Select the type of ID you want to upload
+                </Text>
+
+                {/* ID Type Selector */}
+                <TouchableOpacity
+                  onPress={() => setShowIdTypePicker(true)}
+                  className={`flex-row items-center justify-between p-3 rounded-xl border-2 ${
+                    identityDocType
+                      ? 'border-primary-500 bg-primary-500/5'
+                      : isDark
+                        ? 'border-slate-700 bg-slate-700'
+                        : 'border-slate-200 bg-slate-50'
+                  }`}
+                >
+                  <View className="flex-row items-center">
+                    {identityDocType ? (
+                      <>
+                        <MaterialIcons
+                          name={identityDocTypes.find((t) => t.id === identityDocType)?.icon as any}
+                          size={20}
+                          color="#3B82F6"
+                        />
+                        <Text className={`ml-2 font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {identityDocTypes.find((t) => t.id === identityDocType)?.label}
                         </Text>
-                        {existingDoc && getStatusBadge(existingDoc.status)}
-                      </View>
-                      <Text className={`text-sm mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {docType.description}
+                      </>
+                    ) : (
+                      <Text className={isDark ? 'text-slate-400' : 'text-slate-400'}>
+                        Select ID type...
                       </Text>
-                      {existingDoc ? (
-                        <View className="flex-row items-center justify-between">
-                          <Text className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {existingDoc.fileName} • {existingDoc.uploadedAt}
-                          </Text>
-                          <View className="flex-row gap-2">
-                            <TouchableOpacity
-                              onPress={() => handlePickDocument(docType.id)}
-                              className={`px-3 py-1 rounded-lg ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
-                            >
-                              <Text className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                                Replace
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          onPress={() => handlePickDocument(docType.id)}
-                          disabled={uploading}
-                          className="flex-row items-center justify-center py-2 px-4 rounded-lg bg-primary-500 self-start"
-                        >
-                          <MaterialIcons name="cloud-upload" size={18} color="#FFFFFF" />
-                          <Text className="text-white font-semibold ml-2">Upload</Text>
-                        </TouchableOpacity>
-                      )}
-                      {existingDoc?.status === 'rejected' && existingDoc.rejectionReason && (
-                        <View className="mt-2 p-2 rounded-lg bg-red-500/10">
-                          <Text className="text-red-500 text-sm">{existingDoc.rejectionReason}</Text>
-                        </View>
-                      )}
-                    </View>
+                    )}
                   </View>
-                </Card>
-              );
-            })}
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={24}
+                    color={isDark ? '#64748B' : '#94A3B8'}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
+
+          {/* Identity Document Uploads (shown after type selection) */}
+          {identityDocType && (
+            <>
+              {renderDocumentCard(
+                'identity_front',
+                selectedIdType?.frontLabel || 'Front of ID',
+                `Upload a clear photo of ${selectedIdType?.frontLabel.toLowerCase()}`,
+                'photo-camera',
+                true
+              )}
+
+              {selectedIdType?.requiresBack &&
+                renderDocumentCard(
+                  'identity_back',
+                  selectedIdType?.backLabel || 'Back of ID',
+                  `Upload a clear photo of ${selectedIdType?.backLabel.toLowerCase()}`,
+                  'photo-camera',
+                  true
+                )}
+            </>
+          )}
         </View>
 
         {/* Optional Documents */}
-        <View className="px-4 pt-6 pb-4">
+        <View className="px-4 pt-4">
           <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             OPTIONAL DOCUMENTS
           </Text>
-          <View className="gap-3">
-            {documentTypes.filter((t) => !t.required).map((docType) => {
-              const existingDoc = documents.find((d) => d.type === docType.id);
 
-              return (
-                <Card key={docType.id} variant="default">
-                  <View className="flex-row items-start">
-                    <View
-                      className="h-12 w-12 rounded-xl items-center justify-center mr-3"
-                      style={{
-                        backgroundColor: existingDoc
-                          ? getStatusColor(existingDoc.status) + '20'
-                          : isDark
-                          ? '#1E293B'
-                          : '#F1F5F9',
-                      }}
-                    >
-                      <MaterialIcons
-                        name={docType.icon}
-                        size={24}
-                        color={existingDoc ? getStatusColor(existingDoc.status) : '#64748B'}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {docType.name}
-                        </Text>
-                        {existingDoc && getStatusBadge(existingDoc.status)}
-                        {!existingDoc && (
-                          <View className="px-2 py-0.5 rounded bg-slate-500/20">
-                            <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                              Optional
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text className={`text-sm mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {docType.description}
-                      </Text>
-                      {existingDoc ? (
-                        <View className="flex-row items-center justify-between">
-                          <Text className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {existingDoc.fileName} • {existingDoc.uploadedAt}
-                          </Text>
-                          <TouchableOpacity
-                            onPress={() => handleDeleteDocument(existingDoc.id)}
-                            className="px-3 py-1 rounded-lg bg-red-500/10"
-                          >
-                            <Text className="text-red-500 text-sm">Remove</Text>
-                          </TouchableOpacity>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          onPress={() => handlePickDocument(docType.id)}
-                          disabled={uploading}
-                          className={`flex-row items-center justify-center py-2 px-4 rounded-lg self-start ${
-                            isDark ? 'bg-slate-700' : 'bg-slate-100'
-                          }`}
-                        >
-                          <MaterialIcons name="add" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
-                          <Text className={`font-medium ml-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                            Add
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                </Card>
-              );
-            })}
-          </View>
+          {renderDocumentCard(
+            'insurance',
+            'Liability Insurance',
+            'Business or professional liability insurance',
+            'security',
+            false
+          )}
+
+          {renderDocumentCard(
+            'certification',
+            'Professional Certification',
+            'Trade or professional certifications',
+            'workspace-premium',
+            false
+          )}
         </View>
 
         {/* Submit Button */}
         {kycStatus !== 'approved' && kycStatus !== 'submitted' && kycStatus !== 'under_review' && (
-          <View className="px-4 pb-8">
+          <View className="px-4 py-6">
             <Button
               title="Submit for Verification"
               onPress={handleSubmitKyc}
-              disabled={uploadedRequiredCount < requiredCount}
+              disabled={completionPercentage < 100}
               fullWidth
               icon={<MaterialIcons name="send" size={20} color="#FFFFFF" />}
             />
-            {uploadedRequiredCount < requiredCount && (
+            {completionPercentage < 100 && (
               <Text className={`text-center text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Upload all required documents to submit
               </Text>
@@ -571,7 +735,7 @@ export default function DocumentsScreen() {
 
         {/* Document Guidelines */}
         <View className="px-4 pb-8">
-          <Card variant="default">
+          <View className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
             <View className="flex-row items-start">
               <MaterialIcons name="lightbulb" size={20} color="#F59E0B" />
               <View className="flex-1 ml-3">
@@ -594,9 +758,168 @@ export default function DocumentsScreen() {
                 </View>
               </View>
             </View>
-          </Card>
+          </View>
         </View>
       </ScrollView>
+
+      {/* ID Type Picker Modal */}
+      <Modal
+        visible={showIdTypePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowIdTypePicker(false)}
+      >
+        <View className="flex-1 justify-end">
+          <Pressable
+            className="absolute inset-0 bg-black/50"
+            onPress={() => setShowIdTypePicker(false)}
+          />
+          <View className={`rounded-t-3xl ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+            {/* Handle bar */}
+            <View className="items-center py-3">
+              <View className={`w-10 h-1 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
+            </View>
+
+            {/* Header */}
+            <View
+              className={`flex-row items-center justify-between px-6 pb-4 border-b ${
+                isDark ? 'border-slate-800' : 'border-slate-200'
+              }`}
+            >
+              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Select ID Type
+              </Text>
+              <TouchableOpacity onPress={() => setShowIdTypePicker(false)}>
+                <MaterialIcons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Options */}
+            <View className="px-4 py-4">
+              {identityDocTypes.map((type) => {
+                const isSelected = identityDocType === type.id;
+                return (
+                  <TouchableOpacity
+                    key={type.id}
+                    onPress={() => {
+                      // Clear previous identity docs if type changes
+                      if (identityDocType !== type.id) {
+                        setDocuments((prev) => {
+                          const newDocs = { ...prev };
+                          delete newDocs.identity_front;
+                          delete newDocs.identity_back;
+                          return newDocs;
+                        });
+                      }
+                      setIdentityDocType(type.id);
+                      setShowIdTypePicker(false);
+                    }}
+                    className={`flex-row items-center p-4 rounded-xl mb-3 ${
+                      isSelected
+                        ? 'bg-primary-500/10 border-2 border-primary-500'
+                        : isDark
+                          ? 'bg-slate-800'
+                          : 'bg-slate-50'
+                    }`}
+                  >
+                    <View
+                      className={`h-12 w-12 rounded-full items-center justify-center mr-4 ${
+                        isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
+                      }`}
+                    >
+                      <MaterialIcons
+                        name={type.icon as any}
+                        size={24}
+                        color={isSelected ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text
+                        className={`font-semibold ${
+                          isSelected ? 'text-primary-500' : isDark ? 'text-white' : 'text-slate-900'
+                        }`}
+                      >
+                        {type.label}
+                      </Text>
+                      <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {type.requiresBack ? 'Front & Back required' : 'Bio page only'}
+                      </Text>
+                    </View>
+                    {isSelected && <MaterialIcons name="check-circle" size={24} color="#3B82F6" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Safe area padding */}
+            <View style={{ height: 34 }} />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Image Preview Modal */}
+      <Modal
+        visible={!!previewImage}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setPreviewImage(null)}
+        statusBarTranslucent
+      >
+        <View className="flex-1 bg-black">
+          {/* Header with safe area inset */}
+          <View
+            className="flex-row items-center justify-between px-4 py-4"
+            style={{ paddingTop: insets.top + 16 }}
+          >
+            <TouchableOpacity
+              onPress={() => setPreviewImage(null)}
+              className="h-12 w-12 rounded-full bg-white/20 items-center justify-center"
+            >
+              <MaterialIcons name="close" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text className="text-white font-semibold text-lg">Document Preview</Text>
+            <View className="w-12" />
+          </View>
+
+          {/* Image */}
+          <View className="flex-1 items-center justify-center">
+            {previewImage && (
+              <Image
+                source={{ uri: previewImage }}
+                className="w-full h-full"
+                resizeMode="contain"
+              />
+            )}
+          </View>
+
+          {/* Bottom safe area */}
+          <View style={{ height: insets.bottom }} />
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDocKeyToDelete(null);
+        }}
+        onConfirm={confirmDeleteDocument}
+        title="Delete Document"
+        message={`Are you sure you want to delete your ${docKeyToDelete ? getDocumentLabel(docKeyToDelete) : 'document'}? You may need to re-upload it for verification.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Document Deleted"
+        message="The document has been removed. Please upload a new one if required."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

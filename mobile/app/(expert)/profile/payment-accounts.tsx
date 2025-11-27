@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Input } from '../../../src/components/common';
+import { Card, Button, Input, SuccessModal, ConfirmationModal, PhoneNumberInput } from '../../../src/components/common';
 
 // Types
 interface PaymentAccount {
@@ -83,6 +83,10 @@ export default function PaymentAccountsScreen() {
   const [accountName, setAccountName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<PaymentAccount | null>(null);
 
   const resetForm = () => {
     setAccountType(null);
@@ -134,7 +138,11 @@ export default function PaymentAccountsScreen() {
     setAccounts([...accounts, newAccount]);
     setSaving(false);
     handleCloseModal();
-    Alert.alert('Success', 'Payment account added successfully.');
+    setSuccessMessage({
+      title: 'Account Added!',
+      message: 'Your payment account has been added successfully.',
+    });
+    setShowSuccessModal(true);
   };
 
   const handleSetDefault = (accountId: string) => {
@@ -146,27 +154,27 @@ export default function PaymentAccountsScreen() {
     );
   };
 
-  const handleDeleteAccount = (accountId: string) => {
-    const account = accounts.find((a) => a.id === accountId);
-    Alert.alert(
-      'Delete Account',
-      `Are you sure you want to remove ${account?.provider} (${account?.accountNumber})?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            const updatedAccounts = accounts.filter((a) => a.id !== accountId);
-            // If deleted account was default, set first remaining as default
-            if (account?.isDefault && updatedAccounts.length > 0) {
-              updatedAccounts[0].isDefault = true;
-            }
-            setAccounts(updatedAccounts);
-          },
-        },
-      ]
-    );
+  const handleDeleteAccount = (account: PaymentAccount) => {
+    setAccountToDelete(account);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (accountToDelete) {
+      const updatedAccounts = accounts.filter((a) => a.id !== accountToDelete.id);
+      // If deleted account was default, set first remaining as default
+      if (accountToDelete.isDefault && updatedAccounts.length > 0) {
+        updatedAccounts[0].isDefault = true;
+      }
+      setAccounts(updatedAccounts);
+      setShowDeleteModal(false);
+      setSuccessMessage({
+        title: 'Account Removed',
+        message: `${accountToDelete.provider} has been removed from your payment accounts.`,
+      });
+      setAccountToDelete(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const maskAccountNumber = (number: string, type: 'mobile_money' | 'bank') => {
@@ -217,7 +225,7 @@ export default function PaymentAccountsScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={() => handleDeleteAccount(account.id)}
+            onPress={() => handleDeleteAccount(account)}
             className={`p-2 rounded-lg ${isDark ? 'bg-red-500/20' : 'bg-red-50'}`}
           >
             <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
@@ -453,16 +461,24 @@ export default function PaymentAccountsScreen() {
                     autoCapitalize="words"
                   />
 
-                  <Input
-                    label={accountType === 'mobile_money' ? 'Phone Number' : 'Account Number'}
-                    placeholder={
-                      accountType === 'mobile_money' ? 'e.g., 0541234567' : 'Enter account number'
-                    }
-                    value={accountNumber}
-                    onChangeText={setAccountNumber}
-                    keyboardType="numeric"
-                    maxLength={accountType === 'mobile_money' ? 10 : 20}
-                  />
+                  {accountType === 'mobile_money' ? (
+                    <PhoneNumberInput
+                      label="Phone Number"
+                      placeholder="XX XXX XXXX"
+                      defaultCountryCode="GH"
+                      value={accountNumber}
+                      onChangeFormattedText={setAccountNumber}
+                    />
+                  ) : (
+                    <Input
+                      label="Account Number"
+                      placeholder="Enter account number"
+                      value={accountNumber}
+                      onChangeText={setAccountNumber}
+                      keyboardType="numeric"
+                      maxLength={20}
+                    />
+                  )}
 
                   {accountType === 'mobile_money' && (
                     <View
@@ -650,6 +666,30 @@ export default function PaymentAccountsScreen() {
       </ScrollView>
 
       {renderAddAccountModal()}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setAccountToDelete(null);
+        }}
+        onConfirm={confirmDeleteAccount}
+        title="Remove Account"
+        message={`Are you sure you want to remove ${accountToDelete?.provider} (${accountToDelete?.accountNumber})? This action cannot be undone.`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title={successMessage.title}
+        message={successMessage.message}
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

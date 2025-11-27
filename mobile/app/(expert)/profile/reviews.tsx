@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar, Button, Card, Chip, Rating, SuccessModal } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Avatar, Rating, Chip } from '../../../src/components/common';
 
 interface Review {
   id: string;
@@ -76,19 +76,55 @@ const filters = [
 export default function ReviewsScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const handleReplyPress = (review: Review) => {
+    setSelectedReview(review);
+    setReplyText('');
+    setShowReplyModal(true);
+  };
+
+  const handleSubmitReply = async () => {
+    if (!replyText.trim() || !selectedReview) return;
+
+    setSubmitting(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Update the review with the response
+    setReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review.id === selectedReview.id
+          ? { ...review, response: replyText.trim() }
+          : review
+      )
+    );
+
+    setSubmitting(false);
+    setShowReplyModal(false);
+    setSelectedReview(null);
+    setReplyText('');
+    setShowSuccessModal(true);
+  };
 
   const filteredReviews = selectedFilter === 'all'
-    ? mockReviews
-    : mockReviews.filter((review) => review.rating.toString() === selectedFilter);
+    ? reviews
+    : reviews.filter((review) => review.rating.toString() === selectedFilter);
 
-  const averageRating = mockReviews.reduce((sum, r) => sum + r.rating, 0) / mockReviews.length;
-  const totalReviews = mockReviews.length;
+  const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const totalReviews = reviews.length;
 
   const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: mockReviews.filter((r) => r.rating === star).length,
-    percentage: (mockReviews.filter((r) => r.rating === star).length / totalReviews) * 100,
+    count: reviews.filter((r) => r.rating === star).length,
+    percentage: (reviews.filter((r) => r.rating === star).length / totalReviews) * 100,
   }));
 
   return (
@@ -218,7 +254,10 @@ export default function ReviewsScreen() {
                     </Text>
                   </View>
                   {!review.response && (
-                    <TouchableOpacity className="flex-row items-center">
+                    <TouchableOpacity
+                      onPress={() => handleReplyPress(review)}
+                      className="flex-row items-center"
+                    >
                       <MaterialIcons name="reply" size={16} color="#3B82F6" />
                       <Text className="text-primary-500 font-semibold text-sm ml-1">Reply</Text>
                     </TouchableOpacity>
@@ -229,6 +268,125 @@ export default function ReviewsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Reply Modal */}
+      <Modal
+        visible={showReplyModal}
+        animationType="slide"
+        onRequestClose={() => setShowReplyModal(false)}
+      >
+        <View className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          {/* Modal Header */}
+          <View
+            className={`flex-row items-center justify-between px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}
+            style={{ paddingTop: insets.top + 16 }}
+          >
+            <TouchableOpacity
+              onPress={() => setShowReplyModal(false)}
+              className="h-10 w-10 items-center justify-center"
+            >
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Reply to Review
+            </Text>
+            <View className="w-10" />
+          </View>
+
+          <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
+            {/* Original Review */}
+            {selectedReview && (
+              <View className={`p-4 rounded-xl mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <View className="flex-row items-center mb-3">
+                  <Avatar size="sm" name={selectedReview.customer} />
+                  <View className="ml-3 flex-1">
+                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {selectedReview.customer}
+                    </Text>
+                    <View className="flex-row items-center">
+                      <Rating value={selectedReview.rating} size="sm" />
+                      <Text className={`text-xs ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {selectedReview.date}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {selectedReview.comment}
+                </Text>
+              </View>
+            )}
+
+            {/* Reply Input */}
+            <View className="mb-4">
+              <Text className={`text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Your Reply
+              </Text>
+              <TextInput
+                value={replyText}
+                onChangeText={setReplyText}
+                placeholder="Write a thoughtful reply to this review..."
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                multiline
+                numberOfLines={5}
+                textAlignVertical="top"
+                className={`p-4 rounded-xl border ${isDark
+                  ? 'border-slate-600 bg-slate-800 text-white'
+                  : 'border-slate-300 bg-white text-slate-900'
+                  }`}
+                style={{ minHeight: 120 }}
+              />
+              <Text className={`text-xs mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Your reply will be visible to all users viewing this review.
+              </Text>
+            </View>
+
+            {/* Tips */}
+            <View className={`p-4 rounded-xl ${isDark ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
+              <View className="flex-row items-center mb-2">
+                <MaterialIcons name="lightbulb" size={18} color="#3B82F6" />
+                <Text className={`font-semibold ml-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+                  Tips for a great reply
+                </Text>
+              </View>
+              <View className="gap-1">
+                <Text className={`text-sm ${isDark ? 'text-blue-400/80' : 'text-blue-600/80'}`}>
+                  • Thank the customer for their feedback
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-blue-400/80' : 'text-blue-600/80'}`}>
+                  • Address any specific concerns mentioned
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-blue-400/80' : 'text-blue-600/80'}`}>
+                  • Keep it professional and courteous
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Submit Button */}
+          <View
+            className={`px-4 py-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}
+            style={{ paddingBottom: insets.bottom + 16 }}
+          >
+            <Button
+              title="Post Reply"
+              onPress={handleSubmitReply}
+              loading={submitting}
+              disabled={!replyText.trim()}
+              fullWidth
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Reply Posted!"
+        message="Your reply has been posted successfully and is now visible to customers."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

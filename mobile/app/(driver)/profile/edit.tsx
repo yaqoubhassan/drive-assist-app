@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Input, Avatar } from '../../../src/components/common';
+import { Button, Input, Avatar, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function EditProfileScreen() {
   const [phone, setPhone] = useState(user?.phone || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [loading, setSaving] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -43,7 +44,11 @@ export default function EditProfileScreen() {
     setSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setSaving(false);
-    Alert.alert('Success', 'Profile updated successfully');
+    setShowSuccessModal(true);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
     router.back();
   };
 
@@ -110,13 +115,12 @@ export default function EditProfileScreen() {
             autoCapitalize="none"
           />
 
-          <Input
+          <PhoneNumberInput
             label="Phone Number"
-            placeholder="+233 XX XXX XXXX"
-            icon="phone"
+            placeholder="XX XXX XXXX"
+            defaultCountryCode="GH"
             value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
+            onChangeFormattedText={setPhone}
           />
         </View>
 
@@ -146,6 +150,15 @@ export default function EditProfileScreen() {
           fullWidth
         />
       </View>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={handleSuccessClose}
+        title="Profile Updated!"
+        message="Your profile has been updated successfully."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }

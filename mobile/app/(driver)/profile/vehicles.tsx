@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Badge, EmptyState } from '../../../src/components/common';
+import { Card, Button, Badge, EmptyState, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 import { Vehicle } from '../../../src/types';
 
 const mockVehicles: Vehicle[] = [
@@ -43,6 +43,9 @@ export default function VehiclesScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleSetDefault = (vehicleId: string) => {
     setVehicles(vehicles.map((v) => ({
@@ -51,19 +54,18 @@ export default function VehiclesScreen() {
     })));
   };
 
-  const handleDelete = (vehicleId: string) => {
-    Alert.alert(
-      'Delete Vehicle',
-      'Are you sure you want to remove this vehicle?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => setVehicles(vehicles.filter((v) => v.id !== vehicleId)),
-        },
-      ]
-    );
+  const handleDelete = (vehicle: Vehicle) => {
+    setVehicleToDelete(vehicle);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteVehicle = () => {
+    if (vehicleToDelete) {
+      setVehicles(vehicles.filter((v) => v.id !== vehicleToDelete.id));
+      setShowDeleteModal(false);
+      setVehicleToDelete(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const getVehicleIcon = (make: string) => {
@@ -200,7 +202,7 @@ export default function VehiclesScreen() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => handleDelete(vehicle.id)}
+                    onPress={() => handleDelete(vehicle)}
                     className="flex-1 flex-row items-center justify-center py-2"
                   >
                     <MaterialIcons name="delete-outline" size={18} color="#EF4444" />
@@ -220,6 +222,30 @@ export default function VehiclesScreen() {
           />
         )}
       </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setVehicleToDelete(null);
+        }}
+        onConfirm={confirmDeleteVehicle}
+        title="Delete Vehicle"
+        message={`Are you sure you want to remove your ${vehicleToDelete?.year} ${vehicleToDelete?.make} ${vehicleToDelete?.model}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Vehicle Removed"
+        message="The vehicle has been removed from your garage."
+        primaryButtonLabel="Done"
+      />
     </SafeAreaView>
   );
 }
