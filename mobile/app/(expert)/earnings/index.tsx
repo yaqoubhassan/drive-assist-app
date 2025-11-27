@@ -57,6 +57,7 @@ export default function EarningsScreen() {
   };
 
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [showBalance, setShowBalance] = useState(true);
   const displayedTransactions = showAllTransactions ? transactions : transactions.slice(0, 5);
 
   const weeklyData = [
@@ -118,12 +119,12 @@ export default function EarningsScreen() {
           >
             <View className={`flex-row items-center justify-between mb-2 ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
               <Text className="text-white/80">Available Balance</Text>
-              <TouchableOpacity>
-                <MaterialIcons name="visibility" size={20} color="#FFFFFF" />
+              <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
+                <MaterialIcons name={showBalance ? 'visibility' : 'visibility-off'} size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
             <Text className={`text-white text-4xl font-bold mb-4 ${Platform.OS === 'ios' ? 'px-5' : ''}`}>
-              {formatCurrency(stats.totalEarnings)}
+              {showBalance ? formatCurrency(stats.totalEarnings) : 'GH₵ ••••••'}
             </Text>
 
             <View className={`flex-row gap-3 ${Platform.OS === 'ios' ? 'px-5 pb-5' : ''}`}>
