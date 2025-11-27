@@ -18,15 +18,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Button, Chip } from '../../../src/components/common';
+import { Button } from '../../../src/components/common';
 
-type InputTab = 'text' | 'voice' | 'photos';
+type InputTab = 'text' | 'voice';
 
-const suggestionChips = [
+const suggestionPrompts = [
   'When did it start?',
   'Any strange noises?',
-  'Does it happen when...',
-  'How often?',
+  'Does it happen all the time or only sometimes?',
+  'Any warning lights on?',
 ];
 
 export default function DiagnoseDescribeScreen() {
@@ -354,7 +354,12 @@ export default function DiagnoseDescribeScreen() {
   const handleContinue = () => {
     router.push({
       pathname: '/(driver)/diagnose/vehicle',
-      params: { category, description },
+      params: {
+        category,
+        description,
+        photos: JSON.stringify(photos),
+        hasVoiceRecording: recordedUri ? 'true' : 'false',
+      },
     });
   };
 
@@ -400,11 +405,9 @@ export default function DiagnoseDescribeScreen() {
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
-  const handleSuggestionPress = (suggestion: string) => {
-    setDescription((prev) => (prev ? `${prev}\n${suggestion}` : suggestion));
-  };
-
-  const isValid = description.length >= 20 || photos.length > 0 || recordedUri !== null;
+  // Valid if: (text >= 20 chars OR voice recording) - photos are optional but encouraged
+  const hasDescription = description.length >= 20 || recordedUri !== null;
+  const isValid = hasDescription;
 
   return (
     <SafeAreaView
@@ -459,13 +462,13 @@ export default function DiagnoseDescribeScreen() {
             </Text>
           </View>
 
-          {/* Input Tabs */}
+          {/* Input Tabs - Text or Voice */}
           <View className="flex-row gap-2 py-4">
-            {(['text', 'voice', 'photos'] as InputTab[]).map((tab) => (
+            {(['text', 'voice'] as InputTab[]).map((tab) => (
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                className={`flex-1 py-3 rounded-xl items-center ${activeTab === tab
+                className={`flex-1 py-3 rounded-xl items-center flex-row justify-center ${activeTab === tab
                   ? 'bg-primary-500'
                   : isDark
                     ? 'bg-slate-800'
@@ -473,25 +476,19 @@ export default function DiagnoseDescribeScreen() {
                   }`}
               >
                 <MaterialIcons
-                  name={
-                    tab === 'text'
-                      ? 'edit'
-                      : tab === 'voice'
-                        ? 'mic'
-                        : 'photo-camera'
-                  }
+                  name={tab === 'text' ? 'edit' : 'mic'}
                   size={20}
                   color={activeTab === tab ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
                 />
                 <Text
-                  className={`text-sm font-semibold mt-1 capitalize ${activeTab === tab
+                  className={`text-sm font-semibold ml-2 capitalize ${activeTab === tab
                     ? 'text-white'
                     : isDark
                       ? 'text-slate-300'
                       : 'text-slate-600'
                     }`}
                 >
-                  {tab}
+                  {tab === 'text' ? 'Type' : 'Record Voice'}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -587,35 +584,30 @@ export default function DiagnoseDescribeScreen() {
                 </Text>
               </View>
 
-              {/* Suggestions */}
-              <View className="flex-row flex-wrap gap-2 mt-4">
-                {suggestionChips.map((suggestion) => (
-                  <Chip
-                    key={suggestion}
-                    label={suggestion}
-                    onPress={() => handleSuggestionPress(suggestion)}
+              {/* Helper Prompts - Questions to answer */}
+              <View className={`mt-4 p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <View className="flex-row items-center mb-3">
+                  <MaterialIcons
+                    name="help-outline"
+                    size={18}
+                    color={isDark ? '#94A3B8' : '#64748B'}
                   />
-                ))}
-              </View>
-
-              {/* Tip */}
-              <View
-                className={`flex-row p-4 rounded-xl mt-4 ${isDark ? 'bg-amber-500/10' : 'bg-amber-50'
-                  }`}
-              >
-                <MaterialIcons
-                  name="lightbulb"
-                  size={20}
-                  color="#F59E0B"
-                  style={{ marginRight: 12, marginTop: 2 }}
-                />
-                <Text
-                  className={`flex-1 text-sm ${isDark ? 'text-amber-200' : 'text-amber-700'
-                    }`}
-                >
-                  Tip: Mention when the issue started, how often it happens, and any
-                  unusual sounds or smells.
-                </Text>
+                  <Text className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    Try to answer these questions:
+                  </Text>
+                </View>
+                <View className="gap-2">
+                  {suggestionPrompts.map((prompt, index) => (
+                    <View key={prompt} className="flex-row items-start">
+                      <Text className={`mr-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {index + 1}.
+                      </Text>
+                      <Text className={`flex-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {prompt}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
           )}
@@ -737,118 +729,105 @@ export default function DiagnoseDescribeScreen() {
             </View>
           )}
 
-          {/* Photos Tab */}
-          {activeTab === 'photos' && (
-            <View>
-              <Text
-                className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-              >
-                Add Photos
-              </Text>
-              <Text
-                className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
-              >
-                Take or upload up to 5 photos
-              </Text>
-
-              {/* Upload Area */}
-              <TouchableOpacity
-                onPress={handlePickImage}
-                className={`border-2 border-dashed rounded-xl p-8 items-center ${isDark ? 'border-slate-600' : 'border-slate-300'
-                  }`}
-              >
+          {/* Photos Section - Always visible */}
+          <View className={`mt-6 pt-6 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+            <View className="flex-row items-center justify-between mb-3">
+              <View className="flex-row items-center">
                 <MaterialIcons
                   name="photo-camera"
-                  size={48}
-                  color={isDark ? '#64748B' : '#94A3B8'}
+                  size={20}
+                  color={isDark ? '#94A3B8' : '#64748B'}
                 />
-                <Text
-                  className={`text-base font-semibold mt-4 ${isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                >
-                  Tap to take photo or upload
+                <Text className={`ml-2 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Add Photos
                 </Text>
-                <Text
-                  className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                >
-                  Or choose from library
+                <Text className={`ml-2 text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  (Optional)
                 </Text>
-              </TouchableOpacity>
+              </View>
+              {photos.length > 0 && (
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {photos.length}/5
+                </Text>
+              )}
+            </View>
 
-              {/* Action Buttons */}
-              <View className="flex-row gap-3 mt-4">
+            <Text className={`text-sm mb-3 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Photos help our AI better understand the issue
+            </Text>
+
+            {/* Photo Grid / Upload Buttons */}
+            {photos.length === 0 ? (
+              <View className="flex-row gap-3">
                 <TouchableOpacity
                   onPress={handleTakePhoto}
-                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'
-                    }`}
+                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${
+                    isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
+                  }`}
                 >
                   <MaterialIcons
                     name="camera-alt"
-                    size={20}
+                    size={24}
                     color={isDark ? '#94A3B8' : '#64748B'}
                   />
-                  <Text
-                    className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                  >
-                    Take Photo
+                  <Text className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    Camera
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handlePickImage}
-                  className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'
-                    }`}
+                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${
+                    isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
+                  }`}
                 >
                   <MaterialIcons
                     name="photo-library"
-                    size={20}
+                    size={24}
                     color={isDark ? '#94A3B8' : '#64748B'}
                   />
-                  <Text
-                    className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                  >
+                  <Text className={`ml-2 font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                     Gallery
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              {/* Photo Grid */}
-              {photos.length > 0 && (
-                <View className="mt-4">
-                  <Text
-                    className={`text-sm mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                  >
-                    {photos.length} of 5 photos
-                  </Text>
-                  <View className="flex-row flex-wrap gap-3">
-                    {photos.map((photo, index) => (
-                      <View key={index} className="relative">
-                        <Image
-                          source={{ uri: photo }}
-                          className="h-24 w-24 rounded-xl"
-                        />
-                        <TouchableOpacity
-                          onPress={() => handleRemovePhoto(index)}
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 items-center justify-center"
-                        >
-                          <MaterialIcons name="close" size={14} color="#FFFFFF" />
-                        </TouchableOpacity>
-                        {index === 0 && (
-                          <View className="absolute bottom-1 left-1 px-2 py-0.5 rounded bg-primary-500">
-                            <Text className="text-xs text-white font-semibold">
-                              Main
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    ))}
-                  </View>
+            ) : (
+              <View>
+                <View className="flex-row flex-wrap gap-3">
+                  {photos.map((photo, index) => (
+                    <View key={index} className="relative">
+                      <Image
+                        source={{ uri: photo }}
+                        className="h-20 w-20 rounded-xl"
+                      />
+                      <TouchableOpacity
+                        onPress={() => handleRemovePhoto(index)}
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 items-center justify-center"
+                      >
+                        <MaterialIcons name="close" size={14} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  {photos.length < 5 && (
+                    <TouchableOpacity
+                      onPress={handlePickImage}
+                      className={`h-20 w-20 rounded-xl items-center justify-center border-2 border-dashed ${
+                        isDark ? 'border-slate-700' : 'border-slate-300'
+                      }`}
+                    >
+                      <MaterialIcons
+                        name="add"
+                        size={28}
+                        color={isDark ? '#64748B' : '#94A3B8'}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              )}
-            </View>
-          )}
+              </View>
+            )}
+          </View>
+
+          {/* Bottom spacing */}
+          <View className="h-4" />
         </ScrollView>
 
         {/* Footer */}
