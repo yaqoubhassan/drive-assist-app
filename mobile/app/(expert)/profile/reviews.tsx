@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar, Button, Card, Chip, Rating, SuccessModal } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Avatar, Rating, Chip, Button, SuccessModal } from '../../../src/components/common';
 
 interface Review {
   id: string;
@@ -304,7 +304,7 @@ export default function ReviewsScreen() {
                       {selectedReview.customer}
                     </Text>
                     <View className="flex-row items-center">
-                      <Rating value={selectedReview.rating} size="xs" />
+                      <Rating value={selectedReview.rating} size="sm" />
                       <Text className={`text-xs ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                         {selectedReview.date}
                       </Text>
