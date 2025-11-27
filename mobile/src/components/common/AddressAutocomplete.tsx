@@ -480,56 +480,50 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     backgroundColor: pressed ? hoverBgColor : 'transparent',
                   })}
                 >
-                  {/* Icon Container - Fixed width for proper alignment */}
-                  <View
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 8,
-                      backgroundColor: isDark ? '#334155' : '#EEF2FF',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 12,
-                    }}
-                  >
-                    <MaterialIcons name="place" size={20} color="#3B82F6" />
-                  </View>
-
-                  {/* Text Container - Vertically centered with icon */}
-                  <View style={{ flex: 1 }}>
-                    <Text
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {/* Icon Container - Fixed width for proper alignment */}
+                    <View
                       style={{
-                        fontSize: 15,
-                        fontWeight: '600',
-                        color: inputTextColor,
-                        lineHeight: 20,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        backgroundColor: isDark ? '#334155' : '#EEF2FF',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 12,
                       }}
-                      numberOfLines={1}
                     >
-                      {item.structured_formatting?.main_text || item.description}
-                    </Text>
-                    {item.structured_formatting?.secondary_text && (
+                      <MaterialIcons name="place" size={20} color="#3B82F6" />
+                    </View>
+
+                    {/* Text Container - Vertically centered with icon */}
+                    <View style={{ flex: 1 }}>
                       <Text
                         style={{
-                          fontSize: 13,
-                          color: secondaryTextColor,
-                          marginTop: 2,
-                          lineHeight: 18,
+                          fontSize: 15,
+                          fontWeight: '600',
+                          color: inputTextColor,
+                          lineHeight: 20,
                         }}
                         numberOfLines={1}
                       >
-                        {item.structured_formatting.secondary_text}
+                        {item.structured_formatting?.main_text || item.description}
                       </Text>
-                    )}
+                      {item.structured_formatting?.secondary_text && (
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                            marginTop: 2,
+                            lineHeight: 18,
+                          }}
+                          numberOfLines={1}
+                        >
+                          {item.structured_formatting.secondary_text}
+                        </Text>
+                      )}
+                    </View>
                   </View>
-
-                  {/* Chevron - for visual indication */}
-                  <MaterialIcons
-                    name="chevron-right"
-                    size={20}
-                    color={secondaryTextColor}
-                    style={{ marginLeft: 8 }}
-                  />
                 </Pressable>
               ))}
             </ScrollView>

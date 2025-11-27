@@ -214,15 +214,14 @@ export default function ExpertOnboardingScreen() {
         </Text>
         <TouchableOpacity
           onPress={() => setShowBusinessTypePicker(true)}
-          className={`flex-row items-center justify-between p-4 rounded-xl border-2 ${
-            formData.businessType
+          className={`flex-row items-center justify-between p-4 rounded-xl border-2 ${formData.businessType
               ? 'border-primary-500 bg-primary-500/5'
               : errors.businessType
-              ? 'border-red-500'
-              : isDark
-              ? 'border-slate-700 bg-slate-800'
-              : 'border-slate-200 bg-white'
-          }`}
+                ? 'border-red-500'
+                : isDark
+                  ? 'border-slate-700 bg-slate-800'
+                  : 'border-slate-200 bg-white'
+            }`}
         >
           <View className="flex-row items-center flex-1">
             <MaterialIcons
@@ -231,15 +230,14 @@ export default function ExpertOnboardingScreen() {
               color={formData.businessType ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
             />
             <Text
-              className={`ml-3 ${
-                formData.businessType
+              className={`ml-3 ${formData.businessType
                   ? isDark
                     ? 'text-white'
                     : 'text-slate-900'
                   : isDark
-                  ? 'text-slate-400'
-                  : 'text-slate-400'
-              }`}
+                    ? 'text-slate-400'
+                    : 'text-slate-400'
+                }`}
             >
               {formData.businessType
                 ? BusinessTypes[formData.businessType as keyof typeof BusinessTypes]
@@ -289,11 +287,10 @@ export default function ExpertOnboardingScreen() {
           multiline
           numberOfLines={4}
           maxLength={500}
-          className={`p-4 rounded-xl border-2 text-base min-h-[120px] ${
-            isDark
+          className={`p-4 rounded-xl border-2 text-base min-h-[120px] ${isDark
               ? 'border-slate-700 bg-slate-800 text-white'
               : 'border-slate-200 bg-white text-slate-900'
-          }`}
+            }`}
           placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
           textAlignVertical="top"
         />
@@ -344,9 +341,8 @@ export default function ExpertOnboardingScreen() {
                 const newValue = Math.max(5, (formData.serviceRadiusKm || 25) - 5);
                 updateFormData({ serviceRadiusKm: newValue });
               }}
-              className={`h-10 w-10 rounded-full items-center justify-center ${
-                isDark ? 'bg-slate-700' : 'bg-slate-200'
-              }`}
+              className={`h-10 w-10 rounded-full items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'
+                }`}
             >
               <MaterialIcons name="remove" size={24} color={isDark ? '#FFFFFF' : '#374151'} />
             </TouchableOpacity>
@@ -371,9 +367,8 @@ export default function ExpertOnboardingScreen() {
                 const newValue = Math.min(100, (formData.serviceRadiusKm || 25) + 5);
                 updateFormData({ serviceRadiusKm: newValue });
               }}
-              className={`h-10 w-10 rounded-full items-center justify-center ${
-                isDark ? 'bg-slate-700' : 'bg-slate-200'
-              }`}
+              className={`h-10 w-10 rounded-full items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'
+                }`}
             >
               <MaterialIcons name="add" size={24} color={isDark ? '#FFFFFF' : '#374151'} />
             </TouchableOpacity>
@@ -414,22 +409,20 @@ export default function ExpertOnboardingScreen() {
             <TouchableOpacity
               key={key}
               onPress={() => toggleSpecialty(key)}
-              className={`px-4 py-3 rounded-xl border-2 ${
-                isSelected
+              className={`px-4 py-3 rounded-xl border-2 ${isSelected
                   ? 'border-primary-500 bg-primary-500/10'
                   : isDark
-                  ? 'border-slate-700 bg-slate-800'
-                  : 'border-slate-200 bg-white'
-              }`}
+                    ? 'border-slate-700 bg-slate-800'
+                    : 'border-slate-200 bg-white'
+                }`}
             >
               <View className="flex-row items-center">
                 {isSelected && (
                   <MaterialIcons name="check-circle" size={18} color="#3B82F6" style={{ marginRight: 6 }} />
                 )}
                 <Text
-                  className={`font-medium ${
-                    isSelected ? 'text-primary-500' : isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
+                  className={`font-medium ${isSelected ? 'text-primary-500' : isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}
                 >
                   {label}
                 </Text>
@@ -493,9 +486,8 @@ export default function ExpertOnboardingScreen() {
                   className={`w-12 h-6 rounded-full ${hours?.isOpen ? 'bg-green-500' : 'bg-slate-400'}`}
                 >
                   <View
-                    className={`w-5 h-5 bg-white rounded-full m-0.5 ${
-                      hours?.isOpen ? 'ml-auto mr-0.5' : ''
-                    }`}
+                    className={`w-5 h-5 bg-white rounded-full m-0.5 ${hours?.isOpen ? 'ml-auto mr-0.5' : ''
+                      }`}
                   />
                 </TouchableOpacity>
               </View>
@@ -510,11 +502,10 @@ export default function ExpertOnboardingScreen() {
                     value={hours.openTime || ''}
                     onChangeText={(value) => updateDayHours(day.key, { openTime: value })}
                     placeholder="08:00"
-                    className={`px-3 py-2 rounded-lg border ${
-                      isDark
+                    className={`px-3 py-2 rounded-lg border ${isDark
                         ? 'border-slate-600 bg-slate-700 text-white'
                         : 'border-slate-300 bg-white text-slate-900'
-                    }`}
+                      }`}
                     placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                   />
                 </View>
@@ -527,11 +518,10 @@ export default function ExpertOnboardingScreen() {
                     value={hours.closeTime || ''}
                     onChangeText={(value) => updateDayHours(day.key, { closeTime: value })}
                     placeholder="18:00"
-                    className={`px-3 py-2 rounded-lg border ${
-                      isDark
+                    className={`px-3 py-2 rounded-lg border ${isDark
                         ? 'border-slate-600 bg-slate-700 text-white'
                         : 'border-slate-300 bg-white text-slate-900'
-                    }`}
+                      }`}
                     placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                   />
                 </View>
@@ -543,23 +533,21 @@ export default function ExpertOnboardingScreen() {
 
       <TouchableOpacity
         onPress={() => updateFormData({ acceptsEmergency: !formData.acceptsEmergency })}
-        className={`p-4 rounded-xl border-2 ${
-          formData.acceptsEmergency
+        className={`p-4 rounded-xl border-2 ${formData.acceptsEmergency
             ? 'border-orange-500 bg-orange-500/10'
             : isDark
-            ? 'border-slate-700 bg-slate-800'
-            : 'border-slate-200 bg-white'
-        }`}
+              ? 'border-slate-700 bg-slate-800'
+              : 'border-slate-200 bg-white'
+          }`}
       >
         <View className="flex-row items-center">
           <View
-            className={`w-6 h-6 rounded-md border-2 mr-3 items-center justify-center ${
-              formData.acceptsEmergency
+            className={`w-6 h-6 rounded-md border-2 mr-3 items-center justify-center ${formData.acceptsEmergency
                 ? 'bg-orange-500 border-orange-500'
                 : isDark
-                ? 'border-slate-600'
-                : 'border-slate-300'
-            }`}
+                  ? 'border-slate-600'
+                  : 'border-slate-300'
+              }`}
           >
             {formData.acceptsEmergency && (
               <MaterialIcons name="check" size={16} color="#FFFFFF" />
@@ -643,7 +631,7 @@ export default function ExpertOnboardingScreen() {
         onPress={handleComplete}
         loading={loading}
         fullWidth
-        icon={<MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />}
+        icon="arrow-forward"
       />
     </View>
   );
@@ -722,9 +710,8 @@ export default function ExpertOnboardingScreen() {
               <View className="flex-row gap-3">
                 <TouchableOpacity
                   onPress={() => setStep(5)}
-                  className={`flex-1 h-12 rounded-xl items-center justify-center ${
-                    isDark ? 'bg-slate-800' : 'bg-slate-200'
-                  }`}
+                  className={`flex-1 h-12 rounded-xl items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-200'
+                    }`}
                 >
                   <Text className={isDark ? 'text-slate-300' : 'text-slate-700'}>
                     Skip for now
@@ -783,18 +770,16 @@ export default function ExpertOnboardingScreen() {
                       updateFormData({ businessType: key });
                       setShowBusinessTypePicker(false);
                     }}
-                    className={`flex-row items-center p-4 rounded-xl mb-2 ${
-                      isSelected
+                    className={`flex-row items-center p-4 rounded-xl mb-2 ${isSelected
                         ? 'bg-primary-500/10 border-2 border-primary-500'
                         : isDark
-                        ? 'bg-slate-800'
-                        : 'bg-slate-50'
-                    }`}
+                          ? 'bg-slate-800'
+                          : 'bg-slate-50'
+                      }`}
                   >
                     <View
-                      className={`h-10 w-10 rounded-full items-center justify-center mr-4 ${
-                        isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
-                      }`}
+                      className={`h-10 w-10 rounded-full items-center justify-center mr-4 ${isSelected ? 'bg-primary-500' : isDark ? 'bg-slate-700' : 'bg-slate-200'
+                        }`}
                     >
                       <MaterialIcons
                         name="business"
@@ -803,13 +788,12 @@ export default function ExpertOnboardingScreen() {
                       />
                     </View>
                     <Text
-                      className={`flex-1 font-medium ${
-                        isSelected
+                      className={`flex-1 font-medium ${isSelected
                           ? 'text-primary-500'
                           : isDark
-                          ? 'text-white'
-                          : 'text-slate-900'
-                      }`}
+                            ? 'text-white'
+                            : 'text-slate-900'
+                        }`}
                     >
                       {label}
                     </Text>
