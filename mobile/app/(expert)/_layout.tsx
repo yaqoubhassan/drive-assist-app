@@ -89,8 +89,14 @@ export default function ExpertLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
-          // Reset the profile stack when navigating away to prevent stale state
-          unmountOnBlur: true,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Always navigate to profile index when tab is pressed
+            // This prevents showing stale nested screens (like documents)
+            e.preventDefault();
+            router.navigate('/(expert)/profile');
+          },
         }}
       />
     </Tabs>
