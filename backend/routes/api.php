@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\QuizController;
 use App\Http\Controllers\Api\V1\RoadSignController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\VehicleController;
+use App\Http\Controllers\Api\V1\VideoController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -67,6 +68,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/categories', [ArticleController::class, 'categories']);
         Route::get('/categories/{slug}', [ArticleController::class, 'byCategory']);
         Route::get('/{slug}', [ArticleController::class, 'show']);
+    });
+
+    // Public Videos (Learning)
+    Route::prefix('videos')->group(function () {
+        Route::get('/', [VideoController::class, 'index']);
+        Route::get('/categories', [VideoController::class, 'categories']);
+        Route::get('/featured', [VideoController::class, 'featured']);
+        Route::get('/categories/{slug}', [VideoController::class, 'byCategory']);
+        Route::get('/{slug}', [VideoController::class, 'show']);
     });
 
     // Public Quiz Routes

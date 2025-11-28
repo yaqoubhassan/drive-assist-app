@@ -159,6 +159,15 @@ export const apiConfig = {
       history: '/quiz/history',
     },
 
+    // Videos (Learning)
+    videos: {
+      list: '/videos',
+      categories: '/videos/categories',
+      featured: '/videos/featured',
+      byCategory: (slug: string) => `/videos/categories/${slug}`,
+      show: (slug: string) => `/videos/${slug}`,
+    },
+
     // Maintenance
     maintenance: {
       types: '/maintenance-types',

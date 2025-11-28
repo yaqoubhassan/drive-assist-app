@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ArticleSeeder::class,
             QuizQuestionSeeder::class,
             PackageSeeder::class,
+            VideoResourceSeeder::class,
         ]);
 
         // Create test users in non-production environments
