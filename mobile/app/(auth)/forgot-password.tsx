@@ -1,20 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../src/context/ThemeContext';
-import { useAuth } from '../../src/context/AuthContext';
-import { useAlert } from '../../src/context/AlertContext';
 import { Button, Input } from '../../src/components/common';
+import { useAlert } from '../../src/context/AlertContext';
+import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const CODE_LENGTH = 6;
 
@@ -174,9 +174,9 @@ export default function ForgotPasswordScreen() {
 
   const getPasswordStrength = () => {
     if (!password) return null;
-    if (password.length < 6) return { label: 'Weak', color: '#EF4444', width: '33%' };
-    if (password.length < 10) return { label: 'Medium', color: '#F59E0B', width: '66%' };
-    return { label: 'Strong', color: '#10B981', width: '100%' };
+    if (password.length < 6) return { label: 'Weak', color: '#EF4444', width: 33 };
+    if (password.length < 10) return { label: 'Medium', color: '#F59E0B', width: 66 };
+    return { label: 'Strong', color: '#10B981', width: 100 };
   };
 
   const passwordStrength = getPasswordStrength();
@@ -188,9 +188,8 @@ export default function ForgotPasswordScreen() {
           <MaterialIcons name="lock-reset" size={40} color="#3B82F6" />
         </View>
         <Text
-          className={`text-2xl font-bold text-center mb-2 ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}
+          className={`text-2xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+            }`}
         >
           Forgot Password?
         </Text>
@@ -233,9 +232,8 @@ export default function ForgotPasswordScreen() {
           <MaterialIcons name="dialpad" size={40} color="#3B82F6" />
         </View>
         <Text
-          className={`text-2xl font-bold text-center mb-2 ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}
+          className={`text-2xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+            }`}
         >
           Enter Reset Code
         </Text>
@@ -251,21 +249,20 @@ export default function ForgotPasswordScreen() {
         {code.map((digit, index) => (
           <TextInput
             key={index}
-            ref={(ref) => (inputRefs.current[index] = ref)}
+            ref={(ref) => { inputRefs.current[index] = ref; }}
             value={digit}
             onChangeText={(value) => handleCodeChange(index, value)}
             onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
             keyboardType="number-pad"
             maxLength={index === 0 ? CODE_LENGTH : 1}
-            className={`h-14 w-12 rounded-xl text-center text-2xl font-bold border-2 ${
-              digit
-                ? 'border-primary-500 bg-primary-500/10'
-                : errors.code
+            className={`h-14 w-12 rounded-xl text-center text-2xl font-bold border-2 ${digit
+              ? 'border-primary-500 bg-primary-500/10'
+              : errors.code
                 ? 'border-red-500'
                 : isDark
-                ? 'border-slate-700 bg-slate-800'
-                : 'border-slate-300 bg-white'
-            } ${isDark ? 'text-white' : 'text-slate-900'}`}
+                  ? 'border-slate-700 bg-slate-800'
+                  : 'border-slate-300 bg-white'
+              } ${isDark ? 'text-white' : 'text-slate-900'}`}
             selectionColor="#3B82F6"
           />
         ))}
@@ -312,9 +309,8 @@ export default function ForgotPasswordScreen() {
           <MaterialIcons name="check-circle" size={40} color="#10B981" />
         </View>
         <Text
-          className={`text-2xl font-bold text-center mb-2 ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}
+          className={`text-2xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+            }`}
         >
           Create New Password
         </Text>
@@ -347,7 +343,7 @@ export default function ForgotPasswordScreen() {
                 className="h-full rounded-full"
                 style={{
                   backgroundColor: passwordStrength.color,
-                  width: passwordStrength.width,
+                  width: `${passwordStrength.width}%`,
                 }}
               />
             </View>
