@@ -105,12 +105,11 @@ class DatabaseSeeder extends Seeder
                 'whatsapp_number' => '+233200000002',
                 'experience_years' => 10,
                 'rating' => 4.5,
-                'total_reviews' => 25,
-                'total_jobs' => 150,
+                'rating_count' => 25,
+                'jobs_completed' => 150,
                 'kyc_status' => 'approved',
                 'free_leads_remaining' => 4,
                 'is_available' => true,
-                'is_verified' => true,
             ]
         );
 
