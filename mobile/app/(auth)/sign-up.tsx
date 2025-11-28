@@ -226,10 +226,10 @@ export default function SignUpScreen() {
                 placeholder="XX XXX XXXX"
                 defaultCountryCode="GH"
                 value={phone}
-                onChangeText={setPhone}
-                onChangeFormattedText={(text) => {
-                  // This gives us the full formatted number with country code
+                onChangeFormattedText={(formattedText) => {
+                  // Save the full formatted number with country code
                   // e.g., +233249952818
+                  setPhone(formattedText);
                 }}
               />
 

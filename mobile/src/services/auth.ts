@@ -364,8 +364,8 @@ export const authService = {
   /**
    * Verify OTP code
    */
-  async verifyOtp(email: string, otp: string): Promise<boolean> {
-    const response = await api.post(apiConfig.endpoints.auth.verifyOtp, { email, otp });
+  async verifyOtp(email: string, otp: string, type: 'email_verification' | 'password_reset' = 'email_verification'): Promise<boolean> {
+    const response = await api.post(apiConfig.endpoints.auth.verifyOtp, { email, otp, type });
 
     if (!response.success) {
       throw new Error(response.message || 'Invalid OTP');
