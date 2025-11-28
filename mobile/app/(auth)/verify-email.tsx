@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
+import { useAlert } from '../../src/context/AlertContext';
 import { Button } from '../../src/components/common';
 
 const CODE_LENGTH = 6;
@@ -21,6 +21,7 @@ export default function VerifyEmailScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, verifyEmail, resendVerificationCode, isEmailVerified, userType } = useAuth();
+  const { showInfo, showError } = useAlert();
 
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
@@ -123,9 +124,9 @@ export default function VerifyEmailScreen() {
     try {
       await resendVerificationCode();
       setCountdown(60);
-      Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
+      showInfo('Code Sent', 'A new verification code has been sent to your email.');
     } catch (err) {
-      Alert.alert('Error', 'Failed to resend code. Please try again.');
+      showError('Error', 'Failed to resend code. Please try again.');
     } finally {
       setResending(false);
     }

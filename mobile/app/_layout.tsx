@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AuthProvider } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { AlertProvider } from '../src/context/AlertContext';
 
 import '../global.css';
 
@@ -50,7 +51,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <RootLayoutNav />
+            <AlertProvider>
+              <RootLayoutNav />
+            </AlertProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

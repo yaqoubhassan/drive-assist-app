@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Button, Input, Avatar, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user } = useAuth();
+  const { showWarning, showConfirm } = useAlert();
 
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -24,7 +26,7 @@ export default function EditProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your photos to change your profile picture.');
+      showWarning('Permission Required', 'Please allow access to your photos to change your profile picture.');
       return;
     }
 
@@ -127,14 +129,14 @@ export default function EditProfileScreen() {
         {/* Delete Account */}
         <View className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700">
           <TouchableOpacity
-            onPress={() => Alert.alert(
-              'Delete Account',
-              'Are you sure you want to delete your account? This action cannot be undone.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => { } },
-              ]
-            )}
+            onPress={() => showConfirm({
+              title: 'Delete Account',
+              message: 'Are you sure you want to delete your account? This action cannot be undone.',
+              variant: 'danger',
+              confirmLabel: 'Delete',
+              cancelLabel: 'Cancel',
+              onConfirm: () => { },
+            })}
           >
             <Text className="text-red-500 font-semibold text-center">Delete Account</Text>
           </TouchableOpacity>

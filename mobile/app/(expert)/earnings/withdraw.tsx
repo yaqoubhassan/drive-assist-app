@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Card, Button, Input } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
@@ -36,6 +37,7 @@ const quickAmounts = [500, 1000, 2000, 5000];
 export default function WithdrawScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showError, showSuccess } = useAlert();
   const [amount, setAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('momo');
   const [processing, setProcessing] = useState(false);
@@ -57,12 +59,12 @@ export default function WithdrawScreen() {
     const withdrawAmount = parseInt(amount);
 
     if (!withdrawAmount || withdrawAmount < minWithdrawal) {
-      Alert.alert('Invalid Amount', `Minimum withdrawal is ${formatCurrency(minWithdrawal)}`);
+      showError('Invalid Amount', `Minimum withdrawal is ${formatCurrency(minWithdrawal)}`);
       return;
     }
 
     if (withdrawAmount > availableBalance) {
-      Alert.alert('Insufficient Balance', 'You don\'t have enough balance for this withdrawal.');
+      showError('Insufficient Balance', 'You don\'t have enough balance for this withdrawal.');
       return;
     }
 
@@ -70,10 +72,10 @@ export default function WithdrawScreen() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setProcessing(false);
 
-    Alert.alert(
+    showSuccess(
       'Withdrawal Initiated',
       `${formatCurrency(withdrawAmount)} will be sent to your ${withdrawMethods.find((m) => m.id === selectedMethod)?.name} account within 24 hours.`,
-      [{ text: 'OK', onPress: () => router.back() }]
+      () => router.back()
     );
   };
 

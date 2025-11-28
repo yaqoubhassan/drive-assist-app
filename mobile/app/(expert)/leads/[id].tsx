@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Card, Avatar, Badge, Button } from '../../../src/components/common';
 
 const leadData: Record<string, {
@@ -50,6 +51,7 @@ export default function LeadDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showSuccess, showConfirm } = useAlert();
   const [accepting, setAccepting] = useState(false);
 
   const lead = leadData[id || '1'] || leadData['1'];
@@ -79,26 +81,22 @@ export default function LeadDetailScreen() {
     setAccepting(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setAccepting(false);
-    Alert.alert(
+    showSuccess(
       'Lead Accepted',
       'You can now contact the customer and schedule the job.',
-      [{ text: 'OK', onPress: () => router.push('/(expert)/jobs') }]
+      () => router.push('/(expert)/jobs')
     );
   };
 
   const handleDecline = () => {
-    Alert.alert(
-      'Decline Lead',
-      'Are you sure you want to decline this lead?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: () => router.back(),
-        },
-      ]
-    );
+    showConfirm({
+      title: 'Decline Lead',
+      message: 'Are you sure you want to decline this lead?',
+      variant: 'danger',
+      confirmLabel: 'Decline',
+      cancelLabel: 'Cancel',
+      onConfirm: () => router.back(),
+    });
   };
 
   return (
