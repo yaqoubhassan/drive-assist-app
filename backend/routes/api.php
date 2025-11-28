@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\KycController;
 use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\MessageController;
+use App\Http\Controllers\Api\V1\BroadcastController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +124,27 @@ Route::prefix('v1')->group(function () {
         Route::post('articles/{id}/like', [ArticleController::class, 'toggleLike']);
         Route::post('articles/{id}/bookmark', [ArticleController::class, 'toggleBookmark']);
         Route::get('articles/bookmarked', [ArticleController::class, 'bookmarked']);
+
+        // ===========================================
+        // Broadcasting Authentication
+        // ===========================================
+
+        Route::post('broadcasting/auth', [BroadcastController::class, 'authenticate']);
+
+        // ===========================================
+        // Messaging Routes (Real-time Chat)
+        // ===========================================
+
+        Route::prefix('messages')->group(function () {
+            Route::get('/conversations', [MessageController::class, 'conversations']);
+            Route::post('/conversations', [MessageController::class, 'getOrCreateConversation']);
+            Route::get('/conversations/{id}', [MessageController::class, 'messages']);
+            Route::post('/conversations/{id}', [MessageController::class, 'sendMessage']);
+            Route::post('/conversations/{id}/read', [MessageController::class, 'markAsRead']);
+            Route::post('/conversations/{id}/typing', [MessageController::class, 'typing']);
+            Route::get('/unread-count', [MessageController::class, 'unreadCount']);
+            Route::delete('/{id}', [MessageController::class, 'deleteMessage']);
+        });
 
         // ===========================================
         // Driver Routes

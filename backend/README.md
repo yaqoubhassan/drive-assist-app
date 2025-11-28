@@ -12,6 +12,8 @@ A Laravel 12 REST API backend for the DriveAssist mobile application - a vehicle
 - **Road Safety**: Road signs library and driving quizzes
 - **Maintenance Tracking**: Vehicle maintenance reminders and logs
 - **File Storage**: Local storage with S3 compatibility for production
+- **Real-time Chat**: WebSocket-powered messaging between drivers and experts
+- **Live Notifications**: Real-time notifications via Laravel Reverb
 
 ## Requirements
 
@@ -141,6 +143,32 @@ FREE_DIAGNOSES_FOR_GUESTS=3   # Free diagnoses for guests
 FREE_DIAGNOSES_FOR_DRIVERS=5  # Free diagnoses for registered drivers
 ```
 
+### Real-time (Laravel Reverb)
+
+Configure WebSocket server in `.env`:
+
+```env
+BROADCAST_CONNECTION=reverb
+
+# Reverb Server Configuration
+REVERB_APP_ID=driveassist
+REVERB_APP_KEY=your-reverb-key
+REVERB_APP_SECRET=your-reverb-secret
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+# Server binding
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=8080
+```
+
+For production with SSL:
+```env
+REVERB_SCHEME=https
+REVERB_PORT=443
+```
+
 ## Queue Workers
 
 For background job processing:
@@ -150,6 +178,21 @@ php artisan queue:work
 ```
 
 For production, use Supervisor to manage queue workers.
+
+## WebSocket Server (Reverb)
+
+Start the Reverb WebSocket server:
+
+```bash
+php artisan reverb:start
+```
+
+For production with verbose logging:
+```bash
+php artisan reverb:start --debug
+```
+
+The WebSocket server will be available at `ws://localhost:8080`
 
 ## API Endpoints Overview
 
@@ -190,10 +233,33 @@ For production, use Supervisor to manage queue workers.
 |--------|----------|-------------|
 | POST | `/api/v1/diagnoses/guest` | Guest diagnosis (limited) |
 
+### Messaging Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/messages/conversations` | List conversations |
+| POST | `/api/v1/messages/conversations` | Get/create conversation |
+| GET | `/api/v1/messages/conversations/{id}` | Get messages |
+| POST | `/api/v1/messages/conversations/{id}` | Send message |
+| POST | `/api/v1/messages/conversations/{id}/read` | Mark as read |
+| POST | `/api/v1/messages/conversations/{id}/typing` | Typing indicator |
+| GET | `/api/v1/messages/unread-count` | Total unread count |
+
+### Broadcasting Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/broadcasting/auth` | WebSocket auth (Sanctum) |
+
 ## Project Structure
 
 ```
 app/
+├── Events/                    # Broadcast events
+│   ├── NewMessageEvent.php    # New chat message
+│   ├── MessageReadEvent.php   # Message read receipts
+│   ├── UserTypingEvent.php    # Typing indicators
+│   ├── NewLeadEvent.php       # New lead notification
+│   ├── DiagnosisUpdatedEvent.php
+│   └── UserNotificationEvent.php
 ├── Http/
 │   ├── Controllers/Api/V1/    # API Controllers
 │   ├── Middleware/            # Custom middleware
@@ -210,6 +276,11 @@ app/
 database/
 ├── migrations/                # Database migrations
 └── seeders/                   # Database seeders
+
+routes/
+├── api.php                    # API routes
+├── channels.php               # Broadcast channel authorization
+└── console.php                # Artisan commands
 ```
 
 ## Testing
@@ -262,7 +333,55 @@ The seeders populate:
 6. Run `php artisan config:cache`
 7. Run `php artisan route:cache`
 8. Set up Supervisor for queue workers
-9. Configure SSL/HTTPS
+9. Set up Supervisor for Reverb WebSocket server
+10. Configure SSL/HTTPS (also for WebSocket via wss://)
+
+### Supervisor Configuration for Reverb
+
+```ini
+[program:reverb]
+command=php /path/to/artisan reverb:start
+autostart=true
+autorestart=true
+user=www-data
+redirect_stderr=true
+stdout_logfile=/var/log/reverb.log
+```
+
+## React Native Integration
+
+For React Native Expo apps, use `pusher-js` to connect to Reverb:
+
+```javascript
+import Pusher from 'pusher-js/react-native';
+
+const pusher = new Pusher('your-reverb-key', {
+  wsHost: 'your-domain.com',
+  wsPort: 8080,
+  wssPort: 443,
+  forceTLS: true,
+  disableStats: true,
+  enabledTransports: ['ws', 'wss'],
+  authEndpoint: 'https://your-api.com/api/v1/broadcasting/auth',
+  auth: {
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  },
+});
+
+// Subscribe to private channel
+const channel = pusher.subscribe('private-user.123');
+channel.bind('notification', (data) => {
+  console.log('Notification received:', data);
+});
+
+// Subscribe to conversation
+const chatChannel = pusher.subscribe('private-conversation.1');
+chatChannel.bind('message.new', (data) => {
+  console.log('New message:', data);
+});
+```
 
 ## License
 
