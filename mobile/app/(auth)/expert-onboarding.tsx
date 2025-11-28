@@ -7,7 +7,6 @@ import {
   Platform,
   ScrollView,
   TextInput,
-  Alert,
   Modal,
   Pressable,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
+import { useAlert } from '../../src/context/AlertContext';
 import { Button, Input, AddressAutocomplete, LocationData, PhoneNumberInput } from '../../src/components/common';
 import {
   ExpertOnboardingData,
@@ -51,6 +51,7 @@ export default function ExpertOnboardingScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, completeExpertOnboarding, isExpertOnboardingComplete, isEmailVerified } = useAuth();
+  const { showError } = useAlert();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -147,7 +148,7 @@ export default function ExpertOnboardingScreen() {
       await completeExpertOnboarding(formData);
       router.replace('/(expert)');
     } catch (err) {
-      Alert.alert('Error', 'Failed to complete onboarding. Please try again.');
+      showError('Error', 'Failed to complete onboarding. Please try again.');
     } finally {
       setLoading(false);
     }

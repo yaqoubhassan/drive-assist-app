@@ -2,16 +2,18 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressAutocomplete, Avatar, Button, Card, Input, LocationData, PhoneNumberInput, SuccessModal } from '../../../src/components/common';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 
 export default function EditExpertProfileScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user } = useAuth();
+  const { showWarning } = useAlert();
   const insets = useSafeAreaInsets();
 
   const [fullName, setFullName] = useState(user?.fullName || '');
@@ -40,7 +42,7 @@ export default function EditExpertProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your photos to change your profile picture.');
+      showWarning('Permission Required', 'Please allow access to your photos to change your profile picture.');
       return;
     }
 

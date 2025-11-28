@@ -13,6 +13,7 @@ export interface User {
   avatar?: string;
   userType: UserType;
   location?: Location;
+  emailVerified?: boolean; // Email verification status for all users
   createdAt: string;
   updatedAt: string;
   isGuest?: boolean;
@@ -20,6 +21,7 @@ export interface User {
 
 export interface DriverProfile extends User {
   userType: 'driver';
+  emailVerified?: boolean;
   vehicles: Vehicle[];
   savedExperts: string[]; // Expert IDs
   diagnosisCount: number;

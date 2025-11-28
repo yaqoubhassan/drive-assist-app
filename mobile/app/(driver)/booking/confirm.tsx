@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Card, Avatar, Badge, Button, Input } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
@@ -28,6 +29,7 @@ const serviceOptions = [
 export default function BookingConfirmScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showWarning, showAlert } = useAlert();
   const { expertId, date, time } = useLocalSearchParams<{
     expertId: string;
     date: string;
@@ -43,7 +45,7 @@ export default function BookingConfirmScreen() {
 
   const handleConfirmBooking = async () => {
     if (!selectedService) {
-      Alert.alert('Select Service', 'Please select a service type.');
+      showWarning('Select Service', 'Please select a service type.');
       return;
     }
 
@@ -51,24 +53,19 @@ export default function BookingConfirmScreen() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setConfirming(false);
 
-    Alert.alert(
-      'Booking Confirmed!',
-      `Your appointment with ${expertInfo.name} has been scheduled for ${selectedDate.toLocaleDateString('en-GB', {
+    showAlert({
+      title: 'Booking Confirmed!',
+      message: `Your appointment with ${expertInfo.name} has been scheduled for ${selectedDate.toLocaleDateString('en-GB', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
       })} at ${time}.`,
-      [
-        {
-          text: 'View Booking',
-          onPress: () => router.replace('/(driver)/profile/history'),
-        },
-        {
-          text: 'Done',
-          onPress: () => router.replace('/(driver)'),
-        },
-      ]
-    );
+      variant: 'success',
+      primaryButtonLabel: 'View Booking',
+      onPrimaryPress: () => router.replace('/(driver)/profile/history'),
+      secondaryButtonLabel: 'Done',
+      onSecondaryPress: () => router.replace('/(driver)'),
+    });
   };
 
   return (

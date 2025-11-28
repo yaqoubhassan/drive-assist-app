@@ -89,13 +89,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const user = await authService.getMe();
           const userType = user.userType;
 
+          // Get email verification status - check all user types
+          const isEmailVerified = 'emailVerified' in user ? user.emailVerified === true : false;
+
           setState({
             user,
             userType,
             isAuthenticated: true,
             isLoading: false,
             isOnboardingComplete: await storage.getItem(StorageKeys.ONBOARDING_COMPLETE) === 'true',
-            isEmailVerified: userType === 'expert' ? (user as ExpertProfile).emailVerified : true,
+            isEmailVerified,
             isExpertOnboardingComplete: userType === 'expert' ? (user as ExpertProfile).onboardingComplete : false,
             kycStatus: userType === 'expert' ? (user as ExpertProfile).kycStatus : 'not_started',
             error: null,
@@ -126,8 +129,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
+      // Store email for OTP verification if needed
+      pendingEmail = email;
+
       const { user } = await authService.login({ email, password });
       const userType = user.userType;
+
+      // Get email verification status - check all user types
+      const isEmailVerified = 'emailVerified' in user ? user.emailVerified === true : false;
 
       setState(prev => ({
         ...prev,
@@ -135,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userType,
         isAuthenticated: true,
         isLoading: false,
-        isEmailVerified: userType === 'expert' ? (user as ExpertProfile).emailVerified : true,
+        isEmailVerified,
         isExpertOnboardingComplete: userType === 'expert' ? (user as ExpertProfile).onboardingComplete : false,
         kycStatus: userType === 'expert' ? (user as ExpertProfile).kycStatus : 'not_started',
         error: null,
@@ -170,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userType,
         isAuthenticated: true,
         isLoading: false,
-        isEmailVerified: userType === 'expert' ? false : true, // Experts need to verify email
+        isEmailVerified: false, // All new users need to verify email
         isExpertOnboardingComplete: false,
         kycStatus: userType === 'expert' ? 'not_started' : prev.kycStatus,
         error: null,
@@ -317,7 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('No email address found');
       }
 
-      await authService.resendOtp(email, 'verification');
+      await authService.resendOtp(email, 'email_verification');
     } catch (error) {
       console.error('Resend verification code error:', error);
       throw error;

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Card, Avatar, Badge, Button } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
@@ -11,6 +12,7 @@ export default function JobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showInfo, showSuccess } = useAlert();
   const [status, setStatus] = useState<'scheduled' | 'in_progress' | 'completed'>('scheduled');
   const [updating, setUpdating] = useState(false);
 
@@ -58,10 +60,10 @@ export default function JobDetailScreen() {
 
     if (status === 'scheduled') {
       setStatus('in_progress');
-      Alert.alert('Status Updated', 'Job is now in progress.');
+      showInfo('Status Updated', 'Job is now in progress.');
     } else if (status === 'in_progress') {
       setStatus('completed');
-      Alert.alert('Job Completed', 'Great work! The job has been marked as completed.');
+      showSuccess('Job Completed', 'Great work! The job has been marked as completed.');
     }
 
     setUpdating(false);

@@ -22,7 +22,7 @@ interface SuccessModalProps {
   onSecondaryPress?: () => void;
   autoClose?: boolean;
   autoCloseDelay?: number;
-  variant?: 'success' | 'info' | 'warning';
+  variant?: 'success' | 'info' | 'warning' | 'error';
 }
 
 export function SuccessModal({
@@ -61,6 +61,12 @@ export function SuccessModal({
       bgColor: isDark ? 'bg-yellow-500/20' : 'bg-yellow-100',
       iconColor: '#F59E0B',
       borderColor: isDark ? 'border-yellow-500/30' : 'border-yellow-200',
+    },
+    error: {
+      icon: 'error' as const,
+      bgColor: isDark ? 'bg-red-500/20' : 'bg-red-100',
+      iconColor: '#EF4444',
+      borderColor: isDark ? 'border-red-500/30' : 'border-red-200',
     },
   };
 

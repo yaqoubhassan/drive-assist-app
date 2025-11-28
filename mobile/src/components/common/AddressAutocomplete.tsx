@@ -4,7 +4,6 @@ import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Keyboard,
   Modal,
   Platform,
@@ -19,6 +18,7 @@ import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GhanaConstants } from '../../constants';
 import { useTheme } from '../../context/ThemeContext';
+import { useAlert } from '../../context/AlertContext';
 
 // Get API key from app.config.js extra
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsApiKey || '';
@@ -64,6 +64,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   disabled = false,
 }) => {
   const { isDark } = useTheme();
+  const { showError, showWarning } = useAlert();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const inputRef = useRef<TextInput>(null);
@@ -207,7 +208,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     } catch (err) {
       console.error('Error fetching place details:', err);
-      Alert.alert('Error', 'Failed to get place details. Please try again.');
+      showError('Error', 'Failed to get place details. Please try again.');
     } finally {
       setIsSearching(false);
     }
@@ -227,7 +228,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please allow location access to use this feature.');
+        showWarning('Permission Required', 'Please allow location access to use this feature.');
         return;
       }
 
@@ -293,7 +294,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       setMapRegion(newRegion);
       mapRef.current?.animateToRegion(newRegion, 500);
     } catch (err) {
-      Alert.alert('Error', 'Failed to get your current location. Please try again.');
+      showError('Error', 'Failed to get your current location. Please try again.');
       console.error('Location error:', err);
     } finally {
       setIsLoadingLocation(false);

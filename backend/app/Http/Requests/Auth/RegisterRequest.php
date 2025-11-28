@@ -25,8 +25,9 @@ class RegisterRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['nullable', 'string', 'max:20', 'unique:users'],
+            // Exclude soft-deleted records from uniqueness check
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,NULL,id,deleted_at,NULL'],
+            'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone,NULL,id,deleted_at,NULL'],
             'password' => ['required', 'confirmed', Password::min(8)],
             'role' => ['required', 'in:driver,expert'],
         ];

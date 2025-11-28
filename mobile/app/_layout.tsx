@@ -7,6 +7,8 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AuthProvider } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { AlertProvider } from '../src/context/AlertContext';
+import { DiagnosisProvider } from '../src/context/DiagnosisContext';
 
 import '../global.css';
 
@@ -27,17 +29,18 @@ function RootLayoutNav() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation: 'fade',
+          animationDuration: 200,
           contentStyle: {
             backgroundColor: isDark ? '#111827' : '#FFFFFF',
           },
         }}
       >
-        <Stack.Screen name="index" options={{ animation: 'fade' }} />
+        <Stack.Screen name="index" options={{ animation: 'none' }} />
         <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
         <Stack.Screen name="(driver)" options={{ animation: 'fade' }} />
         <Stack.Screen name="(expert)" options={{ animation: 'fade' }} />
-        <Stack.Screen name="(shared)" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="(shared)" options={{ animation: 'slide_from_right', animationDuration: 250 }} />
       </Stack>
     </>
   );
@@ -49,7 +52,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <RootLayoutNav />
+            <DiagnosisProvider>
+              <AlertProvider>
+                <RootLayoutNav />
+              </AlertProvider>
+            </DiagnosisProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

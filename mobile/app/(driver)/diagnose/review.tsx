@@ -1,21 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useDiagnosis } from '../../../src/context/DiagnosisContext';
 import { Button, Card } from '../../../src/components/common';
 
 export default function DiagnoseReviewScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isDark } = useTheme();
+  const { input, isGuest } = useDiagnosis();
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const { category, description, year, make, model, mileage } = params;
+  // Get data from params or context
+  const category = (params.category as string) || input.category;
+  const description = (params.description as string) || input.description;
+  const isGuestFromParams = params.isGuest === 'true';
+  const isGuestUser = isGuest || isGuestFromParams;
+
+  // Vehicle info for authenticated users
+  const { year, make, model, mileage } = params;
+  const hasVehicle = make || model || year || input.vehicleInfo;
+
+  // Step number depends on whether it's a guest (3 steps) or authenticated (4 steps)
+  const stepText = isGuestUser ? 'Step 3 of 3' : 'Step 4 of 4';
 
   const handleSubmit = () => {
+    // Navigate to loading screen which will handle the actual API call
     router.push('/(driver)/diagnose/loading');
+  };
+
+  const handleClose = () => {
+    // If guest, go back to welcome/index; if authenticated, go to driver dashboard
+    if (isGuestUser) {
+      router.replace('/');
+    } else {
+      router.replace('/(driver)/');
+    }
   };
 
   return (
@@ -38,10 +61,10 @@ export default function DiagnoseReviewScreen() {
         <Text
           className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
         >
-          Step 4 of 4
+          {stepText}
         </Text>
         <TouchableOpacity
-          onPress={() => router.replace('/(driver)/')}
+          onPress={handleClose}
           className="h-12 w-12 items-center justify-center"
         >
           <MaterialIcons
@@ -66,6 +89,40 @@ export default function DiagnoseReviewScreen() {
             Make sure everything looks good
           </Text>
         </View>
+
+        {/* Guest Notice */}
+        {isGuestUser && (
+          <View
+            className={`p-4 rounded-xl mb-4 ${
+              isDark ? 'bg-amber-500/10' : 'bg-amber-50'
+            }`}
+          >
+            <View className="flex-row items-start">
+              <MaterialIcons
+                name="info"
+                size={20}
+                color="#F59E0B"
+                style={{ marginRight: 12, marginTop: 2 }}
+              />
+              <View className="flex-1">
+                <Text
+                  className={`font-semibold ${
+                    isDark ? 'text-amber-200' : 'text-amber-800'
+                  }`}
+                >
+                  Guest Diagnosis
+                </Text>
+                <Text
+                  className={`text-sm mt-1 ${
+                    isDark ? 'text-amber-200/80' : 'text-amber-700'
+                  }`}
+                >
+                  You have limited free diagnoses. Sign up to unlock unlimited diagnoses and expert connections.
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Review Cards */}
         <View className="gap-4 py-4">
@@ -134,8 +191,8 @@ export default function DiagnoseReviewScreen() {
             </View>
           </Card>
 
-          {/* Vehicle */}
-          {(make || model || year) && (
+          {/* Vehicle - Only show for authenticated users with vehicle */}
+          {hasVehicle && !isGuestUser && (
             <Card variant="outlined">
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
@@ -153,15 +210,15 @@ export default function DiagnoseReviewScreen() {
                         isDark ? 'text-white' : 'text-slate-900'
                       }`}
                     >
-                      {year} {make} {model}
+                      {year || input.vehicleInfo?.year} {make || input.vehicleInfo?.make} {model || input.vehicleInfo?.model}
                     </Text>
-                    {mileage && (
+                    {(mileage || input.vehicleInfo?.mileage) && (
                       <Text
                         className={`text-sm ${
                           isDark ? 'text-slate-400' : 'text-slate-500'
                         }`}
                       >
-                        {mileage} km
+                        {mileage || input.vehicleInfo?.mileage} km
                       </Text>
                     )}
                   </View>

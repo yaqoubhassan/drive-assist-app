@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'onboarding_completed',
         'is_active',
         'fcm_token',
+        'email_verified_at',
     ];
 
     /**

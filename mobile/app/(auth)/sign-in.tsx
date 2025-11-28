@@ -42,21 +42,34 @@ export default function SignInScreen() {
     setLoading(true);
     try {
       await signIn(email, password);
-      // The signIn function updates the auth state, so we check the email for expert routing
-      const isExpert = email.includes('expert');
-      if (isExpert) {
-        // Expert login - check their verification/onboarding status
-        // These will be updated by signIn, so we navigate after state update
-        router.replace('/(expert)');
-      } else {
-        router.replace('/(driver)');
-      }
+      // Navigation will be handled by the useEffect below after state updates
     } catch (error) {
       setErrors({ email: 'Invalid email or password' });
-    } finally {
       setLoading(false);
     }
   };
+
+  // Handle navigation after successful sign in based on verification status
+  React.useEffect(() => {
+    if (!loading) return;
+
+    // Check if we just completed sign in (loading was true and now auth state updated)
+    if (isEmailVerified === false && userType) {
+      // User needs to verify email
+      setLoading(false);
+      router.replace('/(auth)/verify-email');
+    } else if (isEmailVerified && userType === 'expert') {
+      setLoading(false);
+      if (!isExpertOnboardingComplete) {
+        router.replace('/(auth)/expert-onboarding');
+      } else {
+        router.replace('/(expert)');
+      }
+    } else if (isEmailVerified && userType === 'driver') {
+      setLoading(false);
+      router.replace('/(driver)');
+    }
+  }, [isEmailVerified, userType, isExpertOnboardingComplete, loading]);
 
   return (
     <SafeAreaView

@@ -4,7 +4,6 @@ import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Keyboard,
   Modal,
   Platform,
@@ -19,6 +18,7 @@ import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GhanaConstants } from '../../constants';
 import { useTheme } from '../../context/ThemeContext';
+import { useAlert } from '../../context/AlertContext';
 
 // Get API key from app.config.js extra
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsApiKey || '';
@@ -62,6 +62,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   title = 'Select Location',
 }) => {
   const { isDark } = useTheme();
+  const { showError, showWarning } = useAlert();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const [loading, setLoading] = useState(false);
@@ -87,7 +88,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showWarning(
           'Permission Required',
           'Please enable location services to use this feature.'
         );
@@ -113,7 +114,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       await reverseGeocode(location.coords.latitude, location.coords.longitude);
     } catch (error) {
       console.log('Error getting location:', error);
-      Alert.alert('Error', 'Failed to get current location. Please try again.');
+      showError('Error', 'Failed to get current location. Please try again.');
     }
     setLoading(false);
   };
@@ -185,7 +186,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       onSelectLocation(selectedLocation);
       onClose();
     } else {
-      Alert.alert('Select Location', 'Please select a location on the map.');
+      showWarning('Select Location', 'Please select a location on the map.');
     }
   };
 
@@ -385,6 +386,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   disabled = false,
 }) => {
   const { isDark } = useTheme();
+  const { showError, showWarning } = useAlert();
   const insets = useSafeAreaInsets();
   const autocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
   const mapRef = useRef<MapView>(null);
@@ -492,7 +494,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please allow location access to use this feature.');
+        showWarning('Permission Required', 'Please allow location access to use this feature.');
         return;
       }
 
@@ -561,7 +563,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       };
       mapRef.current?.animateToRegion(newRegion, 500);
     } catch (err) {
-      Alert.alert('Error', 'Failed to get your current location. Please try again.');
+      showError('Error', 'Failed to get your current location. Please try again.');
       console.error('Location error:', err);
     } finally {
       setIsLoadingLocation(false);

@@ -82,15 +82,33 @@ export default function SignUpScreen() {
         phone: phone || undefined,
         userType,
       });
-      // Experts go through email verification first, then onboarding
-      // Drivers go directly to the app
-      if (userType === 'expert') {
-        router.replace('/(auth)/verify-email');
+      // All users go through email verification first
+      router.replace('/(auth)/verify-email');
+    } catch (error: any) {
+      // Parse backend validation errors
+      const apiErrors: Record<string, string> = {};
+
+      if (error?.errors) {
+        // Backend returns errors in format: { field: ["error message"] }
+        Object.entries(error.errors).forEach(([field, messages]) => {
+          if (Array.isArray(messages) && messages.length > 0) {
+            // Map backend field names to frontend field names
+            const fieldMap: Record<string, string> = {
+              first_name: 'fullName',
+              last_name: 'fullName',
+            };
+            const frontendField = fieldMap[field] || field;
+            apiErrors[frontendField] = messages[0] as string;
+          }
+        });
+      } else if (error?.message) {
+        // Generic error message
+        apiErrors.general = error.message;
       } else {
-        router.replace('/(driver)');
+        apiErrors.general = 'Registration failed. Please try again.';
       }
-    } catch (error) {
-      setErrors({ email: 'Email already in use' });
+
+      setErrors(apiErrors);
     } finally {
       setLoading(false);
     }
@@ -202,6 +220,13 @@ export default function SignUpScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* General Error Message */}
+            {errors.general && (
+              <View className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <Text className="text-red-500 text-sm text-center">{errors.general}</Text>
+              </View>
+            )}
+
             {/* Form */}
             <View className="gap-1">
               <Input
@@ -231,11 +256,12 @@ export default function SignUpScreen() {
                 placeholder="XX XXX XXXX"
                 defaultCountryCode="GH"
                 value={phone}
-                onChangeText={setPhone}
-                onChangeFormattedText={(text) => {
-                  // This gives us the full formatted number with country code
+                onChangeFormattedText={(formattedText) => {
+                  // Save the full formatted number with country code
                   // e.g., +233249952818
+                  setPhone(formattedText);
                 }}
+                error={errors.phone}
               />
 
               <Input

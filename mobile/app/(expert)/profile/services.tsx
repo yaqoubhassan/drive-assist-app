@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAlert } from '../../../src/context/AlertContext';
 import { Card, Button, Input, Badge, ConfirmationModal, SuccessModal } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
 
@@ -79,6 +80,7 @@ const categories = ['All', 'Diagnostics', 'Maintenance', 'Brakes', 'Transmission
 export default function ServicesScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showWarning } = useAlert();
   const [services, setServices] = useState<Service[]>(initialServices);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -132,7 +134,7 @@ export default function ServicesScreen() {
 
   const handleSaveService = () => {
     if (!serviceName || !servicePrice) {
-      Alert.alert('Required Fields', 'Please fill in service name and price.');
+      showWarning('Required Fields', 'Please fill in service name and price.');
       return;
     }
 

@@ -149,6 +149,18 @@ class AuthController extends Controller
             return $this->error('Your account has been deactivated. Please contact support.', 403);
         }
 
+        // If email is not verified, generate and log a new OTP
+        if (!$user->email_verified_at) {
+            $otp = OtpCode::generate($user->email, 'email_verification');
+
+            Log::channel('single')->info('Email Verification OTP (Login - Unverified User)', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'otp' => $otp->code,
+                'expires_at' => $otp->expires_at,
+            ]);
+        }
+
         // Revoke existing tokens (optional - for single device login)
         // $user->tokens()->delete();
 

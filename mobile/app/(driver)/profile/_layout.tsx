@@ -8,15 +8,17 @@ export default function ProfileLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'slide_from_right',
+        animationDuration: 250,
         contentStyle: {
           backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
         },
       }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="edit" />
+      <Stack.Screen name="index" options={{ animation: 'fade' }} />
+      <Stack.Screen name="edit" options={{ animation: 'slide_from_bottom', presentation: 'modal' }} />
       <Stack.Screen name="vehicles" />
-      <Stack.Screen name="vehicle-edit" />
+      <Stack.Screen name="vehicle-edit" options={{ animation: 'slide_from_bottom', presentation: 'modal' }} />
       <Stack.Screen name="settings" />
       <Stack.Screen name="history" />
       <Stack.Screen name="bookmarks" />

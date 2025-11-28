@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useDiagnosis } from '../../../src/context/DiagnosisContext';
 import { Button } from '../../../src/components/common';
 
 type InputTab = 'text' | 'voice';
@@ -33,6 +34,7 @@ export default function DiagnoseDescribeScreen() {
   const router = useRouter();
   const { category } = useLocalSearchParams<{ category: string }>();
   const { isDark } = useTheme();
+  const { updateInput, isGuest } = useDiagnosis();
 
   const [activeTab, setActiveTab] = useState<InputTab>('text');
   const [description, setDescription] = useState('');
@@ -352,15 +354,36 @@ export default function DiagnoseDescribeScreen() {
   };
 
   const handleContinue = () => {
-    router.push({
-      pathname: '/(driver)/diagnose/vehicle',
-      params: {
-        category,
-        description,
-        photos: JSON.stringify(photos),
-        hasVoiceRecording: recordedUri ? 'true' : 'false',
-      },
+    // Save to diagnosis context
+    updateInput({
+      category,
+      description,
+      photos,
+      voiceRecordingUri: recordedUri || undefined,
     });
+
+    // For guests, skip vehicle selection and go directly to review
+    if (isGuest) {
+      router.push({
+        pathname: '/(driver)/diagnose/review',
+        params: {
+          category,
+          description,
+          isGuest: 'true',
+        },
+      });
+    } else {
+      // Authenticated users go to vehicle selection
+      router.push({
+        pathname: '/(driver)/diagnose/vehicle',
+        params: {
+          category,
+          description,
+          photos: JSON.stringify(photos),
+          hasVoiceRecording: recordedUri ? 'true' : 'false',
+        },
+      });
+    }
   };
 
   const handlePickImage = async () => {
