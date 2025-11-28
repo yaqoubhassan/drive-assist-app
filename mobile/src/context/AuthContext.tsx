@@ -1,7 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, UserType, DriverProfile, ExpertProfile, KycStatus, ExpertOnboardingData } from '../types';
 import { AppConstants } from '../constants';
+import {
+  authService,
+  storage,
+  StorageKeys,
+  tokenStorage,
+  clearAuthStorage,
+  getErrorMessage,
+} from '../services';
 
 interface AuthState {
   user: User | DriverProfile | ExpertProfile | null;
@@ -13,6 +20,8 @@ interface AuthState {
   isEmailVerified: boolean;
   isExpertOnboardingComplete: boolean;
   kycStatus: KycStatus;
+  // Error state
+  error: string | null;
 }
 
 interface AuthContextType extends AuthState {
@@ -33,6 +42,9 @@ interface AuthContextType extends AuthState {
   completeExpertOnboarding: (data: ExpertOnboardingData) => Promise<void>;
   // KYC
   updateKycStatus: (status: KycStatus) => Promise<void>;
+  // Utility
+  clearError: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 interface SignUpData {
@@ -45,6 +57,9 @@ interface SignUpData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Store email temporarily for OTP verification
+let pendingEmail: string | null = null;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -56,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isEmailVerified: false,
     isExpertOnboardingComplete: false,
     kycStatus: 'not_started',
+    error: null,
   });
 
   useEffect(() => {
@@ -64,231 +80,136 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthState = async () => {
     try {
-      const [token, userData, userType, onboardingComplete, emailVerified, expertOnboardingComplete, kycStatus] = await Promise.all([
-        AsyncStorage.getItem(AppConstants.storageKeys.authToken),
-        AsyncStorage.getItem(AppConstants.storageKeys.user),
-        AsyncStorage.getItem(AppConstants.storageKeys.userType),
-        AsyncStorage.getItem(AppConstants.storageKeys.onboardingComplete),
-        AsyncStorage.getItem(AppConstants.storageKeys.emailVerified),
-        AsyncStorage.getItem(AppConstants.storageKeys.expertOnboardingComplete),
-        AsyncStorage.getItem(AppConstants.storageKeys.expertKycStatus),
-      ]);
+      // Check for existing token
+      const hasToken = await tokenStorage.hasToken();
 
-      if (token && userData) {
-        const user = JSON.parse(userData);
-        setState({
-          user,
-          userType: (userType as UserType) || 'driver',
-          isAuthenticated: true,
-          isLoading: false,
-          isOnboardingComplete: onboardingComplete === 'true',
-          isEmailVerified: emailVerified === 'true',
-          isExpertOnboardingComplete: expertOnboardingComplete === 'true',
-          kycStatus: (kycStatus as KycStatus) || 'not_started',
-        });
-      } else {
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          isOnboardingComplete: onboardingComplete === 'true',
-        }));
+      if (hasToken) {
+        // Try to get current user from API
+        try {
+          const user = await authService.getMe();
+          const userType = user.userType;
+
+          setState({
+            user,
+            userType,
+            isAuthenticated: true,
+            isLoading: false,
+            isOnboardingComplete: await storage.getItem(StorageKeys.ONBOARDING_COMPLETE) === 'true',
+            isEmailVerified: userType === 'expert' ? (user as ExpertProfile).emailVerified : true,
+            isExpertOnboardingComplete: userType === 'expert' ? (user as ExpertProfile).onboardingComplete : false,
+            kycStatus: userType === 'expert' ? (user as ExpertProfile).kycStatus : 'not_started',
+            error: null,
+          });
+          return;
+        } catch (error) {
+          // Token is invalid, clear it
+          console.warn('Token validation failed:', error);
+          await clearAuthStorage();
+        }
       }
+
+      // No valid token, check for onboarding status
+      const onboardingComplete = await storage.getItem(StorageKeys.ONBOARDING_COMPLETE);
+
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        isOnboardingComplete: onboardingComplete === 'true',
+      }));
     } catch (error) {
       console.error('Error checking auth state:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState(prev => ({ ...prev, isLoading: false, error: getErrorMessage(error) }));
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      // TODO: Replace with actual API call
-      // Simulating API response - check if email ends with @expert for expert login
-      const isExpert = email.includes('expert');
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-      if (isExpert) {
-        const mockExpert: ExpertProfile = {
-          id: '1',
-          email,
-          fullName: 'Kwame Auto Services',
-          phone: '+233 24 123 4567',
-          userType: 'expert',
-          businessName: 'Kwame Auto Services',
-          businessType: 'auto_repair_shop',
-          specialties: ['engine_repair', 'brakes', 'electrical'],
-          services: [],
-          rating: 4.8,
-          reviewCount: 47,
-          yearsExperience: 10,
-          verified: true,
-          certifications: [],
-          hours: {
-            monday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-            tuesday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-            wednesday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-            thursday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-            friday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-            saturday: { isOpen: true, openTime: '09:00', closeTime: '15:00' },
-            sunday: { isOpen: false },
-          },
-          gallery: [],
-          priceRange: 'average',
-          emailVerified: true,
-          onboardingComplete: true,
-          kycStatus: 'approved',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+      const { user } = await authService.login({ email, password });
+      const userType = user.userType;
 
-        await AsyncStorage.setItem(AppConstants.storageKeys.authToken, 'mock_token');
-        await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(mockExpert));
-        await AsyncStorage.setItem(AppConstants.storageKeys.userType, 'expert');
-        await AsyncStorage.setItem(AppConstants.storageKeys.emailVerified, 'true');
-        await AsyncStorage.setItem(AppConstants.storageKeys.expertOnboardingComplete, 'true');
-        await AsyncStorage.setItem(AppConstants.storageKeys.expertKycStatus, 'approved');
-
-        setState(prev => ({
-          ...prev,
-          user: mockExpert,
-          userType: 'expert',
-          isAuthenticated: true,
-          isEmailVerified: true,
-          isExpertOnboardingComplete: true,
-          kycStatus: 'approved',
-        }));
-      } else {
-        const mockUser: DriverProfile = {
-          id: '1',
-          email,
-          fullName: 'Kwame Asante',
-          phone: '+233 24 123 4567',
-          userType: 'driver',
-          vehicles: [],
-          savedExperts: [],
-          diagnosisCount: 12,
-          reviewsGiven: 5,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        await AsyncStorage.setItem(AppConstants.storageKeys.authToken, 'mock_token');
-        await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(mockUser));
-        await AsyncStorage.setItem(AppConstants.storageKeys.userType, mockUser.userType);
-
-        setState(prev => ({
-          ...prev,
-          user: mockUser,
-          userType: mockUser.userType,
-          isAuthenticated: true,
-        }));
-      }
+      setState(prev => ({
+        ...prev,
+        user,
+        userType,
+        isAuthenticated: true,
+        isLoading: false,
+        isEmailVerified: userType === 'expert' ? (user as ExpertProfile).emailVerified : true,
+        isExpertOnboardingComplete: userType === 'expert' ? (user as ExpertProfile).onboardingComplete : false,
+        kycStatus: userType === 'expert' ? (user as ExpertProfile).kycStatus : 'not_started',
+        error: null,
+      }));
     } catch (error) {
       console.error('Sign in error:', error);
+      setState(prev => ({ ...prev, isLoading: false, error: getErrorMessage(error) }));
       throw error;
     }
   };
 
   const signUp = async (data: SignUpData) => {
     try {
-      // TODO: Replace with actual API call
-      if (data.userType === 'expert') {
-        const mockExpert: ExpertProfile = {
-          id: Date.now().toString(),
-          email: data.email,
-          fullName: data.fullName,
-          phone: data.phone,
-          userType: 'expert',
-          businessName: '',
-          specialties: [],
-          services: [],
-          rating: 0,
-          reviewCount: 0,
-          verified: false,
-          certifications: [],
-          hours: {
-            monday: { isOpen: false },
-            tuesday: { isOpen: false },
-            wednesday: { isOpen: false },
-            thursday: { isOpen: false },
-            friday: { isOpen: false },
-            saturday: { isOpen: false },
-            sunday: { isOpen: false },
-          },
-          gallery: [],
-          priceRange: 'average',
-          emailVerified: false,
-          onboardingComplete: false,
-          kycStatus: 'not_started',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-        await AsyncStorage.setItem(AppConstants.storageKeys.authToken, 'mock_token');
-        await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(mockExpert));
-        await AsyncStorage.setItem(AppConstants.storageKeys.userType, 'expert');
-        await AsyncStorage.setItem(AppConstants.storageKeys.emailVerified, 'false');
-        await AsyncStorage.setItem(AppConstants.storageKeys.expertOnboardingComplete, 'false');
-        await AsyncStorage.setItem(AppConstants.storageKeys.expertKycStatus, 'not_started');
+      // Store email for OTP verification
+      pendingEmail = data.email;
 
-        setState(prev => ({
-          ...prev,
-          user: mockExpert,
-          userType: 'expert',
-          isAuthenticated: true,
-          isEmailVerified: false,
-          isExpertOnboardingComplete: false,
-          kycStatus: 'not_started',
-        }));
-      } else {
-        const mockUser: User = {
-          id: Date.now().toString(),
-          email: data.email,
-          fullName: data.fullName,
-          phone: data.phone,
-          userType: data.userType,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+      const { user } = await authService.register({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        phone: data.phone,
+        userType: data.userType,
+      });
 
-        await AsyncStorage.setItem(AppConstants.storageKeys.authToken, 'mock_token');
-        await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(mockUser));
-        await AsyncStorage.setItem(AppConstants.storageKeys.userType, mockUser.userType);
+      const userType = user.userType;
 
-        setState(prev => ({
-          ...prev,
-          user: mockUser,
-          userType: mockUser.userType,
-          isAuthenticated: true,
-        }));
-      }
+      setState(prev => ({
+        ...prev,
+        user,
+        userType,
+        isAuthenticated: true,
+        isLoading: false,
+        isEmailVerified: userType === 'expert' ? false : true, // Experts need to verify email
+        isExpertOnboardingComplete: false,
+        kycStatus: userType === 'expert' ? 'not_started' : prev.kycStatus,
+        error: null,
+      }));
     } catch (error) {
       console.error('Sign up error:', error);
+      setState(prev => ({ ...prev, isLoading: false, error: getErrorMessage(error) }));
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      await AsyncStorage.multiRemove([
-        AppConstants.storageKeys.authToken,
-        AppConstants.storageKeys.user,
-        AppConstants.storageKeys.userType,
-        AppConstants.storageKeys.emailVerified,
-        AppConstants.storageKeys.expertOnboardingComplete,
-        AppConstants.storageKeys.expertKycStatus,
-      ]);
+      setState(prev => ({ ...prev, isLoading: true }));
+
+      await authService.logout();
 
       setState(prev => ({
         ...prev,
         user: null,
         userType: null,
         isAuthenticated: false,
+        isLoading: false,
         isEmailVerified: false,
         isExpertOnboardingComplete: false,
         kycStatus: 'not_started',
+        error: null,
       }));
     } catch (error) {
       console.error('Sign out error:', error);
-      throw error;
+      // Even if API call fails, clear local state
+      setState(prev => ({
+        ...prev,
+        user: null,
+        userType: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      }));
     }
   };
 
@@ -303,13 +224,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date().toISOString(),
       };
 
-      await AsyncStorage.setItem(AppConstants.storageKeys.userType, 'guest');
+      await storage.setItem(StorageKeys.USER_TYPE, 'guest');
 
       setState(prev => ({
         ...prev,
         user: guestUser,
         userType: 'guest',
         isAuthenticated: true,
+        error: null,
       }));
     } catch (error) {
       console.error('Continue as guest error:', error);
@@ -319,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem(AppConstants.storageKeys.onboardingComplete, 'true');
+      await storage.setItem(StorageKeys.ONBOARDING_COMPLETE, 'true');
       setState(prev => ({ ...prev, isOnboardingComplete: true }));
     } catch (error) {
       console.error('Complete onboarding error:', error);
@@ -332,7 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!state.user) return;
 
       const updatedUser = { ...state.user, ...updates, updatedAt: new Date().toISOString() };
-      await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(updatedUser));
+      await storage.setObject(StorageKeys.USER, updatedUser);
 
       setState(prev => ({
         ...prev,
@@ -346,7 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const switchUserType = async (type: UserType) => {
     try {
-      await AsyncStorage.setItem(AppConstants.storageKeys.userType, type);
+      await storage.setItem(StorageKeys.USER_TYPE, type);
       setState(prev => ({ ...prev, userType: type }));
     } catch (error) {
       console.error('Switch user type error:', error);
@@ -357,15 +279,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Email verification methods
   const verifyEmail = async (code: string): Promise<boolean> => {
     try {
-      // TODO: Replace with actual API call
-      // Simulate verification - accept any 6-digit code
-      if (code.length === 6) {
-        await AsyncStorage.setItem(AppConstants.storageKeys.emailVerified, 'true');
+      const email = pendingEmail || state.user?.email;
+      if (!email) {
+        throw new Error('No email address found for verification');
+      }
+
+      const success = await authService.verifyOtp(email, code);
+
+      if (success) {
+        await storage.setItem(StorageKeys.EMAIL_VERIFIED, 'true');
 
         // Update user object
         if (state.user) {
           const updatedUser = { ...state.user, emailVerified: true };
-          await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(updatedUser));
+          await storage.setObject(StorageKeys.USER, updatedUser);
           setState(prev => ({
             ...prev,
             isEmailVerified: true,
@@ -385,9 +312,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendVerificationCode = async () => {
     try {
-      // TODO: Replace with actual API call
-      // Simulate sending verification code
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const email = pendingEmail || state.user?.email;
+      if (!email) {
+        throw new Error('No email address found');
+      }
+
+      await authService.resendOtp(email, 'verification');
     } catch (error) {
       console.error('Resend verification code error:', error);
       throw error;
@@ -397,9 +327,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Password reset methods
   const requestPasswordReset = async (email: string) => {
     try {
-      // TODO: Replace with actual API call
-      // Simulate sending password reset email
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Store email for later steps
+      pendingEmail = email;
+      await authService.forgotPassword(email);
     } catch (error) {
       console.error('Request password reset error:', error);
       throw error;
@@ -408,13 +338,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (code: string, newPassword: string): Promise<boolean> => {
     try {
-      // TODO: Replace with actual API call
-      // Simulate password reset - accept any 6-digit code
-      if (code.length === 6 && newPassword.length >= 8) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return true;
+      const email = pendingEmail;
+      if (!email) {
+        throw new Error('No email address found for password reset');
       }
-      return false;
+
+      const success = await authService.resetPassword(email, code, newPassword);
+
+      if (success) {
+        // Clear pending email
+        pendingEmail = null;
+      }
+
+      return success;
     } catch (error) {
       console.error('Reset password error:', error);
       throw error;
@@ -426,6 +362,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (!state.user || state.userType !== 'expert') return;
 
+      // TODO: Call API to update expert profile when endpoint is ready
+      // For now, update local state
       const updatedUser: ExpertProfile = {
         ...(state.user as ExpertProfile),
         businessName: data.businessName || '',
@@ -443,8 +381,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date().toISOString(),
       };
 
-      await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(updatedUser));
-      await AsyncStorage.setItem(AppConstants.storageKeys.expertOnboardingComplete, 'true');
+      await storage.setObject(StorageKeys.USER, updatedUser);
+      await storage.setItem(StorageKeys.EXPERT_ONBOARDING_COMPLETE, 'true');
 
       setState(prev => ({
         ...prev,
@@ -460,12 +398,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // KYC status
   const updateKycStatus = async (status: KycStatus) => {
     try {
-      await AsyncStorage.setItem(AppConstants.storageKeys.expertKycStatus, status);
+      await storage.setItem(StorageKeys.EXPERT_KYC_STATUS, status);
 
       // Update user object if expert
       if (state.user && state.userType === 'expert') {
         const updatedUser = { ...(state.user as ExpertProfile), kycStatus: status };
-        await AsyncStorage.setItem(AppConstants.storageKeys.user, JSON.stringify(updatedUser));
+        await storage.setObject(StorageKeys.USER, updatedUser);
         setState(prev => ({
           ...prev,
           kycStatus: status,
@@ -476,6 +414,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Update KYC status error:', error);
+      throw error;
+    }
+  };
+
+  const clearError = () => {
+    setState(prev => ({ ...prev, error: null }));
+  };
+
+  const refreshUser = async () => {
+    try {
+      if (!state.isAuthenticated || state.userType === 'guest') return;
+
+      const user = await authService.getMe();
+
+      setState(prev => ({
+        ...prev,
+        user,
+        isEmailVerified: user.userType === 'expert' ? (user as ExpertProfile).emailVerified : true,
+        isExpertOnboardingComplete: user.userType === 'expert' ? (user as ExpertProfile).onboardingComplete : false,
+        kycStatus: user.userType === 'expert' ? (user as ExpertProfile).kycStatus : 'not_started',
+      }));
+    } catch (error) {
+      console.error('Refresh user error:', error);
       throw error;
     }
   };
@@ -497,6 +458,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         completeExpertOnboarding,
         updateKycStatus,
+        clearError,
+        refreshUser,
       }}
     >
       {children}
