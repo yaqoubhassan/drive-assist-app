@@ -1,39 +1,60 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Avatar, Badge, Button } from '../../../src/components/common';
+import { Card, Avatar, Button } from '../../../src/components/common';
+import { expertService, Expert } from '../../../src/services/expert';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const timeSlots = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-  '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM',
-  '4:00 PM', '5:00 PM',
+// Default time slots - in production, these should come from expert's availability
+const defaultTimeSlots = [
+  '08:00', '09:00', '10:00', '11:00',
+  '12:00', '13:00', '14:00', '15:00',
+  '16:00', '17:00',
 ];
-
-const expertInfo = {
-  id: '1',
-  name: 'Emmanuel Auto Services',
-  rating: 4.9,
-  reviews: 127,
-  specialty: 'Engine & Transmission',
-  image: null,
-};
 
 export default function BookingScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { expertId } = useLocalSearchParams<{ expertId: string }>();
+  const params = useLocalSearchParams<{
+    expertId: string;
+    diagnosisId?: string;
+    vehicleId?: string;
+    serviceType?: string;
+  }>();
+
+  const [expert, setExpert] = useState<Expert | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (params.expertId) {
+      fetchExpert();
+    }
+  }, [params.expertId]);
+
+  const fetchExpert = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await expertService.getExpert(params.expertId!);
+      setExpert(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load expert details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getDaysInMonth = (month: number, year: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -48,12 +69,10 @@ export default function BookingScreen() {
     const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
     const days: (number | null)[] = [];
 
-    // Add empty slots for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(null);
     }
 
-    // Add the days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i);
     }
@@ -79,7 +98,7 @@ export default function BookingScreen() {
   const handleDateSelect = (day: number) => {
     if (isDateDisabled(day)) return;
     setSelectedDate(new Date(currentYear, currentMonth, day));
-    setSelectedTime(null); // Reset time when date changes
+    setSelectedTime(null);
   };
 
   const handlePrevMonth = () => {
@@ -104,20 +123,67 @@ export default function BookingScreen() {
     return currentMonth === today.getMonth() && currentYear === today.getFullYear();
   };
 
+  const formatTime = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+    return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  };
+
   const handleContinue = () => {
-    if (selectedDate && selectedTime) {
+    if (selectedDate && selectedTime && expert) {
       router.push({
         pathname: '/(driver)/booking/confirm',
         params: {
-          expertId: expertId || '1',
-          date: selectedDate.toISOString(),
-          time: selectedTime,
+          expertId: expert.id.toString(),
+          date: selectedDate.toISOString().split('T')[0], // YYYY-MM-DD
+          time: selectedTime, // HH:mm
+          diagnosisId: params.diagnosisId || '',
+          vehicleId: params.vehicleId || '',
+          serviceType: params.serviceType || 'diagnostic',
         },
       });
     }
   };
 
   const calendarDays = generateCalendarDays();
+
+  if (loading) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Loading expert details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !expert) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <View className="flex-1 items-center justify-center px-6">
+          <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+          <Text className={`mt-4 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            Failed to load expert
+          </Text>
+          <Text className={`mt-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mt-6 bg-primary-500 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-semibold">Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const profile = expert.profile;
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -143,18 +209,24 @@ export default function BookingScreen() {
         <View className="px-4 py-4">
           <Card variant="default">
             <View className="flex-row items-center">
-              <Avatar size="lg" name={expertInfo.name} />
+              <Avatar
+                size="lg"
+                name={profile?.business_name || expert.full_name}
+                source={expert.avatar ? { uri: expert.avatar } : undefined}
+              />
               <View className="ml-3 flex-1">
                 <Text className={`font-bold text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {expertInfo.name}
+                  {profile?.business_name || expert.full_name}
                 </Text>
-                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {expertInfo.specialty}
-                </Text>
+                {profile?.specializations && profile.specializations.length > 0 && (
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {profile.specializations[0].name}
+                  </Text>
+                )}
                 <View className="flex-row items-center mt-1">
                   <MaterialIcons name="star" size={14} color="#F59E0B" />
                   <Text className={`text-sm ml-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {expertInfo.rating} ({expertInfo.reviews} reviews)
+                    {profile?.rating?.toFixed(1) || '0.0'} ({profile?.total_reviews || 0} reviews)
                   </Text>
                 </View>
               </View>
@@ -218,11 +290,7 @@ export default function BookingScreen() {
                   {day && (
                     <View
                       className={`h-10 w-10 rounded-full items-center justify-center ${
-                        isDateSelected(day)
-                          ? 'bg-primary-500'
-                          : isDateDisabled(day)
-                          ? ''
-                          : ''
+                        isDateSelected(day) ? 'bg-primary-500' : ''
                       }`}
                     >
                       <Text
@@ -255,7 +323,7 @@ export default function BookingScreen() {
               Available Times
             </Text>
             <View className="flex-row flex-wrap gap-3">
-              {timeSlots.map((time) => (
+              {defaultTimeSlots.map((time) => (
                 <TouchableOpacity
                   key={time}
                   onPress={() => setSelectedTime(time)}
@@ -276,7 +344,7 @@ export default function BookingScreen() {
                         : 'text-slate-900'
                     }`}
                   >
-                    {time}
+                    {formatTime(time)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -299,7 +367,7 @@ export default function BookingScreen() {
                       year: 'numeric',
                     })}
                   </Text>
-                  <Text className="text-primary-500 font-semibold">{selectedTime}</Text>
+                  <Text className="text-primary-500 font-semibold">{formatTime(selectedTime)}</Text>
                 </View>
               </View>
             </Card>

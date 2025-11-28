@@ -1,47 +1,79 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAlert } from '../../../src/context/AlertContext';
-import { Card, Avatar, Badge, Button, Input } from '../../../src/components/common';
+import { Card, Avatar, Button, Input } from '../../../src/components/common';
 import { formatCurrency } from '../../../src/constants';
+import { expertService, Expert } from '../../../src/services/expert';
+import { appointmentService, ServiceType } from '../../../src/services/appointment';
 
-const expertInfo = {
-  id: '1',
-  name: 'Emmanuel Auto Services',
-  rating: 4.9,
-  reviews: 127,
-  specialty: 'Engine & Transmission',
-  location: 'East Legon, Accra',
-  phone: '+233 24 123 4567',
-};
-
-const serviceOptions = [
-  { id: '1', name: 'Diagnostic Check', price: 100, duration: '30 min' },
-  { id: '2', name: 'Oil Change', price: 150, duration: '45 min' },
-  { id: '3', name: 'Brake Inspection', price: 80, duration: '30 min' },
-  { id: '4', name: 'Full Service', price: 500, duration: '2-3 hours' },
-  { id: '5', name: 'Custom (Describe below)', price: 0, duration: 'TBD' },
+// Service type options that match backend
+const serviceOptions: Array<{
+  id: ServiceType;
+  name: string;
+  price: number;
+  duration: string;
+  description: string;
+}> = [
+  { id: 'diagnostic', name: 'Diagnostic Check', price: 100, duration: '30-60 min', description: 'Comprehensive vehicle diagnosis' },
+  { id: 'repair', name: 'Repair Service', price: 0, duration: 'Varies', description: 'Fix identified issues' },
+  { id: 'maintenance', name: 'Maintenance Service', price: 150, duration: '1-2 hours', description: 'Regular maintenance and servicing' },
+  { id: 'inspection', name: 'Full Inspection', price: 200, duration: '1-2 hours', description: 'Complete vehicle inspection' },
 ];
 
 export default function BookingConfirmScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const { showWarning, showAlert } = useAlert();
-  const { expertId, date, time } = useLocalSearchParams<{
+  const { showWarning, showAlert, showError } = useAlert();
+  const params = useLocalSearchParams<{
     expertId: string;
     date: string;
     time: string;
+    diagnosisId?: string;
+    vehicleId?: string;
+    serviceType?: string;
   }>();
 
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [expert, setExpert] = useState<Expert | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(
+    (params.serviceType as ServiceType) || null
+  );
   const [notes, setNotes] = useState('');
   const [confirming, setConfirming] = useState(false);
 
-  const selectedDate = date ? new Date(date) : new Date();
+  const selectedDate = params.date ? new Date(params.date) : new Date();
   const service = serviceOptions.find((s) => s.id === selectedService);
+
+  useEffect(() => {
+    if (params.expertId) {
+      fetchExpert();
+    }
+  }, [params.expertId]);
+
+  const fetchExpert = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await expertService.getExpert(params.expertId!);
+      setExpert(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load expert details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+    return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  };
 
   const handleConfirmBooking = async () => {
     if (!selectedService) {
@@ -49,24 +81,88 @@ export default function BookingConfirmScreen() {
       return;
     }
 
-    setConfirming(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setConfirming(false);
+    if (!expert) {
+      showError('Error', 'Expert information not loaded.');
+      return;
+    }
 
-    showAlert({
-      title: 'Booking Confirmed!',
-      message: `Your appointment with ${expertInfo.name} has been scheduled for ${selectedDate.toLocaleDateString('en-GB', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      })} at ${time}.`,
-      variant: 'success',
-      primaryButtonLabel: 'View Booking',
-      onPrimaryPress: () => router.replace('/(driver)/profile/history'),
-      secondaryButtonLabel: 'Done',
-      onSecondaryPress: () => router.replace('/(driver)'),
-    });
+    setConfirming(true);
+    try {
+      const appointmentData = {
+        expert_id: expert.id,
+        scheduled_date: params.date!,
+        scheduled_time: params.time!,
+        service_type: selectedService,
+        description: notes || undefined,
+        diagnosis_id: params.diagnosisId ? parseInt(params.diagnosisId) : undefined,
+        vehicle_id: params.vehicleId ? parseInt(params.vehicleId) : undefined,
+        estimated_cost: service?.price || undefined,
+      };
+
+      await appointmentService.createAppointment(appointmentData);
+
+      const expertName = expert.profile?.business_name || expert.full_name;
+
+      showAlert({
+        title: 'Booking Requested!',
+        message: `Your appointment request with ${expertName} has been sent for ${selectedDate.toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+        })} at ${formatTime(params.time!)}. You'll be notified once it's confirmed.`,
+        variant: 'success',
+        primaryButtonLabel: 'View Appointments',
+        onPrimaryPress: () => router.replace('/(driver)/appointments'),
+        secondaryButtonLabel: 'Done',
+        onSecondaryPress: () => router.replace('/(driver)'),
+      });
+    } catch (err: any) {
+      showError('Booking Failed', err.message || 'Failed to create appointment. Please try again.');
+    } finally {
+      setConfirming(false);
+    }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Loading booking details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (error || !expert) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <View className="flex-1 items-center justify-center px-6">
+          <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+          <Text className={`mt-4 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            Failed to load booking details
+          </Text>
+          <Text className={`mt-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mt-6 bg-primary-500 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-semibold">Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const profile = expert.profile;
+  const expertName = profile?.business_name || expert.full_name;
+  const expertLocation = profile?.address || profile?.city || 'Location not specified';
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -97,15 +193,19 @@ export default function BookingConfirmScreen() {
 
             {/* Expert */}
             <View className="flex-row items-center mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-              <Avatar size="md" name={expertInfo.name} />
+              <Avatar
+                size="md"
+                name={expertName}
+                source={expert.avatar ? { uri: expert.avatar } : undefined}
+              />
               <View className="ml-3 flex-1">
                 <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {expertInfo.name}
+                  {expertName}
                 </Text>
                 <View className="flex-row items-center">
                   <MaterialIcons name="star" size={14} color="#F59E0B" />
                   <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {expertInfo.rating} ({expertInfo.reviews} reviews)
+                    {profile?.rating?.toFixed(1) || '0.0'} ({profile?.total_reviews || 0} reviews)
                   </Text>
                 </View>
               </View>
@@ -136,7 +236,7 @@ export default function BookingConfirmScreen() {
                   </Text>
                 </View>
                 <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {time}
+                  {params.time ? formatTime(params.time) : 'Not selected'}
                 </Text>
               </View>
             </View>
@@ -145,7 +245,7 @@ export default function BookingConfirmScreen() {
             <View className="flex-row items-center">
               <MaterialIcons name="location-on" size={18} color="#10B981" />
               <Text className={`ml-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                {expertInfo.location}
+                {expertLocation}
               </Text>
             </View>
           </Card>
@@ -154,7 +254,7 @@ export default function BookingConfirmScreen() {
         {/* Service Selection */}
         <View className="px-4 pb-4">
           <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Select Service
+            Select Service Type
           </Text>
           <View className="gap-3">
             {serviceOptions.map((option) => (
@@ -174,7 +274,10 @@ export default function BookingConfirmScreen() {
                     <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {option.name}
                     </Text>
-                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <Text className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {option.description}
+                    </Text>
+                    <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       Duration: {option.duration}
                     </Text>
                   </View>

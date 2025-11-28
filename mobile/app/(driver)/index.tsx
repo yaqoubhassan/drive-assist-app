@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   Image, Platform, ScrollView,
   Text,
@@ -8,9 +9,10 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, Chip, IconButton, Button } from '../../src/components/common';
+import { Badge, Card, Chip, IconButton, Button, Avatar } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { appointmentService, Appointment, formatAppointmentDate, formatAppointmentTime, getStatusLabel } from '../../src/services/appointment';
 
 const quickCategories = [
   { id: 'engine', label: 'Engine', icon: 'settings' as const },
@@ -137,9 +139,38 @@ export default function DriverHomeScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, userType } = useAuth();
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [appointmentsCount, setAppointmentsCount] = useState(0);
 
   const isGuest = userType === 'guest';
   const firstName = isGuest ? 'Guest' : (user?.fullName?.split(' ')[0] || 'Driver');
+
+  // Fetch upcoming appointments for authenticated users
+  useEffect(() => {
+    if (!isGuest) {
+      fetchUpcomingAppointments();
+    }
+  }, [isGuest]);
+
+  const fetchUpcomingAppointments = async () => {
+    try {
+      // Fetch upcoming count
+      const countResponse = await appointmentService.getUpcomingCount();
+      setAppointmentsCount(countResponse.count);
+
+      // Fetch pending and confirmed appointments (limit to 3 for home screen)
+      const response = await appointmentService.getAppointments({ status: 'confirmed' });
+      const pendingResponse = await appointmentService.getAppointments({ status: 'pending' });
+
+      const allUpcoming = [...response.data, ...pendingResponse.data]
+        .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+        .slice(0, 3);
+
+      setUpcomingAppointments(allUpcoming);
+    } catch (error) {
+      console.error('Failed to fetch upcoming appointments:', error);
+    }
+  };
 
   // For authenticated users, show mock data
   const recentDiagnoses = mockRecentDiagnoses;
@@ -525,6 +556,77 @@ export default function DriverHomeScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* Upcoming Appointments */}
+        {(upcomingAppointments.length > 0 || appointmentsCount > 0) && (
+          <View className="pt-6">
+            <View className="flex-row items-center justify-between px-4 pb-3">
+              <View className="flex-row items-center">
+                <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Upcoming Appointments
+                </Text>
+                {appointmentsCount > 0 && (
+                  <View className="ml-2 bg-primary-500 px-2 py-0.5 rounded-full">
+                    <Text className="text-white text-xs font-bold">{appointmentsCount}</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(driver)/appointments')}>
+                <Text className="text-primary-500 font-semibold text-sm">View All</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="px-4 gap-3">
+              {upcomingAppointments.length > 0 ? (
+                upcomingAppointments.map((appointment) => {
+                  const expertName = appointment.expert?.profile?.business_name || appointment.expert?.full_name || 'Expert';
+                  return (
+                    <Card
+                      key={appointment.id}
+                      variant="default"
+                      onPress={() => router.push(`/(driver)/appointments/${appointment.id}`)}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <Avatar
+                          size="md"
+                          name={expertName}
+                          source={appointment.expert?.avatar ? { uri: appointment.expert.avatar } : undefined}
+                        />
+                        <View className="flex-1">
+                          <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {expertName}
+                          </Text>
+                          <View className="flex-row items-center mt-1">
+                            <MaterialIcons name="event" size={14} color="#3B82F6" />
+                            <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {formatAppointmentDate(appointment.scheduled_date)} at {formatAppointmentTime(appointment.scheduled_time)}
+                            </Text>
+                          </View>
+                        </View>
+                        <Badge
+                          label={getStatusLabel(appointment.status)}
+                          variant={appointment.status === 'confirmed' ? 'info' : 'warning'}
+                          size="sm"
+                        />
+                      </View>
+                    </Card>
+                  );
+                })
+              ) : (
+                <TouchableOpacity
+                  onPress={() => router.push('/(driver)/appointments')}
+                  className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+                >
+                  <View className="flex-row items-center justify-center">
+                    <MaterialIcons name="event" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
+                    <Text className={`ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      View all appointments
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Recent Diagnoses */}
         <View className="pt-6">

@@ -185,6 +185,25 @@ export const apiConfig = {
       respond: (id: string) => `/expert/reviews/${id}/respond`,
     },
 
+    // Appointments (Driver)
+    appointments: {
+      list: '/appointments',
+      create: '/appointments',
+      upcomingCount: '/appointments/upcoming-count',
+      show: (id: string) => `/appointments/${id}`,
+      cancel: (id: string) => `/appointments/${id}/cancel`,
+      reschedule: (id: string) => `/appointments/${id}/reschedule`,
+    },
+
+    // Appointments (Expert)
+    expertAppointments: {
+      list: '/expert/appointments',
+      confirm: (id: string) => `/expert/appointments/${id}/confirm`,
+      reject: (id: string) => `/expert/appointments/${id}/reject`,
+      start: (id: string) => `/expert/appointments/${id}/start`,
+      complete: (id: string) => `/expert/appointments/${id}/complete`,
+    },
+
     // Settings/Data
     settings: {
       regions: '/regions',

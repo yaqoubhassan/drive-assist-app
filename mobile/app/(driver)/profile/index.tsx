@@ -33,6 +33,13 @@ const menuItems = [
     route: '/(driver)/profile/history',
   },
   {
+    id: 'appointments',
+    title: 'My Appointments',
+    subtitle: 'View and manage bookings',
+    icon: 'event-available' as const,
+    route: '/(driver)/appointments',
+  },
+  {
     id: 'bookmarks',
     title: 'Saved Articles',
     subtitle: 'Your bookmarked content',
@@ -65,7 +72,7 @@ const menuItems = [
 const stats = [
   { label: 'Diagnoses', value: '12' },
   { label: 'Vehicles', value: '2' },
-  { label: 'Saved', value: '8' },
+  { label: 'Appointments', value: '5' },
 ];
 
 export default function ProfileScreen() {
