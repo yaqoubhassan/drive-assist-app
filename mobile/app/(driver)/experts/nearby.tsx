@@ -41,7 +41,7 @@ export default function NearbyExpertsScreen() {
       setShowProfileSheet(false);
       if (selectedExpert) {
         router.push({
-          pathname: '/(driver)/messages/[id]',
+          pathname: '/(shared)/messages/[id]',
           params: { id: selectedExpert.id.toString(), expertId: selectedExpert.id.toString() },
         });
       }
@@ -64,9 +64,8 @@ export default function NearbyExpertsScreen() {
       edges={['top']}
     >
       {/* Header */}
-      <View className={`flex-row items-center justify-between px-4 py-3 border-b ${
-        isDark ? 'border-slate-800' : 'border-slate-100'
-      }`}>
+      <View className={`flex-row items-center justify-between px-4 py-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'
+        }`}>
         <TouchableOpacity
           onPress={() => router.back()}
           className="p-2 -ml-2"
