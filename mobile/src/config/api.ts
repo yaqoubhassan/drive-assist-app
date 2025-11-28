@@ -88,6 +88,7 @@ export const apiConfig = {
     // Expert search (for drivers)
     experts: {
       list: '/experts',
+      nearby: '/experts/nearby',
       show: (id: string) => `/experts/${id}`,
       specializations: '/specializations',
     },

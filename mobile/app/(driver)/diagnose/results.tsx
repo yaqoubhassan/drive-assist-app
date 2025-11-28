@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useDiagnosis } from '../../../src/context/DiagnosisContext';
 import { Button, Card } from '../../../src/components/common';
+import { NearbyExpertsList } from '../../../src/components/experts';
+import { Expert } from '../../../src/services/expert';
 
 export default function DiagnoseResultsScreen() {
   const router = useRouter();
@@ -61,6 +63,21 @@ export default function DiagnoseResultsScreen() {
     } else {
       router.push('/(driver)/experts');
     }
+  };
+
+  const handleExpertPress = (expert: Expert) => {
+    if (isGuest) {
+      router.push('/(auth)/sign-up');
+    } else {
+      router.push({
+        pathname: '/(driver)/experts/[id]',
+        params: { id: expert.id.toString() },
+      });
+    }
+  };
+
+  const handleSignUpPress = () => {
+    router.push('/(auth)/sign-up');
   };
 
   return (
@@ -346,6 +363,16 @@ export default function DiagnoseResultsScreen() {
             </Card>
           </View>
         )}
+
+        {/* Nearby Experts Section */}
+        <View className="px-4 py-4">
+          <NearbyExpertsList
+            onExpertPress={handleExpertPress}
+            onSignUpPress={handleSignUpPress}
+            isGuest={isGuest}
+            limit={5}
+          />
+        </View>
 
         {/* Bottom padding for footer */}
         <View className="h-48" />

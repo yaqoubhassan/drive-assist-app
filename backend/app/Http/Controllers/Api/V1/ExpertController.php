@@ -11,6 +11,7 @@ use App\Models\Specialization;
 use App\Models\Review;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExpertController extends Controller
 {
@@ -37,10 +38,91 @@ class ExpertController extends Controller
             );
         }
 
+        // Location-based search using Haversine formula
+        if ($request->has('latitude') && $request->has('longitude')) {
+            $lat = (float) $request->get('latitude');
+            $lng = (float) $request->get('longitude');
+            $radius = (float) $request->get('radius', 50); // Default 50km radius
+
+            // Haversine formula for calculating distance in kilometers
+            $haversine = "(6371 * acos(cos(radians($lat))
+                         * cos(radians(expert_profiles.latitude))
+                         * cos(radians(expert_profiles.longitude) - radians($lng))
+                         + sin(radians($lat))
+                         * sin(radians(expert_profiles.latitude))))";
+
+            $query->join('expert_profiles', 'users.id', '=', 'expert_profiles.user_id')
+                ->whereNotNull('expert_profiles.latitude')
+                ->whereNotNull('expert_profiles.longitude')
+                ->whereRaw("$haversine < ?", [$radius])
+                ->selectRaw("users.*, $haversine as distance")
+                ->orderBy('distance', 'asc');
+        }
+
         $experts = $query->with(['expertProfile.specializations', 'expertProfile.serviceRegions'])
             ->paginate(15);
 
         return $this->success(ExpertResource::collection($experts));
+    }
+
+    /**
+     * Find nearby experts based on location.
+     * This endpoint is publicly accessible for guest users.
+     */
+    public function nearby(Request $request): JsonResponse
+    {
+        $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'radius' => 'sometimes|numeric|min:1|max:100',
+            'limit' => 'sometimes|integer|min:1|max:20',
+            'specialization_id' => 'sometimes|exists:specializations,id',
+        ]);
+
+        $lat = (float) $request->get('latitude');
+        $lng = (float) $request->get('longitude');
+        $radius = (float) $request->get('radius', 25); // Default 25km
+        $limit = (int) $request->get('limit', 10);
+
+        // Haversine formula for calculating distance in kilometers
+        $haversine = "(6371 * acos(cos(radians($lat))
+                     * cos(radians(expert_profiles.latitude))
+                     * cos(radians(expert_profiles.longitude) - radians($lng))
+                     + sin(radians($lat))
+                     * sin(radians(expert_profiles.latitude))))";
+
+        $query = User::where('role', 'expert')
+            ->join('expert_profiles', 'users.id', '=', 'expert_profiles.user_id')
+            ->where('expert_profiles.is_available', true)
+            ->where('expert_profiles.kyc_status', 'approved')
+            ->whereNotNull('expert_profiles.latitude')
+            ->whereNotNull('expert_profiles.longitude')
+            ->whereRaw("$haversine < ?", [$radius])
+            ->selectRaw("users.*, $haversine as distance");
+
+        if ($request->has('specialization_id')) {
+            $query->whereHas('expertProfile.specializations', fn($q) =>
+                $q->where('specialization_id', $request->get('specialization_id'))
+            );
+        }
+
+        // Sort by: priority listing first, then by distance, then by rating
+        $experts = $query->orderByDesc('expert_profiles.is_priority_listed')
+            ->orderBy('distance')
+            ->orderByDesc('expert_profiles.rating')
+            ->limit($limit)
+            ->with(['expertProfile.specializations'])
+            ->get();
+
+        // Format response with distance info
+        $result = $experts->map(function ($expert) {
+            $resource = new ExpertResource($expert);
+            $data = $resource->toArray(request());
+            $data['distance_km'] = round($expert->distance, 1);
+            return $data;
+        });
+
+        return $this->success($result);
     }
 
     public function show(int $id): JsonResponse

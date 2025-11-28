@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
         // Create test users in non-production environments
         if (app()->environment(['local', 'staging', 'testing'])) {
             $this->createTestUsers();
+            $this->call([
+                ExpertSeeder::class,
+            ]);
         }
     }
 

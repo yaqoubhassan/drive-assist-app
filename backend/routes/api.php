@@ -88,6 +88,9 @@ Route::prefix('v1')->group(function () {
         Route::post('diagnoses/guest', [DiagnosisController::class, 'guestDiagnosis']);
     });
 
+    // Public Expert Search (for guests to find nearby experts)
+    Route::get('experts/nearby', [ExpertController::class, 'nearby']);
+
     // ===========================================
     // Authenticated Routes
     // ===========================================
