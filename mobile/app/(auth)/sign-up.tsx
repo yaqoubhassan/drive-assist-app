@@ -84,8 +84,31 @@ export default function SignUpScreen() {
       });
       // All users go through email verification first
       router.replace('/(auth)/verify-email');
-    } catch (error) {
-      setErrors({ email: 'Email already in use' });
+    } catch (error: any) {
+      // Parse backend validation errors
+      const apiErrors: Record<string, string> = {};
+
+      if (error?.errors) {
+        // Backend returns errors in format: { field: ["error message"] }
+        Object.entries(error.errors).forEach(([field, messages]) => {
+          if (Array.isArray(messages) && messages.length > 0) {
+            // Map backend field names to frontend field names
+            const fieldMap: Record<string, string> = {
+              first_name: 'fullName',
+              last_name: 'fullName',
+            };
+            const frontendField = fieldMap[field] || field;
+            apiErrors[frontendField] = messages[0] as string;
+          }
+        });
+      } else if (error?.message) {
+        // Generic error message
+        apiErrors.general = error.message;
+      } else {
+        apiErrors.general = 'Registration failed. Please try again.';
+      }
+
+      setErrors(apiErrors);
     } finally {
       setLoading(false);
     }
@@ -197,6 +220,13 @@ export default function SignUpScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* General Error Message */}
+            {errors.general && (
+              <View className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <Text className="text-red-500 text-sm text-center">{errors.general}</Text>
+              </View>
+            )}
+
             {/* Form */}
             <View className="gap-1">
               <Input
@@ -231,6 +261,7 @@ export default function SignUpScreen() {
                   // e.g., +233249952818
                   setPhone(formattedText);
                 }}
+                error={errors.phone}
               />
 
               <Input
