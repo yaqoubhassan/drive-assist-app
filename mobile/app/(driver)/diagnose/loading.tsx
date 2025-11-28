@@ -4,12 +4,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useDiagnosis } from '../../../src/context/DiagnosisContext';
+import { useAlert } from '../../../src/context/AlertContext';
 
 const statusMessages = [
   { icon: 'search', text: 'Analyzing your vehicle issue...' },
   { icon: 'smart-toy', text: 'Consulting our AI mechanic...' },
   { icon: 'storage', text: 'Cross-referencing thousands of cases...' },
-  { icon: 'photo-library', text: 'Examining uploaded photos...' },
   { icon: 'auto-awesome', text: 'Preparing your diagnosis...' },
 ];
 
@@ -23,13 +24,18 @@ const funFacts = [
 export default function DiagnoseLoadingScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { submitDiagnosis, result, error, isSubmitting, isGuest, clearError } = useDiagnosis();
+  const { showError } = useAlert();
+
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const pulseValue = useRef(new Animated.Value(1)).current;
 
+  // Start animations
   useEffect(() => {
     // Spin animation
     Animated.loop(
@@ -59,17 +65,6 @@ export default function DiagnoseLoadingScreen() {
       ])
     ).start();
 
-    // Progress simulation
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + Math.random() * 5 + 2;
-      });
-    }, 500);
-
     // Message rotation
     const messageInterval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % statusMessages.length);
@@ -80,18 +75,65 @@ export default function DiagnoseLoadingScreen() {
       setFactIndex((prev) => (prev + 1) % funFacts.length);
     }, 5000);
 
-    // Navigate to results after completion
-    const timeout = setTimeout(() => {
-      router.replace('/(driver)/diagnose/results');
-    }, 15000);
-
     return () => {
-      clearInterval(progressInterval);
       clearInterval(messageInterval);
       clearInterval(factInterval);
-      clearTimeout(timeout);
     };
   }, []);
+
+  // Progress simulation
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        // If we have a result, jump to 100%
+        if (result) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        // Slow down progress as it gets higher (never reach 100% without result)
+        if (prev >= 90) {
+          return prev + 0.2;
+        }
+        if (prev >= 70) {
+          return prev + 0.5;
+        }
+        return prev + Math.random() * 3 + 1;
+      });
+    }, 300);
+
+    return () => clearInterval(progressInterval);
+  }, [result]);
+
+  // Submit diagnosis on mount
+  useEffect(() => {
+    if (!hasStarted) {
+      setHasStarted(true);
+      submitDiagnosis().catch((err) => {
+        console.error('Diagnosis submission error:', err);
+      });
+    }
+  }, [hasStarted, submitDiagnosis]);
+
+  // Handle result
+  useEffect(() => {
+    if (result && progress >= 95) {
+      // Navigate to results with a small delay for smooth transition
+      const timeout = setTimeout(() => {
+        router.replace('/(driver)/diagnose/results');
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [result, progress, router]);
+
+  // Handle error
+  useEffect(() => {
+    if (error) {
+      showError('Diagnosis Failed', error, () => {
+        clearError();
+        router.back();
+      });
+    }
+  }, [error, showError, clearError, router]);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -160,6 +202,23 @@ export default function DiagnoseLoadingScreen() {
             {currentMessage.text}
           </Text>
         </View>
+
+        {/* Guest diagnosis notice */}
+        {isGuest && (
+          <View
+            className={`mt-4 px-4 py-2 rounded-full ${
+              isDark ? 'bg-amber-500/20' : 'bg-amber-100'
+            }`}
+          >
+            <Text
+              className={`text-sm ${
+                isDark ? 'text-amber-300' : 'text-amber-700'
+              }`}
+            >
+              Free Guest Diagnosis
+            </Text>
+          </View>
+        )}
 
         {/* Fun Fact */}
         <View

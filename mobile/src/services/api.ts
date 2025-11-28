@@ -6,6 +6,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { apiConfig } from '../config/api';
 import { tokenStorage } from './storage';
+import { deviceService } from './device';
 
 // API Response types
 export interface ApiResponse<T = unknown> {
@@ -45,16 +46,24 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - Add auth token and device headers to requests
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
+      // Add auth token if available
       const token = await tokenStorage.getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Add device headers for guest tracking
+      // These are always included but only required for guest endpoints
+      const deviceHeaders = await deviceService.getDeviceHeaders();
+      Object.entries(deviceHeaders).forEach(([key, value]) => {
+        config.headers[key] = value;
+      });
     } catch (error) {
-      console.error('Error getting token for request:', error);
+      console.error('Error setting up request headers:', error);
     }
     return config;
   },
