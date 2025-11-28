@@ -1,11 +1,10 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Card } from '../../../../src/components/common';
 import { useTheme } from '../../../../src/context/ThemeContext';
-import { Card, Badge } from '../../../../src/components/common';
 
 const { width } = Dimensions.get('window');
 
@@ -124,13 +123,13 @@ export default function QuizIndexScreen() {
             className="rounded-2xl p-5"
             style={{ borderRadius: 16 }}
           >
-            <View className="flex-row items-center justify-between mb-4">
+            <View className={`flex-row items-center justify-between mb-4 ${Platform.OS === 'ios' ? 'p-4' : ''}`}>
               <Text className="text-white/80 font-medium">Your Progress</Text>
               <TouchableOpacity>
                 <MaterialIcons name="leaderboard" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            <View className="flex-row justify-between">
+            <View className={`flex-row justify-between ${Platform.OS === 'ios' ? 'p-4' : ''}`}>
               <View className="items-center flex-1">
                 <Text className="text-white text-2xl font-bold">85%</Text>
                 <Text className="text-white/70 text-xs mt-1">Avg. Score</Text>
@@ -179,7 +178,7 @@ export default function QuizIndexScreen() {
                     className="p-4"
                     style={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
                   >
-                    <View className="flex-row items-center">
+                    <View className={`flex-row items-center ${Platform.OS === 'ios' ? 'p-4' : ''}`}>
                       <View className="h-12 w-12 rounded-full bg-white/20 items-center justify-center mr-3">
                         <MaterialIcons name={category.icon} size={24} color="#FFFFFF" />
                       </View>
@@ -190,7 +189,7 @@ export default function QuizIndexScreen() {
                       <MaterialIcons name="chevron-right" size={24} color="#FFFFFF" />
                     </View>
                   </LinearGradient>
-                  <View className={`flex-row p-3 justify-between ${isDark ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <View className={`flex-row p-3 justify-between ${isDark ? 'bg-slate-800' : 'bg-slate-50'} ${Platform.OS === 'ios' ? 'p-4' : ''}`}>
                     <View className="flex-row items-center">
                       <MaterialIcons name="help-outline" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
                       <Text className={`ml-1 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Card, SearchBar } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { SearchBar, Card, Badge } from '../../../src/components/common';
 
 const { width } = Dimensions.get('window');
 
@@ -96,9 +96,8 @@ export default function LearnScreen() {
                     router.push(`/(driver)/learn/category/${category.id}`);
                   }
                 }}
-                className={`flex-row items-center p-4 rounded-xl ${
-                  isDark ? 'bg-slate-800' : 'bg-white'
-                }`}
+                className={`flex-row items-center p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'
+                  }`}
                 style={{ width: '48%' }}
               >
                 <View
@@ -133,7 +132,7 @@ export default function LearnScreen() {
               className="rounded-2xl p-5"
               style={{ borderRadius: 16 }}
             >
-              <View className="flex-row items-center justify-between">
+              <View className={`flex-row items-center justify-between ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
                 <View className="flex-1">
                   <View className="flex-row items-center mb-2">
                     <View className="h-10 w-10 rounded-full bg-white/20 items-center justify-center mr-3">

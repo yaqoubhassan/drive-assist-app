@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Platform,
-  Switch,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Button, Card, Chip } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Badge, Chip } from '../../../src/components/common';
 
 interface MaintenanceReminder {
   id: string;
@@ -353,7 +352,7 @@ export default function RemindersScreen() {
               className="rounded-2xl p-4"
               style={{ borderRadius: 16 }}
             >
-              <View className="flex-row items-center">
+              <View className={`flex-row items-center ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
                 <View className="h-12 w-12 rounded-full bg-white/20 items-center justify-center mr-3">
                   <MaterialIcons
                     name={overdueCount > 0 ? 'warning' : 'schedule'}
@@ -432,10 +431,10 @@ export default function RemindersScreen() {
                           label={getStatusLabel(reminder.status)}
                           variant={
                             reminder.status === 'overdue'
-                              ? 'danger'
+                              ? 'error'
                               : reminder.status === 'due_soon'
-                              ? 'warning'
-                              : 'success'
+                                ? 'warning'
+                                : 'success'
                           }
                           size="sm"
                         />
@@ -448,9 +447,8 @@ export default function RemindersScreen() {
 
                   {/* Details */}
                   <View
-                    className={`flex-row mt-4 pt-4 border-t ${
-                      isDark ? 'border-slate-700' : 'border-slate-100'
-                    }`}
+                    className={`flex-row mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-100'
+                      }`}
                   >
                     <View className="flex-1">
                       <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -481,9 +479,8 @@ export default function RemindersScreen() {
 
                   {/* Countdown */}
                   <View
-                    className={`flex-row items-center justify-between mt-3 p-3 rounded-xl ${
-                      isDark ? 'bg-slate-800' : 'bg-slate-50'
-                    }`}
+                    className={`flex-row items-center justify-between mt-3 p-3 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-50'
+                      }`}
                   >
                     <View className="flex-row items-center">
                       <MaterialIcons
@@ -498,8 +495,8 @@ export default function RemindersScreen() {
                         {daysUntil > 0
                           ? `${daysUntil} days until due`
                           : daysUntil === 0
-                          ? 'Due today'
-                          : `${Math.abs(daysUntil)} days overdue`}
+                            ? 'Due today'
+                            : `${Math.abs(daysUntil)} days overdue`}
                       </Text>
                     </View>
                     <View className="flex-row items-center">
@@ -521,9 +518,8 @@ export default function RemindersScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => toggleNotifications(reminder.id)}
-                      className={`py-3 px-4 rounded-xl items-center ${
-                        isDark ? 'bg-slate-700' : 'bg-slate-100'
-                      }`}
+                      className={`py-3 px-4 rounded-xl items-center ${isDark ? 'bg-slate-700' : 'bg-slate-100'
+                        }`}
                     >
                       <MaterialIcons
                         name={reminder.notificationsEnabled ? 'notifications-off' : 'notifications-active'}
@@ -640,13 +636,12 @@ export default function RemindersScreen() {
                   <TouchableOpacity
                     key={key}
                     onPress={() => setNewReminderType(key as MaintenanceType)}
-                    className={`flex-row items-center p-3 rounded-xl border-2 ${
-                      newReminderType === key
-                        ? 'border-primary-500 bg-primary-500/10'
-                        : isDark
+                    className={`flex-row items-center p-3 rounded-xl border-2 ${newReminderType === key
+                      ? 'border-primary-500 bg-primary-500/10'
+                      : isDark
                         ? 'border-slate-700 bg-slate-700/50'
                         : 'border-slate-200 bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <View
                       className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -730,9 +725,8 @@ export default function RemindersScreen() {
                   Current Mileage (km)
                 </Text>
                 <TextInput
-                  className={`p-4 rounded-xl mb-4 text-lg ${
-                    isDark ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-900'
-                  }`}
+                  className={`p-4 rounded-xl mb-4 text-lg ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-900'
+                    }`}
                   placeholder="Enter current mileage"
                   placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                   keyboardType="numeric"

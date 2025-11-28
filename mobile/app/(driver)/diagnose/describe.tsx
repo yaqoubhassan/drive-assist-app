@@ -436,7 +436,7 @@ export default function DiagnoseDescribeScreen() {
             Step 2 of 4
           </Text>
           <TouchableOpacity
-            onPress={() => router.replace('/(driver)/')}
+            onPress={() => router.replace('/(driver)')}
             className="h-12 w-12 items-center justify-center"
           >
             <MaterialIcons
@@ -519,11 +519,10 @@ export default function DiagnoseDescribeScreen() {
                   {/* Speech-to-text button */}
                   <TouchableOpacity
                     onPress={isListening ? stopListening : startListening}
-                    className={`flex-row items-center px-4 py-2 rounded-full ${
-                      isListening
+                    className={`flex-row items-center px-4 py-2 rounded-full ${isListening
                         ? 'bg-red-500'
                         : isDark ? 'bg-slate-700' : 'bg-slate-200'
-                    }`}
+                      }`}
                   >
                     <MaterialIcons
                       name={isListening ? 'mic-off' : 'mic'}
@@ -531,11 +530,10 @@ export default function DiagnoseDescribeScreen() {
                       color={isListening ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
                     />
                     <Text
-                      className={`ml-2 text-sm font-medium ${
-                        isListening
+                      className={`ml-2 text-sm font-medium ${isListening
                           ? 'text-white'
                           : isDark ? 'text-slate-300' : 'text-slate-600'
-                      }`}
+                        }`}
                     >
                       {isListening ? 'Listening...' : 'Speak'}
                     </Text>
@@ -544,11 +542,10 @@ export default function DiagnoseDescribeScreen() {
                   {/* Text-to-speech button */}
                   <TouchableOpacity
                     onPress={speakText}
-                    className={`flex-row items-center px-4 py-2 rounded-full ${
-                      isSpeaking
+                    className={`flex-row items-center px-4 py-2 rounded-full ${isSpeaking
                         ? 'bg-primary-500'
                         : isDark ? 'bg-slate-700' : 'bg-slate-200'
-                    }`}
+                      }`}
                     disabled={!description.trim()}
                     style={{ opacity: description.trim() ? 1 : 0.5 }}
                   >
@@ -558,11 +555,10 @@ export default function DiagnoseDescribeScreen() {
                       color={isSpeaking ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
                     />
                     <Text
-                      className={`ml-2 text-sm font-medium ${
-                        isSpeaking
+                      className={`ml-2 text-sm font-medium ${isSpeaking
                           ? 'text-white'
                           : isDark ? 'text-slate-300' : 'text-slate-600'
-                      }`}
+                        }`}
                     >
                       {isSpeaking ? 'Stop' : 'Listen'}
                     </Text>
@@ -761,9 +757,8 @@ export default function DiagnoseDescribeScreen() {
               <View className="flex-row gap-3">
                 <TouchableOpacity
                   onPress={handleTakePhoto}
-                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${
-                    isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
-                  }`}
+                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
+                    }`}
                 >
                   <MaterialIcons
                     name="camera-alt"
@@ -776,9 +771,8 @@ export default function DiagnoseDescribeScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handlePickImage}
-                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${
-                    isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
-                  }`}
+                  className={`flex-1 flex-row items-center justify-center py-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-300 bg-slate-50'
+                    }`}
                 >
                   <MaterialIcons
                     name="photo-library"
@@ -810,9 +804,8 @@ export default function DiagnoseDescribeScreen() {
                   {photos.length < 5 && (
                     <TouchableOpacity
                       onPress={handlePickImage}
-                      className={`h-20 w-20 rounded-xl items-center justify-center border-2 border-dashed ${
-                        isDark ? 'border-slate-700' : 'border-slate-300'
-                      }`}
+                      className={`h-20 w-20 rounded-xl items-center justify-center border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-300'
+                        }`}
                     >
                       <MaterialIcons
                         name="add"

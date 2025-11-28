@@ -124,9 +124,8 @@ export default function QuizResultsScreen() {
 
               {/* Pass/Fail Badge */}
               <View
-                className={`mt-4 px-4 py-2 rounded-full ${
-                  isPassed ? 'bg-green-500/10' : 'bg-red-500/10'
-                }`}
+                className={`mt-4 px-4 py-2 rounded-full ${isPassed ? 'bg-green-500/10' : 'bg-red-500/10'
+                  }`}
               >
                 <Text
                   className={`font-semibold ${isPassed ? 'text-green-600' : 'text-red-600'}`}
@@ -197,9 +196,8 @@ export default function QuizResultsScreen() {
               ].map((item) => (
                 <View key={item.grade} className="items-center">
                   <View
-                    className={`h-10 w-10 rounded-full items-center justify-center mb-1 ${
-                      item.grade === grade ? 'border-2' : ''
-                    }`}
+                    className={`h-10 w-10 rounded-full items-center justify-center mb-1 ${item.grade === grade ? 'border-2' : ''
+                      }`}
                     style={{
                       backgroundColor: item.color + '20',
                       borderColor: item.grade === grade ? item.color : 'transparent',
@@ -224,9 +222,8 @@ export default function QuizResultsScreen() {
         <View className="flex-row gap-3">
           <TouchableOpacity
             onPress={() => router.replace('/(driver)/learn/quiz')}
-            className={`flex-1 py-4 rounded-xl items-center justify-center ${
-              isDark ? 'bg-slate-800' : 'bg-slate-100'
-            }`}
+            className={`flex-1 py-4 rounded-xl items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+              }`}
           >
             <MaterialIcons name="list" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
             <Text className={`mt-1 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>

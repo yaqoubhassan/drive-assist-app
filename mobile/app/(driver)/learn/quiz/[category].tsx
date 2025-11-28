@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Animated } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../../../src/context/ThemeContext';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card } from '../../../../src/components/common';
+import { useTheme } from '../../../../src/context/ThemeContext';
 
 interface QuizQuestion {
   id: string;
@@ -634,7 +634,7 @@ export default function QuizScreen() {
             end={{ x: 1, y: 1 }}
             className="px-4 py-8"
           >
-            <View className="items-center">
+            <View className={`items-center ${Platform.OS === 'ios' ? 'p-8' : ''}`}>
               <View className="h-20 w-20 rounded-full bg-white/20 items-center justify-center mb-4">
                 <MaterialIcons
                   name={isPassed ? 'emoji-events' : 'trending-up'}
@@ -676,9 +676,8 @@ export default function QuizScreen() {
 
               {/* Pass/Fail Badge */}
               <View
-                className={`mt-4 px-4 py-2 rounded-full ${
-                  isPassed ? 'bg-green-500/10' : 'bg-red-500/10'
-                }`}
+                className={`mt-4 px-4 py-2 rounded-full ${isPassed ? 'bg-green-500/10' : 'bg-red-500/10'
+                  }`}
               >
                 <Text
                   className={`font-semibold ${isPassed ? 'text-green-600' : 'text-red-600'}`}
@@ -747,9 +746,8 @@ export default function QuizScreen() {
           <View className="flex-row gap-3">
             <TouchableOpacity
               onPress={() => router.replace('/(driver)/learn/quiz')}
-              className={`flex-1 py-4 rounded-xl items-center justify-center ${
-                isDark ? 'bg-slate-800' : 'bg-slate-100'
-              }`}
+              className={`flex-1 py-4 rounded-xl items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+                }`}
             >
               <MaterialIcons name="list" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
               <Text className={`mt-1 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -935,7 +933,6 @@ export default function QuizScreen() {
           <Button
             title={isLastQuestion ? 'See Results' : 'Next Question'}
             onPress={handleNext}
-            rightIcon="arrow-forward"
             fullWidth
           />
         )}
