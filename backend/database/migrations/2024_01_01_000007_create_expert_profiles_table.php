@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignId('specialization_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['expert_profile_id', 'specialization_id']);
+            $table->unique(['expert_profile_id', 'specialization_id'], 'expert_spec_unique');
         });
 
         // Pivot table for expert service regions
@@ -56,7 +56,7 @@ return new class extends Migration
             $table->foreignId('region_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['expert_profile_id', 'region_id']);
+            $table->unique(['expert_profile_id', 'region_id'], 'expert_region_unique');
         });
 
         // Pivot table for vehicle makes expert specializes in
@@ -66,7 +66,7 @@ return new class extends Migration
             $table->foreignId('vehicle_make_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['expert_profile_id', 'vehicle_make_id']);
+            $table->unique(['expert_profile_id', 'vehicle_make_id'], 'expert_make_unique');
         });
     }
 
