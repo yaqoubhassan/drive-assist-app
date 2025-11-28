@@ -20,6 +20,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="settings" />
       <Stack.Screen name="history" />
       <Stack.Screen name="bookmarks" />
+      <Stack.Screen name="reminders" />
     </Stack>
   );
 }

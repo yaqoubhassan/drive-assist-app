@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -107,12 +107,37 @@ const filters = [
   { id: 'contacted', label: 'Contacted' },
 ];
 
+const urgencyOptions = [
+  { id: 'all', label: 'All' },
+  { id: 'high', label: 'High' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'low', label: 'Low' },
+];
+
+const categoryOptions = [
+  { id: 'all', label: 'All Categories' },
+  { id: 'Engine', label: 'Engine' },
+  { id: 'Brakes', label: 'Brakes' },
+  { id: 'Electrical', label: 'Electrical' },
+  { id: 'Transmission', label: 'Transmission' },
+  { id: 'Suspension', label: 'Suspension' },
+  { id: 'Other', label: 'Other' },
+];
+
 export default function LeadsScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedUrgency, setSelectedUrgency] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Count active filters (excluding 'all' selections)
+  const activeFilterCount =
+    (selectedUrgency !== 'all' ? 1 : 0) +
+    (selectedCategory !== 'all' ? 1 : 0);
 
   const filteredLeads = mockLeads.filter((lead) => {
     const matchesSearch =
@@ -120,8 +145,15 @@ export default function LeadsScreen() {
       lead.issue.toLowerCase().includes(searchQuery.toLowerCase()) ||
       lead.vehicle.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || lead.status === selectedFilter;
-    return matchesSearch && matchesFilter;
+    const matchesUrgency = selectedUrgency === 'all' || lead.urgency === selectedUrgency;
+    const matchesCategory = selectedCategory === 'all' || lead.category === selectedCategory;
+    return matchesSearch && matchesFilter && matchesUrgency && matchesCategory;
   });
+
+  const clearFilters = () => {
+    setSelectedUrgency('all');
+    setSelectedCategory('all');
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -169,9 +201,15 @@ export default function LeadsScreen() {
             </Text>
           </View>
           <TouchableOpacity
+            onPress={() => setShowFilterModal(true)}
             className={`h-10 w-10 rounded-full items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-white'}`}
           >
             <MaterialIcons name="filter-list" size={22} color={isDark ? '#FFFFFF' : '#111827'} />
+            {activeFilterCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-primary-500 h-5 w-5 rounded-full items-center justify-center">
+                <Text className="text-white text-xs font-bold">{activeFilterCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -299,6 +337,111 @@ export default function LeadsScreen() {
           />
         )}
       </ScrollView>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          {/* Modal Header */}
+          <View className={`flex-row items-center justify-between px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+              <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Filter Leads
+            </Text>
+            <TouchableOpacity onPress={clearFilters}>
+              <Text className="text-primary-500 font-semibold">Clear</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="flex-1 px-4 py-4">
+            {/* Urgency Filter */}
+            <View className="mb-6">
+              <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                URGENCY LEVEL
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {urgencyOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.id}
+                    onPress={() => setSelectedUrgency(option.id)}
+                    className={`px-4 py-2 rounded-full border ${
+                      selectedUrgency === option.id
+                        ? 'bg-primary-500 border-primary-500'
+                        : isDark
+                        ? 'border-slate-600 bg-slate-800'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    <Text
+                      className={`font-medium ${
+                        selectedUrgency === option.id
+                          ? 'text-white'
+                          : isDark
+                          ? 'text-slate-300'
+                          : 'text-slate-700'
+                      }`}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Category Filter */}
+            <View className="mb-6">
+              <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                CATEGORY
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {categoryOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.id}
+                    onPress={() => setSelectedCategory(option.id)}
+                    className={`px-4 py-2 rounded-full border ${
+                      selectedCategory === option.id
+                        ? 'bg-primary-500 border-primary-500'
+                        : isDark
+                        ? 'border-slate-600 bg-slate-800'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    <Text
+                      className={`font-medium ${
+                        selectedCategory === option.id
+                          ? 'text-white'
+                          : isDark
+                          ? 'text-slate-300'
+                          : 'text-slate-700'
+                      }`}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Apply Button */}
+          <View className={`px-4 py-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <TouchableOpacity
+              onPress={() => setShowFilterModal(false)}
+              className="bg-primary-500 py-4 rounded-xl items-center"
+            >
+              <Text className="text-white font-bold text-lg">
+                Apply Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

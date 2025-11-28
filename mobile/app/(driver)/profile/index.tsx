@@ -17,6 +17,15 @@ const menuItems = [
     badge: '2',
   },
   {
+    id: 'reminders',
+    title: 'Maintenance Reminders',
+    subtitle: 'Track your vehicle maintenance',
+    icon: 'event' as const,
+    route: '/(driver)/profile/reminders',
+    badge: '3',
+    badgeVariant: 'warning' as const,
+  },
+  {
     id: 'history',
     title: 'Diagnosis History',
     subtitle: 'View past diagnoses',
@@ -188,7 +197,9 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
                 {item.badge && (
-                  <View className="bg-primary-500 h-6 min-w-[24px] rounded-full items-center justify-center mr-2">
+                  <View className={`h-6 min-w-[24px] rounded-full items-center justify-center mr-2 ${
+                    item.badgeVariant === 'warning' ? 'bg-amber-500' : 'bg-primary-500'
+                  }`}>
                     <Text className="text-white text-xs font-bold px-2">{item.badge}</Text>
                   </View>
                 )}

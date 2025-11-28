@@ -1,0 +1,1802 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "DriveAssist API",
+        "description": "API documentation for DriveAssist - Vehicle Diagnostics and Expert Marketplace",
+        "contact": {
+            "name": "DriveAssist Support",
+            "email": "support@driveassist.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/articles": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "List articles",
+                "operationId": "daffc9d151a0c7c956d1157d38e78859",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/articles/categories": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "List article categories",
+                "operationId": "d5dfd8d31cbcf1671fb33117480e6581",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/articles/categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Get articles by category",
+                "operationId": "2bf524fd7a19fc6cc349a3fb77da5175",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/articles/{slug}": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Get article details",
+                "operationId": "5116913f5b70bb0f7ab90575cfdbde20",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "operationId": "7ca6fc7989202054d29707fef91a2d4a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+233201234567"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "driver",
+                                            "expert"
+                                        ],
+                                        "example": "driver"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registration successful"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user",
+                "operationId": "9d0bb5c770cbec19b0b9566606ef4adb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "iPhone 15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "operationId": "3a27a9e02ceb521eb3f98c8d2394aef9",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/logout-all": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout from all devices",
+                "operationId": "afe5fcc3199730bf8caf978b67c6a0c0",
+                "responses": {
+                    "200": {
+                        "description": "Logged out from all devices",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out from all devices"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "operationId": "7edb820901b8b3a880fc4d7a0a7290fb",
+                "responses": {
+                    "200": {
+                        "description": "User data retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Request password reset OTP",
+                "operationId": "4011ca27431b5cd53a225688e531de47",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset OTP sent to your email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/verify-otp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify OTP code",
+                "operationId": "1258aba85ba0bc83d55205e0d88c2295",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "otp",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "otp": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "email_verification",
+                                            "password_reset"
+                                        ],
+                                        "example": "email_verification"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP verified successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired OTP"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reset password with OTP",
+                "operationId": "aba7a33c4064b5b1a2f3a8a70c20094b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "otp",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "otp": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired OTP"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/resend-otp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Resend OTP code",
+                "operationId": "da7a6abfc3494aba2c199262eab211f4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "email_verification",
+                                            "password_reset"
+                                        ],
+                                        "example": "email_verification"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP resent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP has been resent"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/update-fcm-token": {
+            "put": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Update FCM token for push notifications",
+                "operationId": "5b3d2dd9b84e7adee573c1da8451859a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fcm_token"
+                                ],
+                                "properties": {
+                                    "fcm_token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "FCM token updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "FCM token updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/diagnoses": {
+            "get": {
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "List user diagnoses",
+                "operationId": "ab672c52f3f59154c668ba6389d926ef",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Create a new diagnosis",
+                "operationId": "2e9df781414b28078eec5a25b23a9342",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "vehicle_id": {
+                                        "type": "integer"
+                                    },
+                                    "symptoms_description": {
+                                        "type": "string"
+                                    },
+                                    "region_id": {
+                                        "type": "integer"
+                                    },
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Diagnosis created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/diagnoses/guest": {
+            "post": {
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Create a guest diagnosis",
+                "operationId": "e72318c4054aba594e4b8dff5f03b21d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "symptoms_description"
+                                ],
+                                "properties": {
+                                    "symptoms_description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Diagnosis created"
+                    }
+                }
+            }
+        },
+        "/api/v1/diagnoses/{id}": {
+            "get": {
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Get diagnosis details",
+                "operationId": "5c4a81f016ecb7b2193369746cf96b4f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/quiz/categories": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "List quiz categories",
+                "operationId": "b6ca0b864e31a4b11aa2bd8eee1e9af6",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/quiz/questions/{category}": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "Get quiz questions for category",
+                "operationId": "9c0de47bfe42cea1e381772977f9507b",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/quiz/submit": {
+            "post": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "Submit quiz answers",
+                "operationId": "c8362608adda1d053eea3585dc225fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "question_id": {
+                                                    "type": "integer"
+                                                },
+                                                "answer_index": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "time_taken": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/quiz/history": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "Get quiz attempt history",
+                "operationId": "37d8f2355f9f5f5435c4900e0abee902",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/road-signs": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "List all road signs",
+                "operationId": "186f72af6dd94f8eaec3f8868c322091",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/road-signs/categories": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "List road sign categories",
+                "operationId": "3b0df2278d65807289e7403907e6d7e6",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/road-signs/categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "Get signs by category",
+                "operationId": "0abfbd20af395741f20da7d81b540bff",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/road-signs/{slug}": {
+            "get": {
+                "tags": [
+                    "Road Signs"
+                ],
+                "summary": "Get road sign details",
+                "operationId": "63947450a90c6e9576cc4ad6c4881776",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/regions": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "List all regions",
+                "operationId": "0eaf0dd34906ab7d092cbef9468adc40",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/vehicle-makes": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "List all vehicle makes",
+                "operationId": "f268713e1242ee4e0fc39eb463db5143",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/vehicle-makes/{make}/models": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "List models for a make",
+                "operationId": "55f46410eaccf62eedb0d1675d1c8bed",
+                "parameters": [
+                    {
+                        "name": "make",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/vehicles": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "List user vehicles",
+                "operationId": "73b535724aa9e0eb6ab36f9dea2af5d9",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Add a vehicle",
+                "operationId": "97d5b1544d8d0b1bbf78bacb7ff7c9d6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "vehicle_make_id": {
+                                        "type": "integer"
+                                    },
+                                    "vehicle_model_id": {
+                                        "type": "integer"
+                                    },
+                                    "custom_make": {
+                                        "type": "string"
+                                    },
+                                    "custom_model": {
+                                        "type": "string"
+                                    },
+                                    "year": {
+                                        "type": "integer"
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    },
+                                    "license_plate": {
+                                        "type": "string"
+                                    },
+                                    "fuel_type": {
+                                        "type": "string"
+                                    },
+                                    "transmission": {
+                                        "type": "string"
+                                    },
+                                    "mileage": {
+                                        "type": "integer"
+                                    },
+                                    "nickname": {
+                                        "type": "string"
+                                    },
+                                    "is_primary": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Vehicle created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/vehicles/{id}": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Get vehicle details",
+                "operationId": "3f9cfe137c4a5c2f8d0cebf4df782777",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Update vehicle",
+                "operationId": "0897d5c6eef35da2391215989a66bd71",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Delete vehicle",
+                "operationId": "8769e23b1fc248d1396ef30e6fde8093",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/vehicles/{id}/primary": {
+            "put": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Set vehicle as primary",
+                "operationId": "6e8ec9f1aa659da8fa81db4a83cd3beb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Diagnosis": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "input_type": {
+                        "type": "string"
+                    },
+                    "symptoms_description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "ai_diagnosis": {
+                        "type": "string"
+                    },
+                    "ai_possible_causes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ai_recommended_actions": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "ai_urgency_level": {
+                        "type": "string"
+                    },
+                    "ai_confidence_score": {
+                        "type": "number"
+                    },
+                    "is_free": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "DriverProfile": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "region": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Region"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Accra"
+                    },
+                    "license_number": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "license_expiry": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "driving_experience_years": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "free_diagnoses_remaining": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "paid_diagnoses_remaining": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "total_diagnoses_available": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "total_diagnoses_used": {
+                        "type": "integer",
+                        "example": 0
+                    }
+                },
+                "type": "object"
+            },
+            "ExpertProfile": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "business_name": {
+                        "type": "string",
+                        "example": "Auto Expert Services"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "experience_years": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "region": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Region"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Accra"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "whatsapp_number": {
+                        "type": "string"
+                    },
+                    "alternate_phone": {
+                        "type": "string"
+                    },
+                    "kyc_status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "submitted",
+                            "approved",
+                            "rejected"
+                        ]
+                    },
+                    "free_leads_remaining": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "total_leads_received": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "rating": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.5
+                    },
+                    "rating_count": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "jobs_completed": {
+                        "type": "integer",
+                        "example": 50
+                    },
+                    "is_priority_listed": {
+                        "type": "boolean"
+                    },
+                    "is_available": {
+                        "type": "boolean"
+                    },
+                    "specializations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Specialization"
+                        }
+                    },
+                    "service_regions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Region"
+                        }
+                    },
+                    "vehicle_makes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VehicleMake"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Region": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Greater Accra"
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "GAR"
+                    },
+                    "country": {
+                        "type": "string",
+                        "example": "Ghana"
+                    }
+                },
+                "type": "object"
+            },
+            "Specialization": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Engine Repair"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "engine-repair"
+                    },
+                    "icon": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UserPreference": {
+                "properties": {
+                    "language": {
+                        "type": "string",
+                        "example": "en"
+                    },
+                    "region": {
+                        "type": "string",
+                        "example": "GH"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "GHS"
+                    },
+                    "distance_unit": {
+                        "type": "string",
+                        "example": "km"
+                    },
+                    "push_notifications": {
+                        "type": "boolean"
+                    },
+                    "email_notifications": {
+                        "type": "boolean"
+                    },
+                    "sms_notifications": {
+                        "type": "boolean"
+                    },
+                    "maintenance_reminders": {
+                        "type": "boolean"
+                    },
+                    "marketing_emails": {
+                        "type": "boolean"
+                    },
+                    "theme": {
+                        "type": "string",
+                        "enum": [
+                            "light",
+                            "dark",
+                            "system"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Doe"
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+233201234567"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "guest",
+                            "driver",
+                            "expert",
+                            "admin"
+                        ],
+                        "example": "driver"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "email_verified": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "phone_verified": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "onboarding_completed": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "kyc_completed": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "driver_profile": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/DriverProfile"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "expert_profile": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ExpertProfile"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "preferences": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/UserPreference"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "VehicleMake": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Toyota"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "toyota"
+                    },
+                    "logo": {
+                        "type": "string"
+                    },
+                    "country_of_origin": {
+                        "type": "string",
+                        "example": "Japan"
+                    }
+                },
+                "type": "object"
+            },
+            "VehicleModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Camry"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "camry"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "sedan",
+                            "suv",
+                            "hatchback",
+                            "pickup",
+                            "van",
+                            "coupe",
+                            "wagon",
+                            "convertible",
+                            "motorcycle",
+                            "truck",
+                            "bus",
+                            "other"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "Vehicle": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "make": {
+                        "type": "string",
+                        "example": "Toyota"
+                    },
+                    "model": {
+                        "type": "string",
+                        "example": "Camry"
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "example": "2020 Toyota Camry"
+                    },
+                    "year": {
+                        "type": "integer",
+                        "example": 2020
+                    },
+                    "color": {
+                        "type": "string",
+                        "example": "Silver"
+                    },
+                    "license_plate": {
+                        "type": "string",
+                        "example": "GR-1234-20"
+                    },
+                    "vin": {
+                        "type": "string"
+                    },
+                    "fuel_type": {
+                        "type": "string",
+                        "enum": [
+                            "petrol",
+                            "diesel",
+                            "electric",
+                            "hybrid",
+                            "lpg",
+                            "other"
+                        ]
+                    },
+                    "transmission": {
+                        "type": "string",
+                        "enum": [
+                            "manual",
+                            "automatic",
+                            "cvt",
+                            "other"
+                        ]
+                    },
+                    "mileage": {
+                        "type": "integer",
+                        "example": 50000
+                    },
+                    "mileage_unit": {
+                        "type": "string",
+                        "enum": [
+                            "km",
+                            "miles"
+                        ]
+                    },
+                    "nickname": {
+                        "type": "string"
+                    },
+                    "image": {
+                        "type": "string"
+                    },
+                    "is_primary": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "User authentication endpoints"
+        },
+        {
+            "name": "Vehicles",
+            "description": "Vehicle management endpoints"
+        },
+        {
+            "name": "Diagnoses",
+            "description": "Vehicle diagnosis endpoints"
+        },
+        {
+            "name": "Road Signs",
+            "description": "Road signs and quiz endpoints"
+        },
+        {
+            "name": "Articles",
+            "description": "Learning articles endpoints"
+        },
+        {
+            "name": "Settings",
+            "description": "Settings"
+        }
+    ]
+}

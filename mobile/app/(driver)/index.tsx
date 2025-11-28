@@ -492,6 +492,40 @@ export default function DriverHomeScreen() {
           </ScrollView>
         </View>
 
+        {/* Maintenance Reminder Banner */}
+        <View className="px-4 pt-4">
+          <TouchableOpacity
+            onPress={() => router.push('/(driver)/profile/reminders')}
+            activeOpacity={0.8}
+          >
+            <View className={`rounded-xl overflow-hidden border ${
+              isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
+            }`}>
+              <View className="p-4">
+                <View className="flex-row items-center">
+                  <View className="h-10 w-10 rounded-full bg-amber-500/20 items-center justify-center mr-3">
+                    <MaterialIcons name="event" size={22} color="#F59E0B" />
+                  </View>
+                  <View className="flex-1">
+                    <View className="flex-row items-center">
+                      <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        Maintenance Due
+                      </Text>
+                      <View className="ml-2 bg-amber-500 px-2 py-0.5 rounded-full">
+                        <Text className="text-white text-xs font-bold">3</Text>
+                      </View>
+                    </View>
+                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Oil change overdue • Tire rotation due soon
+                    </Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+
         {/* Recent Diagnoses */}
         <View className="pt-6">
           <View className="flex-row items-center justify-between px-4 pb-3">

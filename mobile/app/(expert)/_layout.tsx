@@ -90,6 +90,14 @@ export default function ExpertLayout() {
             <MaterialIcons name="person" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: (e) => {
+            // Always navigate to profile index when tab is pressed
+            // This prevents showing stale nested screens (like documents)
+            e.preventDefault();
+            router.navigate('/(expert)/profile');
+          },
+        }}
       />
     </Tabs>
   );
