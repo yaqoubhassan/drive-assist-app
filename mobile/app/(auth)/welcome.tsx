@@ -1,11 +1,10 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../src/context/ThemeContext';
-import { useAuth } from '../../src/context/AuthContext';
+import { useRouter } from 'expo-router';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common';
+import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -37,25 +36,23 @@ export default function WelcomeScreen() {
     >
       <View className="flex-1 px-6 pt-8">
         {/* Logo & Branding */}
-        <View className="items-center">
+        <View className={`items-center ${Platform.OS === 'ios' ? 'pb-8' : ''}`}>
           <View className="h-20 w-20 rounded-2xl bg-primary-500 items-center justify-center mb-4">
             <MaterialIcons name="directions-car" size={48} color="#FFFFFF" />
           </View>
           <Text
-            className={`text-base ${
-              isDark ? 'text-slate-400' : 'text-slate-600'
-            }`}
+            className={`text-base ${isDark ? 'text-slate-400' : 'text-slate-600'
+              }`}
           >
             Your AI-Powered Car Companion
           </Text>
         </View>
 
         {/* Illustration */}
-        <View className="flex-1 items-center justify-center py-8">
+        <View className="flex-1 items-center justify-center py-8 mb-4">
           <View
-            className={`w-full aspect-[4/3] rounded-2xl items-center justify-center ${
-              isDark ? 'bg-slate-800' : 'bg-slate-100'
-            }`}
+            className={`w-full aspect-[4/3] rounded-2xl items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'
+              }`}
           >
             <MaterialIcons
               name="car-repair"
@@ -69,18 +66,16 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Welcome Text */}
-        <View className="items-center mb-8">
+        <View className="items-center mt-4 mb-2">
           <Text
-            className={`text-3xl font-bold text-center mb-2 ${
-              isDark ? 'text-white' : 'text-slate-900'
-            }`}
+            className={`text-3xl font-bold text-center mb-1 ${isDark ? 'text-white' : 'text-slate-900'
+              }`}
           >
             Welcome to DriveAssist
           </Text>
           <Text
-            className={`text-base text-center ${
-              isDark ? 'text-slate-400' : 'text-slate-600'
-            }`}
+            className={`text-base text-center ${isDark ? 'text-slate-400' : 'text-slate-600'
+              }`}
           >
             Sign in or continue as guest
           </Text>
@@ -105,9 +100,8 @@ export default function WelcomeScreen() {
           <View className="flex-row items-center my-2">
             <View className={`flex-1 h-px ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
             <Text
-              className={`mx-4 text-sm font-medium ${
-                isDark ? 'text-slate-400' : 'text-slate-500'
-              }`}
+              className={`mx-4 text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}
             >
               OR
             </Text>
@@ -128,19 +122,17 @@ export default function WelcomeScreen() {
           <View className="gap-3 mt-2">
             <TouchableOpacity
               onPress={() => handleSocialLogin('google')}
-              className={`flex-row items-center justify-center h-12 rounded-xl border ${
-                isDark
-                  ? 'bg-slate-800 border-slate-700'
-                  : 'bg-white border-slate-300'
-              }`}
+              className={`flex-row items-center justify-center h-12 rounded-xl border ${isDark
+                ? 'bg-slate-800 border-slate-700'
+                : 'bg-white border-slate-300'
+                }`}
             >
               <View className="w-6 h-6 mr-3">
                 <MaterialIcons name="g-translate" size={24} color="#EA4335" />
               </View>
               <Text
-                className={`font-bold ${
-                  isDark ? 'text-white' : 'text-slate-800'
-                }`}
+                className={`font-bold ${isDark ? 'text-white' : 'text-slate-800'
+                  }`}
               >
                 Continue with Google
               </Text>
@@ -148,11 +140,10 @@ export default function WelcomeScreen() {
 
             <TouchableOpacity
               onPress={() => handleSocialLogin('apple')}
-              className={`flex-row items-center justify-center h-12 rounded-xl border ${
-                isDark
-                  ? 'bg-slate-800 border-slate-700'
-                  : 'bg-white border-slate-300'
-              }`}
+              className={`flex-row items-center justify-center h-12 rounded-xl border ${isDark
+                ? 'bg-slate-800 border-slate-700'
+                : 'bg-white border-slate-300'
+                }`}
             >
               <MaterialIcons
                 name="apple"
@@ -161,9 +152,8 @@ export default function WelcomeScreen() {
                 style={{ marginRight: 12 }}
               />
               <Text
-                className={`font-bold ${
-                  isDark ? 'text-white' : 'text-slate-800'
-                }`}
+                className={`font-bold ${isDark ? 'text-white' : 'text-slate-800'
+                  }`}
               >
                 Continue with Apple
               </Text>
