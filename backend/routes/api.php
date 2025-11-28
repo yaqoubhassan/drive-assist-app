@@ -1,22 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\VehicleController;
+use App\Http\Controllers\Api\V1\BroadcastController;
 use App\Http\Controllers\Api\V1\DiagnosisController;
 use App\Http\Controllers\Api\V1\ExpertController;
-use App\Http\Controllers\Api\V1\LeadController;
-use App\Http\Controllers\Api\V1\PackageController;
-use App\Http\Controllers\Api\V1\RoadSignController;
-use App\Http\Controllers\Api\V1\QuizController;
-use App\Http\Controllers\Api\V1\ArticleController;
-use App\Http\Controllers\Api\V1\MaintenanceController;
-use App\Http\Controllers\Api\V1\ProfileController;
-use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\KycController;
-use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\LeadController;
+use App\Http\Controllers\Api\V1\MaintenanceController;
 use App\Http\Controllers\Api\V1\MessageController;
-use App\Http\Controllers\Api\V1\BroadcastController;
+use App\Http\Controllers\Api\V1\OnboardingController;
+use App\Http\Controllers\Api\V1\PackageController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\QuizController;
+use App\Http\Controllers\Api\V1\RoadSignController;
+use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\VehicleController;
+use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
