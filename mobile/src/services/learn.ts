@@ -174,7 +174,12 @@ export const roadSignsService = {
    * Get all road signs
    */
   async getAllSigns(params?: { category?: string; search?: string }): Promise<RoadSign[]> {
-    const response = await api.get<RoadSign[]>(
+    const response = await api.get<{
+      data: RoadSign[];
+      current_page: number;
+      last_page: number;
+      total: number;
+    }>(
       apiConfig.endpoints.roadSigns.list,
       params
     );
@@ -183,7 +188,8 @@ export const roadSignsService = {
       throw new Error(response.message || 'Failed to fetch road signs');
     }
 
-    return response.data;
+    // API returns paginated data, extract the data array
+    return response.data.data || [];
   },
 
   /**
