@@ -82,13 +82,8 @@ export default function SignUpScreen() {
         phone: phone || undefined,
         userType,
       });
-      // Experts go through email verification first, then onboarding
-      // Drivers go directly to the app
-      if (userType === 'expert') {
-        router.replace('/(auth)/verify-email');
-      } else {
-        router.replace('/(driver)');
-      }
+      // All users go through email verification first
+      router.replace('/(auth)/verify-email');
     } catch (error) {
       setErrors({ email: 'Email already in use' });
     } finally {

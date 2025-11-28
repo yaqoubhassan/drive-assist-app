@@ -115,6 +115,9 @@ export interface ExpertProfileResponse {
  * Transform API user response to app User type
  */
 function transformUserResponse(apiUser: UserResponse): User | DriverProfile | ExpertProfile {
+  // Check email verification status from API response
+  const isEmailVerified = !!apiUser.email_verified_at;
+
   const baseUser: User = {
     id: apiUser.id.toString(),
     email: apiUser.email,
@@ -122,6 +125,7 @@ function transformUserResponse(apiUser: UserResponse): User | DriverProfile | Ex
     phone: apiUser.phone || undefined,
     avatar: apiUser.avatar || undefined,
     userType: apiUser.role === 'admin' ? 'driver' : apiUser.role, // Treat admin as driver for now
+    emailVerified: isEmailVerified, // Add email verification status to all users
     createdAt: apiUser.created_at,
     updatedAt: apiUser.updated_at,
   };
@@ -130,6 +134,7 @@ function transformUserResponse(apiUser: UserResponse): User | DriverProfile | Ex
     const driverProfile: DriverProfile = {
       ...baseUser,
       userType: 'driver',
+      emailVerified: isEmailVerified,
       vehicles: [],
       savedExperts: [],
       diagnosisCount: 0,
@@ -213,10 +218,13 @@ export const authService = {
       await storage.setObject(StorageKeys.USER, user);
       await storage.setItem(StorageKeys.USER_TYPE, user.userType);
 
+      // Save email verification status for all users
+      const emailVerified = 'emailVerified' in user ? user.emailVerified : false;
+      await storage.setItem(StorageKeys.EMAIL_VERIFIED, emailVerified ? 'true' : 'false');
+
       // Save expert-specific data
       if (user.userType === 'expert') {
         const expertUser = user as ExpertProfile;
-        await storage.setItem(StorageKeys.EMAIL_VERIFIED, expertUser.emailVerified ? 'true' : 'false');
         await storage.setItem(StorageKeys.EXPERT_ONBOARDING_COMPLETE, expertUser.onboardingComplete ? 'true' : 'false');
         await storage.setItem(StorageKeys.EXPERT_KYC_STATUS, expertUser.kycStatus);
       }
@@ -276,9 +284,11 @@ export const authService = {
       await storage.setObject(StorageKeys.USER, user);
       await storage.setItem(StorageKeys.USER_TYPE, user.userType);
 
+      // Save email verification status for all users (false after registration)
+      await storage.setItem(StorageKeys.EMAIL_VERIFIED, 'false');
+
       // Save expert-specific data
       if (user.userType === 'expert') {
-        await storage.setItem(StorageKeys.EMAIL_VERIFIED, 'false');
         await storage.setItem(StorageKeys.EXPERT_ONBOARDING_COMPLETE, 'false');
         await storage.setItem(StorageKeys.EXPERT_KYC_STATUS, 'not_started');
       }

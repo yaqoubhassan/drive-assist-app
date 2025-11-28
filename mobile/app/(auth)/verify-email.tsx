@@ -40,8 +40,12 @@ export default function VerifyEmailScreen() {
 
   // Redirect if already verified
   useEffect(() => {
-    if (isEmailVerified && userType === 'expert') {
-      router.replace('/(auth)/expert-onboarding');
+    if (isEmailVerified) {
+      if (userType === 'expert') {
+        router.replace('/(auth)/expert-onboarding');
+      } else if (userType === 'driver') {
+        router.replace('/(driver)');
+      }
     }
   }, [isEmailVerified, userType]);
 

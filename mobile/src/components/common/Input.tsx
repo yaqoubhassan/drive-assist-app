@@ -5,6 +5,8 @@ import {
   Text,
   TouchableOpacity,
   TextInputProps,
+  Platform,
+  StyleSheet,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -29,9 +31,10 @@ export function Input({
   secureTextEntry,
   containerClassName = '',
   className = '',
+  multiline,
   ...props
 }: InputProps) {
-  const { isDark, colors } = useTheme();
+  const { isDark } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isSecureVisible, setIsSecureVisible] = useState(false);
 
@@ -46,9 +49,29 @@ export function Input({
     : 'border-slate-200';
 
   const bgColor = isDark ? 'bg-slate-800' : 'bg-slate-50';
-  const textColor = isDark ? 'text-white' : 'text-slate-900';
   const placeholderColor = isDark ? '#94A3B8' : '#9CA3AF';
   const iconColor = isDark ? '#94A3B8' : '#6B7280';
+  const textColor = isDark ? '#FFFFFF' : '#0F172A';
+
+  // Dynamic input styles for iOS fix
+  const inputStyles = StyleSheet.create({
+    input: {
+      flex: 1,
+      fontSize: 16,
+      color: textColor,
+      // Fix iOS text alignment issue
+      paddingTop: Platform.OS === 'ios' ? 14 : 12,
+      paddingBottom: Platform.OS === 'ios' ? 14 : 12,
+      // Ensure text is vertically centered
+      textAlignVertical: 'center',
+      // Minimum height for consistent sizing
+      minHeight: multiline ? 100 : 48,
+      // Remove default iOS padding that causes issues
+      ...(Platform.OS === 'ios' && !multiline && {
+        lineHeight: 20,
+      }),
+    },
+  });
 
   return (
     <View className={`mb-4 ${containerClassName}`}>
@@ -64,22 +87,24 @@ export function Input({
 
       <View
         className={`flex-row items-center rounded-xl border-2 px-4 ${borderColor} ${bgColor}`}
+        style={multiline ? { alignItems: 'flex-start', paddingTop: 12 } : undefined}
       >
         {icon && (
           <MaterialIcons
             name={icon}
             size={20}
             color={iconColor}
-            style={{ marginRight: 12 }}
+            style={{ marginRight: 12, marginTop: multiline ? 2 : 0 }}
           />
         )}
 
         <TextInput
-          className={`flex-1 py-4 text-base ${textColor} ${className}`}
+          style={inputStyles.input}
           placeholderTextColor={placeholderColor}
           secureTextEntry={isPassword && !isSecureVisible}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          multiline={multiline}
           {...props}
         />
 

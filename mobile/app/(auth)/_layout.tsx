@@ -10,18 +10,19 @@ export default function AuthLayout() {
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
+        animationDuration: 300,
         contentStyle: {
           backgroundColor: isDark ? '#111827' : '#FFFFFF',
         },
       }}
     >
       <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-      <Stack.Screen name="welcome" />
-      <Stack.Screen name="sign-in" />
-      <Stack.Screen name="sign-up" />
-      <Stack.Screen name="verify-email" />
-      <Stack.Screen name="forgot-password" />
-      <Stack.Screen name="expert-onboarding" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
+      <Stack.Screen name="sign-in" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="sign-up" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="verify-email" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="forgot-password" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="expert-onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
     </Stack>
   );
 }
