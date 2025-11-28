@@ -156,6 +156,33 @@ class DiagnosisController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/v1/diagnoses/guest/quota",
+     *     summary="Check guest diagnosis quota",
+     *     tags={"Diagnoses"},
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function guestQuota(Request $request): JsonResponse
+    {
+        $fingerprint = $request->get('device_fingerprint');
+
+        if (!$fingerprint) {
+            return $this->error('Device identification required.', 400);
+        }
+
+        $freeLimit = config('app.free_diagnoses_for_guests', 3);
+        $remaining = max(0, $freeLimit - $fingerprint->diagnoses_used);
+
+        return $this->success([
+            'total_free' => $freeLimit,
+            'used' => $fingerprint->diagnoses_used,
+            'remaining' => $remaining,
+            'can_diagnose' => $remaining > 0,
+        ]);
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/v1/diagnoses/guest",
      *     summary="Create a guest diagnosis",

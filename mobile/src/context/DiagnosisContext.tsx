@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { diagnosisService, DiagnosisResult, GuestDiagnosisResponse } from '../services/diagnosis';
+import { diagnosisService, DiagnosisResult, GuestDiagnosisResponse, GuestQuotaResponse } from '../services/diagnosis';
 import { useAuth } from './AuthContext';
 
 // Diagnosis input data collected through the flow
@@ -29,9 +29,12 @@ interface DiagnosisState {
   result: DiagnosisResult | null;
   // Guest-specific data
   remainingDiagnoses: number | null;
+  // Whether guest can still diagnose
+  canDiagnose: boolean;
   // Loading/error states
   isLoading: boolean;
   isSubmitting: boolean;
+  isCheckingQuota: boolean;
   error: string | null;
 }
 
@@ -40,6 +43,8 @@ interface DiagnosisContextType extends DiagnosisState {
   updateInput: (data: Partial<DiagnosisInput>) => void;
   // Clear all input data
   clearInput: () => void;
+  // Check guest quota before proceeding
+  checkGuestQuota: () => Promise<GuestQuotaResponse>;
   // Submit diagnosis (handles both guest and authenticated)
   submitDiagnosis: () => Promise<DiagnosisResult>;
   // Clear result
@@ -69,8 +74,10 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
     input: initialInput,
     result: null,
     remainingDiagnoses: null,
+    canDiagnose: true,
     isLoading: false,
     isSubmitting: false,
+    isCheckingQuota: false,
     error: null,
   });
 
@@ -100,6 +107,30 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
       ...prev,
       error: null,
     }));
+  }, []);
+
+  const checkGuestQuota = useCallback(async (): Promise<GuestQuotaResponse> => {
+    setState(prev => ({ ...prev, isCheckingQuota: true, error: null }));
+
+    try {
+      const quota = await diagnosisService.checkGuestQuota();
+
+      setState(prev => ({
+        ...prev,
+        remainingDiagnoses: quota.remaining,
+        canDiagnose: quota.can_diagnose,
+        isCheckingQuota: false,
+      }));
+
+      return quota;
+    } catch (error: any) {
+      setState(prev => ({
+        ...prev,
+        isCheckingQuota: false,
+        error: error?.message || 'Failed to check quota',
+      }));
+      throw error;
+    }
   }, []);
 
   const submitDiagnosis = useCallback(async (): Promise<DiagnosisResult> => {
@@ -154,6 +185,7 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
         ...state,
         updateInput,
         clearInput,
+        checkGuestQuota,
         submitDiagnosis,
         clearResult,
         clearError,

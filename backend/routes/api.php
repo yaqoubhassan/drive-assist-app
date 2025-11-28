@@ -85,8 +85,12 @@ Route::prefix('v1')->group(function () {
 
     // Guest Diagnosis (with device tracking)
     Route::middleware(['track.device'])->group(function () {
+        Route::get('diagnoses/guest/quota', [DiagnosisController::class, 'guestQuota']);
         Route::post('diagnoses/guest', [DiagnosisController::class, 'guestDiagnosis']);
     });
+
+    // Public Expert Search (for guests to find nearby experts)
+    Route::get('experts/nearby', [ExpertController::class, 'nearby']);
 
     // ===========================================
     // Authenticated Routes

@@ -64,10 +64,33 @@ export interface GuestDiagnosisRequest {
   symptoms_description: string;
 }
 
+export interface GuestQuotaResponse {
+  total_free: number;
+  used: number;
+  remaining: number;
+  can_diagnose: boolean;
+}
+
 /**
  * Diagnosis Service
  */
 export const diagnosisService = {
+  /**
+   * Check guest diagnosis quota before submitting
+   * Requires device headers to be set in API client
+   */
+  async checkGuestQuota(): Promise<GuestQuotaResponse> {
+    const response = await api.get<GuestQuotaResponse>(
+      apiConfig.endpoints.diagnoses.guestQuota
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to check quota');
+    }
+
+    return response.data;
+  },
+
   /**
    * Create a guest diagnosis (no authentication required)
    * Requires device headers to be set in API client
