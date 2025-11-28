@@ -326,7 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('No email address found');
       }
 
-      await authService.resendOtp(email, 'verification');
+      await authService.resendOtp(email, 'email_verification');
     } catch (error) {
       console.error('Resend verification code error:', error);
       throw error;

@@ -55,7 +55,7 @@ export interface ResetPasswordRequest {
 
 export interface ResendOtpRequest {
   email: string;
-  type: 'verification' | 'password_reset';
+  type: 'email_verification' | 'password_reset';
 }
 
 export interface UserResponse {
@@ -395,7 +395,7 @@ export const authService = {
   /**
    * Resend OTP code
    */
-  async resendOtp(email: string, type: 'verification' | 'password_reset' = 'verification'): Promise<void> {
+  async resendOtp(email: string, type: 'email_verification' | 'password_reset' = 'email_verification'): Promise<void> {
     const response = await api.post(apiConfig.endpoints.auth.resendOtp, { email, type });
 
     if (!response.success) {
