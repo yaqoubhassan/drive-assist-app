@@ -250,7 +250,7 @@ export default function NearbyExpertsList({
                     </Text>
                   </View>
                 )}
-                {expert.expert_profile?.is_priority_listed && (
+                {expert.profile?.is_priority_listed && (
                   <View className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5">
                     <MaterialIcons name="star" size={12} color="#FFF" />
                   </View>
@@ -267,7 +267,7 @@ export default function NearbyExpertsList({
                       }`}
                       numberOfLines={1}
                     >
-                      {expert.expert_profile?.business_name || expert.full_name}
+                      {expert.profile?.business_name || expert.full_name}
                     </Text>
                     <Text
                       className={`text-sm ${
@@ -275,7 +275,7 @@ export default function NearbyExpertsList({
                       }`}
                       numberOfLines={1}
                     >
-                      {expert.expert_profile?.city || 'Location not specified'}
+                      {expert.profile?.city || 'Location not specified'}
                     </Text>
                   </View>
 
@@ -301,27 +301,27 @@ export default function NearbyExpertsList({
 
                 {/* Rating */}
                 <View className="flex-row items-center mt-1">
-                  <View className="flex-row">{renderStars(expert.expert_profile?.rating || 0)}</View>
+                  <View className="flex-row">{renderStars(expert.profile?.rating || 0)}</View>
                   <Text
                     className={`text-xs ml-1 ${
                       isDark ? 'text-slate-400' : 'text-slate-500'
                     }`}
                   >
-                    {expert.expert_profile?.rating?.toFixed(1) || '0.0'} ({expert.expert_profile?.rating_count || 0})
+                    {expert.profile?.rating?.toFixed(1) || '0.0'} ({expert.profile?.rating_count || 0})
                   </Text>
                   <Text
                     className={`text-xs ml-2 ${
                       isDark ? 'text-slate-500' : 'text-slate-400'
                     }`}
                   >
-                    {expert.expert_profile?.jobs_completed || 0} jobs
+                    {expert.profile?.jobs_completed || 0} jobs
                   </Text>
                 </View>
 
                 {/* Specializations */}
-                {expert.expert_profile?.specializations && expert.expert_profile.specializations.length > 0 && (
+                {expert.profile?.specializations && expert.profile.specializations.length > 0 && (
                   <View className="flex-row flex-wrap mt-2 gap-1">
-                    {expert.expert_profile.specializations.slice(0, 3).map((spec) => (
+                    {expert.profile.specializations.slice(0, 3).map((spec) => (
                       <View
                         key={spec.id}
                         className={`px-2 py-0.5 rounded-full ${
@@ -333,13 +333,13 @@ export default function NearbyExpertsList({
                         </Text>
                       </View>
                     ))}
-                    {expert.expert_profile.specializations.length > 3 && (
+                    {expert.profile.specializations.length > 3 && (
                       <Text
                         className={`text-xs ${
                           isDark ? 'text-slate-500' : 'text-slate-400'
                         }`}
                       >
-                        +{expert.expert_profile.specializations.length - 3} more
+                        +{expert.profile.specializations.length - 3} more
                       </Text>
                     )}
                   </View>

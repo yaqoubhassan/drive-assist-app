@@ -31,7 +31,7 @@ export interface Expert {
   last_name: string;
   full_name: string;
   avatar: string | null;
-  expert_profile: ExpertProfile;
+  profile: ExpertProfile;
   distance_km?: number;
 }
 

@@ -7,7 +7,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useDiagnosis } from '../../../src/context/DiagnosisContext';
 import { Button, Card } from '../../../src/components/common';
-import { NearbyExpertsList } from '../../../src/components/experts';
+import {
+  NearbyExpertsList,
+  ExpertProfileSheet,
+  SignUpPromptModal,
+} from '../../../src/components/experts';
 import { Expert } from '../../../src/services/expert';
 
 export default function DiagnoseResultsScreen() {
@@ -16,6 +20,9 @@ export default function DiagnoseResultsScreen() {
   const { result, remainingDiagnoses, isGuest, clearInput, clearResult } = useDiagnosis();
   const [diyExpanded, setDiyExpanded] = useState(false);
   const [helpful, setHelpful] = useState<boolean | null>(null);
+  const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   const urgencyColors = {
     low: { bg: 'bg-green-500/20', text: 'text-green-500', label: 'Low', icon: 'check-circle', iconColor: '#10B981' },
@@ -57,27 +64,42 @@ export default function DiagnoseResultsScreen() {
   };
 
   const handleFindExpert = () => {
-    if (isGuest) {
-      // For guests, prompt to sign up first
-      router.push('/(auth)/sign-up');
-    } else {
-      router.push('/(driver)/experts');
-    }
+    // Navigate to the nearby experts screen with map view
+    router.push('/(driver)/experts/nearby');
   };
 
   const handleExpertPress = (expert: Expert) => {
+    setSelectedExpert(expert);
+    setShowProfileSheet(true);
+  };
+
+  const handleContactPress = () => {
     if (isGuest) {
-      router.push('/(auth)/sign-up');
+      setShowProfileSheet(false);
+      setTimeout(() => setShowSignUpModal(true), 300);
     } else {
-      router.push({
-        pathname: '/(driver)/experts/[id]',
-        params: { id: expert.id.toString() },
-      });
+      setShowProfileSheet(false);
+      if (selectedExpert) {
+        router.push({
+          pathname: '/(driver)/messages/[id]',
+          params: { id: selectedExpert.id.toString(), expertId: selectedExpert.id.toString() },
+        });
+      }
     }
   };
 
   const handleSignUpPress = () => {
+    setShowSignUpModal(true);
+  };
+
+  const handleSignUp = () => {
+    setShowSignUpModal(false);
     router.push('/(auth)/sign-up');
+  };
+
+  const handleSignIn = () => {
+    setShowSignUpModal(false);
+    router.push('/(auth)/sign-in');
   };
 
   return (
@@ -388,8 +410,8 @@ export default function DiagnoseResultsScreen() {
         style={{ paddingBottom: 32 }}
       >
         <Button
-          title={isGuest ? "Sign Up to Connect with Experts" : "Find Local Expert"}
-          icon={isGuest ? "person-add" : "search"}
+          title="View Experts on Map"
+          icon="map"
           onPress={handleFindExpert}
           fullWidth
         />
@@ -445,6 +467,25 @@ export default function DiagnoseResultsScreen() {
           This AI diagnosis is for informational purposes only.
         </Text>
       </View>
+
+      {/* Expert Profile Bottom Sheet */}
+      <ExpertProfileSheet
+        expert={selectedExpert}
+        visible={showProfileSheet}
+        onClose={() => setShowProfileSheet(false)}
+        onContactPress={handleContactPress}
+        isGuest={isGuest}
+      />
+
+      {/* Sign Up Prompt Modal */}
+      <SignUpPromptModal
+        visible={showSignUpModal}
+        onClose={() => setShowSignUpModal(false)}
+        onSignUp={handleSignUp}
+        onSignIn={handleSignIn}
+        title="Sign Up to Contact"
+        message="Create a free account to message this expert, access their contact details, and book appointments."
+      />
     </SafeAreaView>
   );
 }
