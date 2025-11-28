@@ -217,13 +217,7 @@ export default function NearbyExpertsList({
       {experts.map((expert, index) => (
         <TouchableOpacity
           key={expert.id}
-          onPress={() => {
-            if (isGuest && onSignUpPress) {
-              onSignUpPress();
-            } else {
-              onExpertPress(expert);
-            }
-          }}
+          onPress={() => onExpertPress(expert)}
           className={`mb-3 ${index === experts.length - 1 ? 'mb-0' : ''}`}
         >
           <Card variant="outlined" padding="md">

@@ -81,6 +81,7 @@ export const apiConfig = {
       list: '/diagnoses',
       create: '/diagnoses',
       guest: '/diagnoses/guest',
+      guestQuota: '/diagnoses/guest/quota',
       show: (id: string) => `/diagnoses/${id}`,
       matchingExperts: (id: string) => `/diagnoses/${id}/experts`,
     },
