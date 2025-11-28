@@ -3,8 +3,9 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Animated } from
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../../src/context/ThemeContext';
-import { Button } from '../../../../src/components/common';
+import { Button, Card } from '../../../../src/components/common';
 
 interface QuizQuestion {
   id: string;
@@ -17,7 +18,7 @@ interface QuizQuestion {
   category: string;
 }
 
-// Comprehensive quiz questions database
+// Comprehensive quiz questions database with Flaticon images
 const allQuestions: QuizQuestion[] = [
   // REGULATORY SIGNS
   {
@@ -25,7 +26,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What should you do when you see this sign?',
     options: ['Slow down and proceed', 'Come to a complete stop', 'Yield to traffic', 'Continue at normal speed'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Vienna_Convention_road_sign_B2a.svg/240px-Vienna_Convention_road_sign_B2a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842157.png',
     signName: 'Stop Sign',
     explanation: 'A stop sign requires you to come to a complete stop at the line, crosswalk, or before entering the intersection.',
     category: 'regulatory',
@@ -35,8 +36,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign means you must:',
     options: ['Stop immediately', 'Slow down and give way to traffic', 'Speed up to merge', 'Change lanes'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Vienna_Convention_road_sign_B1-V1.svg/240px-Vienna_Convention_road_sign_B1-V1.svg.png',
-    signName: 'Yield Sign',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842066.png',
+    signName: 'Yield / Give Way',
     explanation: 'A yield sign means you must slow down and give way to traffic on the road you are entering or crossing.',
     category: 'regulatory',
   },
@@ -45,7 +46,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What does this sign indicate?',
     options: ['Minimum speed allowed', 'Maximum speed allowed', 'Suggested speed', 'Speed limit for trucks only'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Zeichen_274-60_-_Zul%C3%A4ssige_H%C3%B6chstgeschwindigkeit%2C_StVO_2017.svg/240px-Zeichen_274-60_-_Zul%C3%A4ssige_H%C3%B6chstgeschwindigkeit%2C_StVO_2017.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842094.png',
     signName: 'Speed Limit',
     explanation: 'This sign shows the maximum speed allowed on this road. In Ghana, speed limits are in km/h.',
     category: 'regulatory',
@@ -55,7 +56,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What does this sign mean?',
     options: ['One way street', 'Do not enter', 'Wrong way', 'Road closed ahead'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Vienna_Convention_road_sign_C1.svg/240px-Vienna_Convention_road_sign_C1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842135.png',
     signName: 'No Entry',
     explanation: 'This sign prohibits entry from your direction. Do not enter this road.',
     category: 'regulatory',
@@ -65,7 +66,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'When you see this sign, you should:',
     options: ['Pass vehicles freely', 'Not overtake other vehicles', 'Overtake only on the right', 'Overtake at high speed'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Vienna_Convention_road_sign_C13a-V1.svg/240px-Vienna_Convention_road_sign_C13a-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842081.png',
     signName: 'No Overtaking',
     explanation: 'This sign means overtaking other vehicles is prohibited in this zone.',
     category: 'regulatory',
@@ -75,7 +76,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Parking available', 'No parking allowed', 'Short-term parking', 'Reserved parking'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Vienna_Convention_road_sign_C18.svg/240px-Vienna_Convention_road_sign_C18.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842138.png',
     signName: 'No Parking',
     explanation: 'Parking is not allowed in this area. Your vehicle may be towed.',
     category: 'regulatory',
@@ -85,7 +86,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What action is prohibited by this sign?',
     options: ['Left turn', 'Right turn', 'U-turn', 'Straight ahead'],
     correctAnswer: 2,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vienna_Convention_road_sign_C11a.svg/240px-Vienna_Convention_road_sign_C11a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842147.png',
     signName: 'No U-Turn',
     explanation: 'U-turns are prohibited at this location.',
     category: 'regulatory',
@@ -95,7 +96,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign prohibits:',
     options: ['Right turns', 'Left turns', 'U-turns', 'Going straight'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Vienna_Convention_road_sign_C11b.svg/240px-Vienna_Convention_road_sign_C11b.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842146.png',
     signName: 'No Left Turn',
     explanation: 'Left turns are prohibited at this intersection.',
     category: 'regulatory',
@@ -105,7 +106,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What does this one-way sign mean?',
     options: ['Merge ahead', 'Traffic flows in one direction only', 'Road splits ahead', 'Keep left'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Vienna_Convention_road_sign_C12b-V1.svg/240px-Vienna_Convention_road_sign_C12b-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842161.png',
     signName: 'One Way',
     explanation: 'Traffic flows in one direction only. Do not drive against the flow.',
     category: 'regulatory',
@@ -115,8 +116,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign is commonly found near:',
     options: ['Schools', 'Hospitals', 'Markets', 'All of the above'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Vienna_Convention_road_sign_C33a-V1.svg/240px-Vienna_Convention_road_sign_C33a-V1.svg.png',
-    signName: 'No Horns',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842134.png',
+    signName: 'No Horns / Silent Zone',
     explanation: 'Use of vehicle horns is prohibited in this area. Common in hospital zones.',
     category: 'regulatory',
   },
@@ -125,7 +126,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What does this sign instruct you to do?',
     options: ['Keep left', 'Keep right', 'Turn around', 'Stop'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Vienna_Convention_road_sign_D1b-V1.svg/240px-Vienna_Convention_road_sign_D1b-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842165.png',
     signName: 'Keep Right',
     explanation: 'Keep to the right side of the obstacle or road divider.',
     category: 'regulatory',
@@ -135,9 +136,29 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign prohibits:',
     options: ['Left turns', 'U-turns', 'Right turns', 'Stopping'],
     correctAnswer: 2,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Vienna_Convention_road_sign_C11c.svg/240px-Vienna_Convention_road_sign_C11c.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842149.png',
     signName: 'No Right Turn',
     explanation: 'Right turns are prohibited at this intersection.',
+    category: 'regulatory',
+  },
+  {
+    id: 'r13',
+    question: 'What does this sign indicate in school zones?',
+    options: ['Maximum 50 km/h', 'Maximum 30 km/h', 'Maximum 60 km/h', 'No speed limit'],
+    correctAnswer: 1,
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842092.png',
+    signName: 'Speed Limit (30 km/h)',
+    explanation: 'Maximum speed 30 km/h. Common in school zones and residential areas in Ghana.',
+    category: 'regulatory',
+  },
+  {
+    id: 'r14',
+    question: 'This sign means you must not:',
+    options: ['Park here', 'Stop here', 'Turn here', 'Honk here'],
+    correctAnswer: 1,
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842140.png',
+    signName: 'No Stopping',
+    explanation: 'Stopping is prohibited in this area, even briefly. Keep moving.',
     category: 'regulatory',
   },
 
@@ -147,7 +168,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign warns you about:',
     options: ['Straight road ahead', 'Sharp curve ahead', 'Road ends', 'Intersection ahead'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Vienna_Convention_road_sign_A1a-V1.svg/240px-Vienna_Convention_road_sign_A1a-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842045.png',
     signName: 'Curve Ahead',
     explanation: 'Sharp curve ahead. Reduce speed and be prepared to turn.',
     category: 'warning',
@@ -157,7 +178,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'When you see this sign, you should:',
     options: ['Speed up', 'Be prepared to stop for pedestrians', 'Honk your horn', 'Change lanes'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Vienna_Convention_road_sign_A12-V2.svg/240px-Vienna_Convention_road_sign_A12-V2.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842032.png',
     signName: 'Pedestrian Crossing',
     explanation: 'Pedestrian crossing ahead. Be prepared to stop for pedestrians.',
     category: 'warning',
@@ -167,8 +188,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Hospital zone', 'School zone', 'Shopping area', 'Residential area'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Vienna_Convention_road_sign_A13-V1.svg/240px-Vienna_Convention_road_sign_A13-V1.svg.png',
-    signName: 'School Zone',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842036.png',
+    signName: 'School Zone / Children',
     explanation: 'School area ahead. Watch for children and reduce speed.',
     category: 'warning',
   },
@@ -177,8 +198,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'At this sign, you should:',
     options: ['Stop completely', 'Give way to vehicles already in the roundabout', 'Speed through', 'Turn back'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Vienna_Convention_road_sign_A26-V2.svg/240px-Vienna_Convention_road_sign_A26-V2.svg.png',
-    signName: 'Roundabout',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842053.png',
+    signName: 'Roundabout Ahead',
     explanation: 'Roundabout ahead. Give way to vehicles already in the roundabout.',
     category: 'warning',
   },
@@ -187,7 +208,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign warns about:',
     options: ['Speed bump', 'Construction zone', 'School ahead', 'Hospital nearby'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Vienna_Convention_road_sign_A15.svg/240px-Vienna_Convention_road_sign_A15.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842059.png',
     signName: 'Road Works',
     explanation: 'Construction or road maintenance ahead. Slow down and watch for workers.',
     category: 'warning',
@@ -197,7 +218,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'When you see this sign, you should:',
     options: ['Speed up', 'Reduce speed and avoid sudden braking', 'Stop immediately', 'Turn around'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Vienna_Convention_road_sign_A8.svg/240px-Vienna_Convention_road_sign_A8.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842043.png',
     signName: 'Slippery Road',
     explanation: 'Road may be slippery when wet. Reduce speed and avoid sudden braking.',
     category: 'warning',
@@ -207,7 +228,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Hill climbing area', 'Steep downhill gradient ahead', 'Speed bump', 'Flat road'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Vienna_Convention_road_sign_A3a.svg/240px-Vienna_Convention_road_sign_A3a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842047.png',
     signName: 'Steep Hill Downward',
     explanation: 'Steep downhill gradient ahead. Use lower gear and control your speed.',
     category: 'warning',
@@ -217,7 +238,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What should you do when seeing this sign?',
     options: ['Brake hard', 'Maintain momentum if safe', 'Stop', 'Turn around'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Vienna_Convention_road_sign_A3b.svg/240px-Vienna_Convention_road_sign_A3b.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842048.png',
     signName: 'Steep Hill Upward',
     explanation: 'Steep uphill gradient ahead. Maintain momentum if safe.',
     category: 'warning',
@@ -227,8 +248,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign warns that:',
     options: ['Road widens', 'Road narrows ahead', 'Road ends', 'Two lanes merge'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Vienna_Convention_road_sign_A5a.svg/240px-Vienna_Convention_road_sign_A5a.svg.png',
-    signName: 'Narrow Road Ahead',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842051.png',
+    signName: 'Narrow Road / Bridge',
     explanation: 'Road narrows ahead. Prepare to adjust your position.',
     category: 'warning',
   },
@@ -237,7 +258,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['One-way traffic', 'Two-way traffic ahead', 'Dead end', 'Merge ahead'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Vienna_Convention_road_sign_A6.svg/240px-Vienna_Convention_road_sign_A6.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842057.png',
     signName: 'Two-Way Traffic',
     explanation: 'Two-way traffic ahead. Stay in your lane.',
     category: 'warning',
@@ -247,7 +268,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'When you see this sign:',
     options: ['Speed up to pass', 'Be prepared to stop', 'Honk your horn', 'Flash your lights'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Vienna_Convention_road_sign_A17.svg/240px-Vienna_Convention_road_sign_A17.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842055.png',
     signName: 'Traffic Lights Ahead',
     explanation: 'Traffic signal ahead. Be prepared to stop.',
     category: 'warning',
@@ -257,7 +278,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign warns about:',
     options: ['Road closure', 'Railway crossing ahead', 'Bridge ahead', 'Tunnel ahead'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Vienna_Convention_road_sign_A27.svg/240px-Vienna_Convention_road_sign_A27.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842062.png',
     signName: 'Railway Crossing',
     explanation: 'Railway level crossing ahead. Stop if signals are active.',
     category: 'warning',
@@ -267,7 +288,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign is common on:',
     options: ['City streets', 'Rural roads', 'Highways', 'Parking lots'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Vienna_Convention_road_sign_A19-V1.svg/240px-Vienna_Convention_road_sign_A19-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842038.png',
     signName: 'Animals Crossing',
     explanation: 'Wild animals may cross the road. Common on rural roads in Ghana.',
     category: 'warning',
@@ -275,11 +296,31 @@ const allQuestions: QuizQuestion[] = [
   {
     id: 'w14',
     question: 'This sign warns about:',
-    options: ['Smooth road ahead', 'Uneven road surface', 'New pavement', 'Speed limit change'],
+    options: ['Smooth road ahead', 'Uneven road surface or speed bumps', 'New pavement', 'Speed limit change'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Vienna_Convention_road_sign_A7a.svg/240px-Vienna_Convention_road_sign_A7a.svg.png',
-    signName: 'Bumpy Road',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842050.png',
+    signName: 'Bumpy Road / Speed Bump',
     explanation: 'Uneven road surface ahead. Reduce speed to avoid damage.',
+    category: 'warning',
+  },
+  {
+    id: 'w15',
+    question: 'This sign warns of:',
+    options: ['Road ending', 'Junction ahead', 'One-way road', 'U-turn allowed'],
+    correctAnswer: 1,
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842064.png',
+    signName: 'Intersection Ahead',
+    explanation: 'Junction or crossroads ahead. Be prepared for traffic from other directions.',
+    category: 'warning',
+  },
+  {
+    id: 'w16',
+    question: 'This sign indicates:',
+    options: ['Single curve', 'Double curve ahead', 'Road ends', 'Straight road'],
+    correctAnswer: 1,
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842046.png',
+    signName: 'Double Curve',
+    explanation: 'Series of curves ahead. Reduce speed and stay alert.',
     category: 'warning',
   },
 
@@ -289,7 +330,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Police station', 'Hospital nearby', 'Fire station', 'School'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Italian_traffic_signs_-_ospedale.svg/240px-Italian_traffic_signs_-_ospedale.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842118.png',
     signName: 'Hospital',
     explanation: 'Hospital nearby. Keep noise low and watch for emergency vehicles.',
     category: 'informational',
@@ -299,8 +340,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'What facility does this sign indicate?',
     options: ['Garage', 'Fuel station', 'Car wash', 'Parking'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Vienna_Convention_road_sign_F5-V1.svg/240px-Vienna_Convention_road_sign_F5-V1.svg.png',
-    signName: 'Fuel Station',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842121.png',
+    signName: 'Fuel / Petrol Station',
     explanation: 'Petrol/fuel station available ahead or nearby.',
     category: 'informational',
   },
@@ -309,7 +350,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['No parking', 'Parking available', 'Reserved parking', 'Temporary parking'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Vienna_Convention_road_sign_E14a.svg/240px-Vienna_Convention_road_sign_E14a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842115.png',
     signName: 'Parking',
     explanation: 'Parking area available.',
     category: 'informational',
@@ -319,8 +360,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'What service is available near this sign?',
     options: ['Hotel', 'Restaurant', 'Gas station', 'Hospital'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Vienna_Convention_road_sign_F3-V1.svg/240px-Vienna_Convention_road_sign_F3-V1.svg.png',
-    signName: 'Restaurant',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842124.png',
+    signName: 'Restaurant / Food',
     explanation: 'Restaurant or food services available nearby.',
     category: 'informational',
   },
@@ -329,8 +370,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Restaurant', 'Hotel or lodging', 'Hospital', 'Information center'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Vienna_Convention_road_sign_F2-V1.svg/240px-Vienna_Convention_road_sign_F2-V1.svg.png',
-    signName: 'Hotel/Lodging',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842119.png',
+    signName: 'Hotel / Lodging',
     explanation: 'Accommodation available nearby. Hotels or guest houses.',
     category: 'informational',
   },
@@ -339,7 +380,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign shows:',
     options: ['Hospital', 'First aid services', 'Pharmacy', 'Doctor\'s office'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Vienna_Convention_road_sign_F8-V1.svg/240px-Vienna_Convention_road_sign_F8-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842117.png',
     signName: 'First Aid',
     explanation: 'First aid or emergency medical services available.',
     category: 'informational',
@@ -349,7 +390,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What facility does this sign indicate?',
     options: ['Internet cafe', 'Public telephone', 'Post office', 'Police station'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Vienna_Convention_road_sign_F9.svg/240px-Vienna_Convention_road_sign_F9.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842127.png',
     signName: 'Telephone',
     explanation: 'Public telephone available. Useful for emergencies.',
     category: 'informational',
@@ -359,8 +400,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Shower area', 'Public restrooms', 'Swimming pool', 'Laundry'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Vienna_Convention_road_sign_F12a.svg/240px-Vienna_Convention_road_sign_F12a.svg.png',
-    signName: 'Restrooms',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842125.png',
+    signName: 'Restrooms / WC',
     explanation: 'Public toilet facilities available.',
     category: 'informational',
   },
@@ -371,7 +412,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign gives directions to:',
     options: ['Bus station', 'Airport', 'Train station', 'Port'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Vienna_Convention_road_sign_F15-V1.svg/240px-Vienna_Convention_road_sign_F15-V1.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842106.png',
     signName: 'Airport',
     explanation: 'Direction to airport. Follow signs to Kotoka International Airport in Accra.',
     category: 'guide',
@@ -381,7 +422,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign indicates:',
     options: ['Road closure', 'Highway exit', 'Speed change', 'Lane ending'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/UK_traffic_sign_819.svg/240px-UK_traffic_sign_819.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842108.png',
     signName: 'Highway Exit',
     explanation: 'Exit from highway or motorway. Follow signs for your destination.',
     category: 'guide',
@@ -391,7 +432,7 @@ const allQuestions: QuizQuestion[] = [
     question: 'What information does this sign provide?',
     options: ['Speed limit', 'Distance to destinations', 'Direction only', 'Road name'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Vienna_Convention_road_sign_E19a.svg/240px-Vienna_Convention_road_sign_E19a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842112.png',
     signName: 'Distance Marker',
     explanation: 'Shows distance to destinations. Distances are in kilometers in Ghana.',
     category: 'guide',
@@ -401,8 +442,8 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign shows:',
     options: ['Speed zone', 'City or town direction', 'Distance only', 'Road condition'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Vienna_Convention_road_sign_E17aa-V1.svg/240px-Vienna_Convention_road_sign_E17aa-V1.svg.png',
-    signName: 'City/Town Ahead',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842110.png',
+    signName: 'City / Town Direction',
     explanation: 'Indicates direction to city or town. Follow for your destination.',
     category: 'guide',
   },
@@ -411,19 +452,19 @@ const allQuestions: QuizQuestion[] = [
     question: 'This sign identifies:',
     options: ['Speed limit', 'Route or highway number', 'Distance', 'Exit number'],
     correctAnswer: 1,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Vienna_Convention_road_sign_E6a.svg/240px-Vienna_Convention_road_sign_E6a.svg.png',
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842113.png',
     signName: 'Route Number',
     explanation: 'Identifies the route or highway number. N1 is the main highway in Ghana.',
     category: 'guide',
   },
   {
     id: 'g6',
-    question: 'Guide signs are typically what color in Ghana?',
-    options: ['Red', 'Yellow', 'Green', 'Blue'],
-    correctAnswer: 2,
-    signImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Vienna_Convention_road_sign_E19a.svg/240px-Vienna_Convention_road_sign_E19a.svg.png',
-    signName: 'Guide Signs',
-    explanation: 'Guide signs are typically green and provide directional information.',
+    question: 'This sign indicates:',
+    options: ['Taxi stand', 'Bus stop', 'Parking', 'Rest area'],
+    correctAnswer: 1,
+    signImage: 'https://cdn-icons-png.flaticon.com/512/3842/3842107.png',
+    signName: 'Bus Stop',
+    explanation: 'Bus stop location. Tro-tro and STC buses stop here.',
     category: 'guide',
   },
 ];
@@ -447,6 +488,8 @@ export default function QuizScreen() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [finalScore, setFinalScore] = useState({ correct: 0, total: 0, percentage: 0 });
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   // Filter questions by category
@@ -460,11 +503,13 @@ export default function QuizScreen() {
 
   // Timer
   useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [startTime]);
+    if (!quizCompleted) {
+      const timer = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [startTime, quizCompleted]);
 
   // Progress animation
   useEffect(() => {
@@ -482,7 +527,7 @@ export default function QuizScreen() {
   };
 
   const handleSelectAnswer = (index: number) => {
-    if (showExplanation) return; // Can't change answer after checking
+    if (showExplanation) return;
     setSelectedAnswer(index);
   };
 
@@ -497,25 +542,22 @@ export default function QuizScreen() {
 
   const handleNext = () => {
     if (isLastQuestion) {
-      // Calculate results and navigate
-      const correctCount = Object.entries({ ...answers, [currentQuestion.id]: selectedAnswer })
+      // Calculate final score immediately
+      const allAnswers = { ...answers, [currentQuestion.id]: selectedAnswer };
+      const correctCount = Object.entries(allAnswers)
         .filter(([id, answer]) => {
           const q = questions.find(q => q.id === id);
           return q && answer === q.correctAnswer;
         }).length;
 
-      const score = Math.round((correctCount / questions.length) * 100);
+      const percentage = Math.round((correctCount / questions.length) * 100);
 
-      router.replace({
-        pathname: '/(driver)/learn/quiz/results',
-        params: {
-          score: score.toString(),
-          correct: correctCount.toString(),
-          total: questions.length.toString(),
-          time: elapsedTime.toString(),
-          category: category || 'all',
-        },
-      } as any);
+      setFinalScore({
+        correct: correctCount,
+        total: questions.length,
+        percentage: percentage
+      });
+      setQuizCompleted(true);
     } else {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
@@ -534,7 +576,208 @@ export default function QuizScreen() {
     );
   };
 
+  const handleViewDetailedResults = () => {
+    router.replace({
+      pathname: '/(driver)/learn/quiz/results',
+      params: {
+        score: finalScore.percentage.toString(),
+        correct: finalScore.correct.toString(),
+        total: finalScore.total.toString(),
+        time: elapsedTime.toString(),
+        category: category || 'all',
+      },
+    } as any);
+  };
+
+  const handleTryAgain = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setAnswers({});
+    setShowExplanation(false);
+    setQuizCompleted(false);
+    setFinalScore({ correct: 0, total: 0, percentage: 0 });
+  };
+
   const isCorrect = selectedAnswer === currentQuestion?.correctAnswer;
+  const isPassed = finalScore.percentage >= 70;
+
+  const getGrade = (score: number) => {
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'B';
+    if (score >= 70) return 'C';
+    if (score >= 60) return 'D';
+    return 'F';
+  };
+
+  const getGradeColor = (grade: string) => {
+    switch (grade) {
+      case 'A': return '#10B981';
+      case 'B': return '#3B82F6';
+      case 'C': return '#F59E0B';
+      case 'D': return '#F97316';
+      default: return '#EF4444';
+    }
+  };
+
+  // Show quiz completion screen
+  if (quizCompleted) {
+    const grade = getGrade(finalScore.percentage);
+    const gradeColor = getGradeColor(grade);
+
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {/* Result Header */}
+          <LinearGradient
+            colors={isPassed ? ['#10B981', '#059669'] : ['#F59E0B', '#EF4444']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="px-4 py-8"
+          >
+            <View className="items-center">
+              <View className="h-20 w-20 rounded-full bg-white/20 items-center justify-center mb-4">
+                <MaterialIcons
+                  name={isPassed ? 'emoji-events' : 'trending-up'}
+                  size={48}
+                  color="#FFFFFF"
+                />
+              </View>
+              <Text className="text-white text-2xl font-bold text-center">
+                {isPassed ? 'Congratulations! 🎉' : 'Keep Practicing! 💪'}
+              </Text>
+              <Text className="text-white/80 text-center mt-2">
+                {isPassed
+                  ? 'You passed the quiz!'
+                  : 'You need 70% to pass. Try again!'}
+              </Text>
+            </View>
+          </LinearGradient>
+
+          {/* Score Card */}
+          <View className="px-4 -mt-6">
+            <Card variant="elevated" className="items-center py-6">
+              {/* Grade Circle */}
+              <View
+                className="h-28 w-28 rounded-full items-center justify-center mb-4"
+                style={{ backgroundColor: gradeColor + '20', borderWidth: 4, borderColor: gradeColor }}
+              >
+                <Text className="text-5xl font-bold" style={{ color: gradeColor }}>
+                  {grade}
+                </Text>
+              </View>
+
+              {/* Score */}
+              <Text className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                {finalScore.percentage}%
+              </Text>
+              <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {finalScore.correct} out of {finalScore.total} correct
+              </Text>
+
+              {/* Pass/Fail Badge */}
+              <View
+                className={`mt-4 px-4 py-2 rounded-full ${
+                  isPassed ? 'bg-green-500/10' : 'bg-red-500/10'
+                }`}
+              >
+                <Text
+                  className={`font-semibold ${isPassed ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  {isPassed ? '✓ PASSED' : '✗ NEEDS IMPROVEMENT'}
+                </Text>
+              </View>
+
+              {/* Stats Row */}
+              <View className="flex-row mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 w-full">
+                <View className="flex-1 items-center">
+                  <MaterialIcons name="schedule" size={24} color="#3B82F6" />
+                  <Text className={`text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {formatTime(elapsedTime)}
+                  </Text>
+                  <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Time Taken
+                  </Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <MaterialIcons name="check-circle" size={24} color="#10B981" />
+                  <Text className={`text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {finalScore.correct}
+                  </Text>
+                  <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Correct
+                  </Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <MaterialIcons name="cancel" size={24} color="#EF4444" />
+                  <Text className={`text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {finalScore.total - finalScore.correct}
+                  </Text>
+                  <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Incorrect
+                  </Text>
+                </View>
+              </View>
+            </Card>
+          </View>
+
+          {/* Category Info */}
+          <View className="px-4 mt-4">
+            <Card variant="default">
+              <View className="flex-row items-center">
+                <View className="h-12 w-12 rounded-full bg-primary-500/10 items-center justify-center mr-3">
+                  <MaterialIcons name="category" size={24} color="#3B82F6" />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {categoryTitles[category || 'all']}
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Quiz Category
+                  </Text>
+                </View>
+              </View>
+            </Card>
+          </View>
+
+          <View className="h-8" />
+        </ScrollView>
+
+        {/* Bottom Actions */}
+        <View className={`px-4 py-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={() => router.replace('/(driver)/learn/quiz')}
+              className={`flex-1 py-4 rounded-xl items-center justify-center ${
+                isDark ? 'bg-slate-800' : 'bg-slate-100'
+              }`}
+            >
+              <MaterialIcons name="list" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+              <Text className={`mt-1 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                All Quizzes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleTryAgain}
+              className="flex-1 py-4 rounded-xl items-center justify-center bg-primary-500"
+            >
+              <MaterialIcons name="replay" size={24} color="#FFFFFF" />
+              <Text className="mt-1 font-semibold text-white">
+                Try Again
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            onPress={handleViewDetailedResults}
+            className="mt-3"
+          >
+            <Text className="text-primary-500 text-center font-semibold">
+              View Detailed Results
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!currentQuestion) {
     return (
