@@ -29,15 +29,18 @@ export interface Vehicle {
 }
 
 export interface CreateVehicleRequest {
-  make: string;
-  model: string;
-  year: number;
+  vehicle_make_id?: number;
+  vehicle_model_id?: number;
+  custom_make?: string;
+  custom_model?: string;
+  year?: number;
   color?: string;
-  plate_number?: string;
+  license_plate?: string;
   vin?: string;
   fuel_type?: string;
   transmission?: string;
   mileage?: number;
+  is_primary?: boolean;
 }
 
 export interface UpdateVehicleRequest extends Partial<CreateVehicleRequest> {}

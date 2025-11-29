@@ -47,10 +47,11 @@ export default function VehicleEditScreen() {
   const [deleting, setDeleting] = useState(false);
 
   // Form state
-  const [make, setMake] = useState('');
+  const [makeId, setMakeId] = useState<number | null>(null);
+  const [makeName, setMakeName] = useState('');
   const [model, setModel] = useState('');
   const [year, setYear] = useState<number>(currentYear);
-  const [plateNumber, setPlateNumber] = useState('');
+  const [licensePlate, setLicensePlate] = useState('');
   const [vin, setVin] = useState('');
   const [color, setColor] = useState('');
   const [fuelType, setFuelType] = useState('petrol');
@@ -61,8 +62,8 @@ export default function VehicleEditScreen() {
   const [showMakePicker, setShowMakePicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
-  // Available makes from backend or constants
-  const [vehicleMakes, setVehicleMakes] = useState<string[]>(GhanaConstants.popularVehicleMakes);
+  // Available makes from backend (with IDs) or constants (names only)
+  const [vehicleMakes, setVehicleMakes] = useState<{ id: number; name: string }[]>([]);
 
   // Load vehicle data if editing
   useEffect(() => {
@@ -75,10 +76,11 @@ export default function VehicleEditScreen() {
   const loadVehicle = async (vehicleId: string) => {
     try {
       const vehicle = await vehicleService.getVehicle(vehicleId);
-      setMake(vehicle.make || '');
+      setMakeId(vehicle.make_id || null);
+      setMakeName(vehicle.make || '');
       setModel(vehicle.model || '');
       setYear(vehicle.year || currentYear);
-      setPlateNumber(vehicle.plate_number || '');
+      setLicensePlate(vehicle.plate_number || '');
       setVin(vehicle.vin || '');
       setColor(vehicle.color || '');
       setFuelType(vehicle.fuel_type || 'petrol');
@@ -96,16 +98,20 @@ export default function VehicleEditScreen() {
     try {
       const makes = await vehicleService.getVehicleMakes();
       if (makes.length > 0) {
-        setVehicleMakes(makes.map(m => m.name));
+        setVehicleMakes(makes.map(m => ({ id: m.id, name: m.name })));
+      } else {
+        // Fall back to constants (without IDs)
+        setVehicleMakes(GhanaConstants.popularVehicleMakes.map((name, index) => ({ id: -index - 1, name })));
       }
     } catch (error) {
       // Fall back to constants if API fails
       console.log('Using local vehicle makes');
+      setVehicleMakes(GhanaConstants.popularVehicleMakes.map((name, index) => ({ id: -index - 1, name })));
     }
   };
 
   const handleSave = async () => {
-    if (!make || !model || !year) {
+    if (!makeName || !model || !year) {
       showError('Required Fields', 'Please fill in make, model, and year.');
       return;
     }
@@ -113,11 +119,11 @@ export default function VehicleEditScreen() {
     setSaving(true);
 
     try {
-      const vehicleData = {
-        make,
-        model,
+      // Build request data with correct field names for backend
+      const vehicleData: any = {
         year,
-        plate_number: plateNumber || undefined,
+        custom_model: model, // Always send model as custom_model for simplicity
+        license_plate: licensePlate || undefined,
         vin: vin || undefined,
         color: color || undefined,
         fuel_type: fuelType,
@@ -125,18 +131,25 @@ export default function VehicleEditScreen() {
         mileage: mileage ? parseInt(mileage, 10) : undefined,
       };
 
+      // Use vehicle_make_id if we have a valid ID from the API, otherwise use custom_make
+      if (makeId && makeId > 0) {
+        vehicleData.vehicle_make_id = makeId;
+      } else {
+        vehicleData.custom_make = makeName;
+      }
+
       if (isEditing && id) {
         await vehicleService.updateVehicle(id, vehicleData);
         showSuccess(
           'Vehicle Updated',
-          `Your ${make} ${model} has been updated successfully.`,
+          `Your ${makeName} ${model} has been updated successfully.`,
           () => router.back()
         );
       } else {
         await vehicleService.createVehicle(vehicleData);
         showSuccess(
           'Vehicle Added',
-          `Your ${make} ${model} has been added successfully.`,
+          `Your ${makeName} ${model} has been added successfully.`,
           () => router.back()
         );
       }
@@ -153,7 +166,7 @@ export default function VehicleEditScreen() {
   const handleDelete = () => {
     showConfirm({
       title: 'Delete Vehicle',
-      message: `Are you sure you want to delete your ${make} ${model}? This action cannot be undone.`,
+      message: `Are you sure you want to delete your ${makeName} ${model}? This action cannot be undone.`,
       variant: 'danger',
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
@@ -240,8 +253,8 @@ export default function VehicleEditScreen() {
                   isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
                 }`}
               >
-                <Text className={make ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')}>
-                  {make || 'Select make'}
+                <Text className={makeName ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')}>
+                  {makeName || 'Select make'}
                 </Text>
                 <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
               </TouchableOpacity>
@@ -251,15 +264,16 @@ export default function VehicleEditScreen() {
                   <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
                     {vehicleMakes.map((vehicleMake) => (
                       <TouchableOpacity
-                        key={vehicleMake}
+                        key={vehicleMake.id}
                         onPress={() => {
-                          setMake(vehicleMake);
+                          setMakeId(vehicleMake.id);
+                          setMakeName(vehicleMake.name);
                           setShowMakePicker(false);
                         }}
                         className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
                       >
-                        <Text className={`${make === vehicleMake ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {vehicleMake}
+                        <Text className={`${makeName === vehicleMake.name ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {vehicleMake.name}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -332,10 +346,10 @@ export default function VehicleEditScreen() {
             </Text>
 
             <Input
-              label="Plate Number"
+              label="License Plate"
               placeholder="e.g., GR-1234-20"
-              value={plateNumber}
-              onChangeText={setPlateNumber}
+              value={licensePlate}
+              onChangeText={setLicensePlate}
               autoCapitalize="characters"
             />
 
