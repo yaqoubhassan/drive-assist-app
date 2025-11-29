@@ -28,31 +28,28 @@ const quickCategories = [
   { id: 'electrical', label: 'Electrical', icon: 'electrical-services' as const },
 ];
 
-// Guest-specific content
+// Guest-specific content - IDs match hardcoded articles in article detail screen
 const popularArticles = [
   {
-    id: '1',
-    slug: 'how-to-check-engine-oil',
-    title: 'How to Check Your Engine Oil',
-    category: 'Maintenance',
-    readTime: '5 min read',
+    id: '3',
+    title: 'How to Check Your Oil Level',
+    category: 'Beginner',
+    readTime: '4 min read',
     image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400',
   },
   {
     id: '2',
-    slug: 'understanding-dashboard-warning-lights',
     title: 'Understanding Dashboard Warning Lights',
-    category: 'Safety',
+    category: 'Education',
     readTime: '8 min read',
-    image: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400',
+    image: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400',
   },
   {
-    id: '3',
-    slug: 'when-to-change-brake-pads',
-    title: 'When to Change Your Brake Pads',
-    category: 'Brakes',
+    id: '5',
+    title: 'Signs Your Brakes Need Attention',
+    category: 'Safety',
     readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+    image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400',
   },
 ];
 
@@ -406,7 +403,7 @@ export default function DriverHomeScreen() {
               {popularArticles.map((article) => (
                 <TouchableOpacity
                   key={article.id}
-                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
+                  onPress={() => router.push(`/(driver)/learn/article/${article.id}`)}
                   className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >

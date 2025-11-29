@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, Share, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../../src/context/ThemeContext';
 import { Badge, Button } from '../../../../src/components/common';
+import { articlesService, Article as ApiArticle } from '../../../../src/services/learn';
 
 const articles: Record<string, {
   id: string;
@@ -812,22 +813,107 @@ const articles: Record<string, {
   },
 };
 
+// Type for combined article (API or hardcoded)
+interface DisplayArticle {
+  id: string;
+  title: string;
+  category: string;
+  readTime: string;
+  author: string;
+  date: string;
+  image: string;
+  content: string[];
+  relatedArticles: { id: string; title: string; image: string }[];
+}
+
+// Transform API article to display format
+function transformApiArticle(apiArticle: ApiArticle): DisplayArticle {
+  // Parse content - split by double newlines or use as single paragraph
+  const contentParagraphs = apiArticle.content
+    ? apiArticle.content.split(/\n\n+/).filter(p => p.trim())
+    : [apiArticle.excerpt];
+
+  return {
+    id: apiArticle.id.toString(),
+    title: apiArticle.title,
+    category: apiArticle.category?.name || 'Article',
+    readTime: `${apiArticle.read_time_minutes} min read`,
+    author: 'DriveAssist Team',
+    date: new Date(apiArticle.created_at).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }),
+    image: apiArticle.image_url || 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800',
+    content: contentParagraphs,
+    relatedArticles: [],
+  };
+}
+
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isDark } = useTheme();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [article, setArticle] = useState<DisplayArticle | null>(null);
 
-  const article = articles[id || '1'];
+  useEffect(() => {
+    async function loadArticle() {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
+      // First check if it's a hardcoded article (numeric ID)
+      const hardcodedArticle = articles[id];
+      if (hardcodedArticle) {
+        setArticle(hardcodedArticle);
+        setLoading(false);
+        return;
+      }
+
+      // Try to fetch from API (could be a slug or numeric ID)
+      try {
+        const apiArticle = await articlesService.getArticle(id);
+        setArticle(transformApiArticle(apiArticle));
+      } catch (error) {
+        console.error('Failed to fetch article:', error);
+        // Article not found
+        setArticle(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadArticle();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Loading article...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!article) {
     return (
       <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
         <View className="flex-1 items-center justify-center p-6">
-          <Text className={`text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <MaterialIcons name="article" size={64} color={isDark ? '#475569' : '#94A3B8'} />
+          <Text className={`text-lg mt-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Article not found
           </Text>
-          <Button title="Go Back" onPress={() => router.back()} className="mt-4" />
+          <Text className={`text-center mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            The article you're looking for doesn't exist or has been removed.
+          </Text>
+          <Button title="Go Back" onPress={() => router.back()} className="mt-6" />
         </View>
       </SafeAreaView>
     );
