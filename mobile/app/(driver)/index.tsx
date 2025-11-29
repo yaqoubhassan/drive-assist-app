@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, Chip, IconButton, Button, Avatar } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
-import { appointmentService, Appointment, formatAppointmentDate, formatAppointmentTime, getStatusLabel } from '../../src/services/appointment';
+import appointmentService, { Appointment, formatAppointmentDate, getStatusLabel } from '../../src/services/appointment';
 
 const quickCategories = [
   { id: 'engine', label: 'Engine', icon: 'settings' as const },
@@ -601,7 +601,7 @@ export default function DriverHomeScreen() {
                           <View className="flex-row items-center mt-1">
                             <MaterialIcons name="event" size={14} color="#3B82F6" />
                             <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                              {formatAppointmentDate(appointment.scheduled_date)} at {formatAppointmentTime(appointment.scheduled_time)}
+                              {formatAppointmentDate(appointment.scheduled_date, appointment.scheduled_time)}
                             </Text>
                           </View>
                         </View>
