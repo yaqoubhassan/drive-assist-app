@@ -135,6 +135,24 @@ class ExpertController extends Controller
         return $this->success(new ExpertResource($expert));
     }
 
+    /**
+     * Get reviews for a specific expert.
+     * This endpoint is publicly accessible.
+     */
+    public function reviews(int $id): JsonResponse
+    {
+        // Verify expert exists
+        $expert = User::where('role', 'expert')->findOrFail($id);
+
+        $reviews = Review::forExpert($id)
+            ->visible()
+            ->with('driver:id,first_name,last_name,avatar')
+            ->latest()
+            ->paginate(10);
+
+        return $this->success($reviews);
+    }
+
     public function myProfile(Request $request): JsonResponse
     {
         $profile = $request->user()->expertProfile()->with([

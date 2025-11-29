@@ -43,6 +43,21 @@ export interface Specialization {
   description: string | null;
 }
 
+export interface Review {
+  id: number;
+  rating: number;
+  comment: string | null;
+  expert_response: string | null;
+  expert_responded_at: string | null;
+  created_at: string;
+  driver: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    avatar: string | null;
+  };
+}
+
 export interface NearbyExpertsRequest {
   latitude: number;
   longitude: number;
@@ -180,6 +195,37 @@ export const expertService = {
     }
 
     return response.data;
+  },
+
+  /**
+   * Get reviews for an expert (publicly accessible)
+   */
+  async getExpertReviews(expertId: number, page: number = 1): Promise<{
+    reviews: Review[];
+    currentPage: number;
+    lastPage: number;
+    total: number;
+  }> {
+    const response = await api.get<{
+      success: boolean;
+      data: {
+        data: Review[];
+        current_page: number;
+        last_page: number;
+        total: number;
+      };
+    }>(`/api/v1/experts/${expertId}/reviews?page=${page}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to fetch reviews');
+    }
+
+    return {
+      reviews: response.data.data,
+      currentPage: response.data.current_page,
+      lastPage: response.data.last_page,
+      total: response.data.total,
+    };
   },
 };
 

@@ -102,6 +102,7 @@ Route::prefix('v1')->group(function () {
 
     // Public Expert Search (for guests to find nearby experts)
     Route::get('experts/nearby', [ExpertController::class, 'nearby']);
+    Route::get('experts/{id}/reviews', [ExpertController::class, 'reviews']);
 
     // ===========================================
     // Authenticated Routes
