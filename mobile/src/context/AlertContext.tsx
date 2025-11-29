@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { SuccessModal, ConfirmationModal } from '../components/common';
+// Import directly to avoid circular dependency with AddressAutocomplete
+import { SuccessModal } from '../components/common/SuccessModal';
+import { ConfirmationModal } from '../components/common/ConfirmationModal';
 
 type AlertVariant = 'success' | 'info' | 'warning' | 'error';
 
