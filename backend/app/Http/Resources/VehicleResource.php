@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Schema(
@@ -52,7 +51,7 @@ class VehicleResource extends JsonResource
             'mileage' => $this->mileage,
             'mileage_unit' => $this->mileage_unit,
             'nickname' => $this->nickname,
-            'image_url' => $this->image ? Storage::disk('public')->url($this->image) : null,
+            'image_url' => $this->getImageUrl($request),
             'is_primary' => $this->is_primary,
             'vehicle_make' => $this->when($this->relationLoaded('make'), function () {
                 return new VehicleMakeResource($this->make);
@@ -61,5 +60,19 @@ class VehicleResource extends JsonResource
                 return new VehicleModelResource($this->model);
             }),
         ];
+    }
+
+    /**
+     * Get the full image URL using the request's base URL
+     */
+    private function getImageUrl(Request $request): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        // Build URL using the request's scheme and host (works with ngrok, localhost, etc.)
+        $baseUrl = $request->getSchemeAndHttpHost();
+        return $baseUrl . '/storage/' . $this->image;
     }
 }
