@@ -250,15 +250,84 @@ PROMPT;
     }
 
     /**
-     * Transcribe voice to text (placeholder - would need speech-to-text service).
+     * Transcribe voice to text using Whisper API.
+     * Uses Groq's Whisper API (fast and affordable) or OpenAI's Whisper.
      */
     public function transcribeVoice(string $audioPath): string
     {
-        // This would integrate with a speech-to-text service
-        // For now, return a placeholder
         Log::info('Voice transcription requested', ['path' => $audioPath]);
 
-        return 'Voice transcription not yet implemented';
+        // Use Groq's Whisper API (faster and more affordable than OpenAI)
+        $groqApiKey = config('services.ai.groq.api_key');
+
+        if (!$groqApiKey) {
+            // Fallback to OpenAI if Groq key not available
+            return $this->transcribeWithOpenAI($audioPath);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $groqApiKey,
+            ])->timeout(120)->attach(
+                'file',
+                file_get_contents($audioPath),
+                basename($audioPath)
+            )->post('https://api.groq.com/openai/v1/audio/transcriptions', [
+                'model' => 'whisper-large-v3-turbo',
+                'language' => 'en',
+                'response_format' => 'json',
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Groq Whisper transcription failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Transcription failed: ' . $response->body());
+            }
+
+            $result = $response->json();
+            $transcription = $result['text'] ?? '';
+
+            Log::info('Voice transcription successful', [
+                'length' => strlen($transcription),
+            ]);
+
+            return $transcription;
+        } catch (\Exception $e) {
+            Log::error('Voice transcription error', ['error' => $e->getMessage()]);
+            throw new \Exception('Failed to transcribe voice recording: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Transcribe using OpenAI's Whisper API as fallback.
+     */
+    protected function transcribeWithOpenAI(string $audioPath): string
+    {
+        $openaiApiKey = config('services.ai.openai.api_key');
+
+        if (!$openaiApiKey) {
+            throw new \Exception('No API key available for voice transcription');
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $openaiApiKey,
+        ])->timeout(120)->attach(
+            'file',
+            file_get_contents($audioPath),
+            basename($audioPath)
+        )->post('https://api.openai.com/v1/audio/transcriptions', [
+            'model' => 'whisper-1',
+            'language' => 'en',
+            'response_format' => 'json',
+        ]);
+
+        if (!$response->successful()) {
+            throw new \Exception('OpenAI transcription failed: ' . $response->body());
+        }
+
+        return $response->json()['text'] ?? '';
     }
 
     /**
