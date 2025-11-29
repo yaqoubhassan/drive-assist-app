@@ -859,9 +859,9 @@ export default function DriverHomeScreen() {
                   className="w-60 h-36 rounded-xl overflow-hidden"
                   onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
                 >
-                  {article.image_url ? (
+                  {article.featured_image ? (
                     <Image
-                      source={{ uri: article.image_url }}
+                      source={{ uri: article.featured_image }}
                       className="h-full w-full"
                       resizeMode="cover"
                     />

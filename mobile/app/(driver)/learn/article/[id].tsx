@@ -844,7 +844,7 @@ function transformApiArticle(apiArticle: ApiArticle): DisplayArticle {
       day: 'numeric',
       year: 'numeric'
     }),
-    image: apiArticle.image_url || 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800',
+    image: apiArticle.featured_image || 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800',
     content: contentParagraphs,
     relatedArticles: [],
   };

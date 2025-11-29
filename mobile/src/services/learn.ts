@@ -51,7 +51,7 @@ export interface Article {
   slug: string;
   excerpt: string;
   content?: string;
-  image_url: string | null;
+  featured_image: string | null;
   read_time_minutes: number;
   views_count: number;
   likes_count: number;
