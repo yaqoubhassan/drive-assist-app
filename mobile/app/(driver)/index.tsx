@@ -77,6 +77,7 @@ const educationalContent = [
 const popularArticles = [
   {
     id: '1',
+    slug: 'how-to-check-engine-oil',
     title: 'How to Check Your Engine Oil',
     category: 'Maintenance',
     readTime: '5 min read',
@@ -84,6 +85,7 @@ const popularArticles = [
   },
   {
     id: '2',
+    slug: 'understanding-dashboard-warning-lights',
     title: 'Understanding Dashboard Warning Lights',
     category: 'Safety',
     readTime: '8 min read',
@@ -91,6 +93,7 @@ const popularArticles = [
   },
   {
     id: '3',
+    slug: 'when-to-change-brake-pads',
     title: 'When to Change Your Brake Pads',
     category: 'Brakes',
     readTime: '6 min read',
@@ -129,10 +132,10 @@ const topExperts = [
 ];
 
 const learnCategories = [
-  { id: '1', title: 'Road Signs', icon: 'signpost' as const, color: '#EF4444' },
-  { id: '2', title: 'Maintenance', icon: 'build' as const, color: '#3B82F6' },
-  { id: '3', title: 'Safety Tips', icon: 'security' as const, color: '#10B981' },
-  { id: '4', title: 'Driving Tips', icon: 'directions-car' as const, color: '#F59E0B' },
+  { id: '1', title: 'Road Signs', icon: 'signpost' as const, color: '#EF4444', route: '/(driver)/learn/road-signs' },
+  { id: '2', title: 'Maintenance', icon: 'build' as const, color: '#3B82F6', route: '/(driver)/learn/category/maintenance' },
+  { id: '3', title: 'Safety Tips', icon: 'security' as const, color: '#10B981', route: '/(driver)/learn/category/safety' },
+  { id: '4', title: 'Driving Tips', icon: 'directions-car' as const, color: '#F59E0B', route: '/(driver)/learn/category/driving' },
 ];
 
 export default function DriverHomeScreen() {
@@ -283,7 +286,7 @@ export default function DriverHomeScreen() {
               {learnCategories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
-                  onPress={() => router.push('/(driver)/learn')}
+                  onPress={() => router.push(category.route as any)}
                   className={`flex-row items-center p-4 rounded-xl flex-1 min-w-[45%] ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
@@ -319,7 +322,7 @@ export default function DriverHomeScreen() {
               {topExperts.map((expert) => (
                 <TouchableOpacity
                   key={expert.id}
-                  onPress={() => router.push('/(driver)/experts')}
+                  onPress={() => router.push(`/(driver)/experts/${expert.id}`)}
                   className={`w-72 rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
@@ -370,7 +373,7 @@ export default function DriverHomeScreen() {
               {popularArticles.map((article) => (
                 <TouchableOpacity
                   key={article.id}
-                  onPress={() => router.push('/(driver)/learn')}
+                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
                   className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
