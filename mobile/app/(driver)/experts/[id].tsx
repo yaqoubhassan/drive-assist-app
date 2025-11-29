@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Dimensions, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Dimensions, Linking, Platform, StatusBar } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,7 +9,8 @@ import { useAuth } from '../../../src/context/AuthContext';
 import { Button, Card, Rating, Badge, Avatar, Chip } from '../../../src/components/common';
 import { formatCurrencyRange } from '../../../src/constants';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
 // Mock expert data
 const expertData = {
@@ -426,55 +427,64 @@ export default function ExpertDetailScreen() {
       {/* Fullscreen Gallery Modal */}
       <Modal
         visible={showGalleryModal}
-        transparent
-        animationType="fade"
+        transparent={false}
+        animationType="slide"
         onRequestClose={() => setShowGalleryModal(false)}
+        statusBarTranslucent
       >
         <View className="flex-1 bg-black">
-          {/* Header */}
-          <SafeAreaView edges={['top']}>
-            <View className="flex-row items-center justify-between px-4 py-4">
+          {/* Header with proper top padding */}
+          <View
+            className="absolute top-0 left-0 right-0 z-10"
+            style={{ paddingTop: statusBarHeight + 8 }}
+          >
+            <View className="flex-row items-center justify-between px-4 py-2">
               <TouchableOpacity
                 onPress={() => setShowGalleryModal(false)}
-                className="h-10 w-10 rounded-full bg-white/20 items-center justify-center"
+                className="h-12 w-12 rounded-full bg-black/60 items-center justify-center"
+                activeOpacity={0.7}
               >
-                <MaterialIcons name="close" size={24} color="#FFFFFF" />
+                <MaterialIcons name="close" size={28} color="#FFFFFF" />
               </TouchableOpacity>
-              <Text className="text-white font-semibold">
-                {selectedImageIndex + 1} / {expertData.gallery.length}
-              </Text>
-              <View className="w-10" />
-            </View>
-          </SafeAreaView>
-
-          {/* Image Viewer */}
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-              setSelectedImageIndex(index);
-            }}
-            contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
-          >
-            {expertData.gallery.map((image, index) => (
-              <View key={index} style={{ width: screenWidth }} className="items-center justify-center">
-                <Image
-                  source={{ uri: image.replace('w=400', 'w=800') }}
-                  style={{ width: screenWidth, height: screenWidth }}
-                  resizeMode="contain"
-                />
+              <View className="bg-black/60 px-4 py-2 rounded-full">
+                <Text className="text-white font-semibold text-base">
+                  {selectedImageIndex + 1} / {expertData.gallery.length}
+                </Text>
               </View>
-            ))}
-          </ScrollView>
+              <View className="w-12" />
+            </View>
+          </View>
+
+          {/* Image Viewer - centered vertically */}
+          <View className="flex-1 justify-center">
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+                setSelectedImageIndex(index);
+              }}
+              contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
+            >
+              {expertData.gallery.map((image, index) => (
+                <View key={index} style={{ width: screenWidth }} className="items-center justify-center">
+                  <Image
+                    source={{ uri: image.replace('w=400', 'w=800') }}
+                    style={{ width: screenWidth, height: screenWidth }}
+                    resizeMode="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
 
           {/* Thumbnail Navigation */}
-          <SafeAreaView edges={['bottom']}>
+          <View style={{ paddingBottom: Platform.OS === 'ios' ? 34 : 16 }}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ padding: 16, gap: 8 }}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
             >
               {expertData.gallery.map((image, index) => (
                 <TouchableOpacity
@@ -489,7 +499,7 @@ export default function ExpertDetailScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          </SafeAreaView>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
