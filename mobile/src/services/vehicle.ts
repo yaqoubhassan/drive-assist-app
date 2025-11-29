@@ -43,6 +43,12 @@ export interface CreateVehicleRequest {
   is_primary?: boolean;
 }
 
+export interface VehicleImage {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 export interface UpdateVehicleRequest extends Partial<CreateVehicleRequest> {}
 
 export interface VehicleMake {
@@ -90,13 +96,48 @@ export async function getVehicle(id: number | string): Promise<Vehicle> {
 }
 
 /**
+ * Create FormData from vehicle data and optional image
+ */
+function createVehicleFormData(data: CreateVehicleRequest, image?: VehicleImage): FormData {
+  const formData = new FormData();
+
+  // Add all non-undefined fields to FormData
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, String(value));
+    }
+  });
+
+  // Add image if provided
+  if (image) {
+    formData.append('image', {
+      uri: image.uri,
+      name: image.name,
+      type: image.type,
+    } as any);
+  }
+
+  return formData;
+}
+
+/**
  * Create a new vehicle
  */
-export async function createVehicle(data: CreateVehicleRequest): Promise<Vehicle> {
-  const response = await api.post<Vehicle>(
-    apiConfig.endpoints.vehicles.create,
-    data
-  );
+export async function createVehicle(data: CreateVehicleRequest, image?: VehicleImage): Promise<Vehicle> {
+  let response;
+
+  if (image) {
+    const formData = createVehicleFormData(data, image);
+    response = await api.postFormData<Vehicle>(
+      apiConfig.endpoints.vehicles.create,
+      formData
+    );
+  } else {
+    response = await api.post<Vehicle>(
+      apiConfig.endpoints.vehicles.create,
+      data
+    );
+  }
 
   if (!response.success || !response.data) {
     throw new Error(response.message || 'Failed to create vehicle');
@@ -110,12 +151,23 @@ export async function createVehicle(data: CreateVehicleRequest): Promise<Vehicle
  */
 export async function updateVehicle(
   id: number | string,
-  data: UpdateVehicleRequest
+  data: UpdateVehicleRequest,
+  image?: VehicleImage
 ): Promise<Vehicle> {
-  const response = await api.put<Vehicle>(
-    apiConfig.endpoints.vehicles.update(id.toString()),
-    data
-  );
+  let response;
+
+  if (image) {
+    const formData = createVehicleFormData(data, image);
+    response = await api.putFormData<Vehicle>(
+      apiConfig.endpoints.vehicles.update(id.toString()),
+      formData
+    );
+  } else {
+    response = await api.put<Vehicle>(
+      apiConfig.endpoints.vehicles.update(id.toString()),
+      data
+    );
+  }
 
   if (!response.success || !response.data) {
     throw new Error(response.message || 'Failed to update vehicle');

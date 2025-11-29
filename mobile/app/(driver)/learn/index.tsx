@@ -324,9 +324,9 @@ export default function LearnScreen() {
                   className="flex-row overflow-hidden"
                   onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
                 >
-                  {article.image_url ? (
+                  {article.featured_image ? (
                     <Image
-                      source={{ uri: article.image_url }}
+                      source={{ uri: article.featured_image }}
                       className="h-24 w-24"
                       resizeMode="cover"
                     />

@@ -6,14 +6,18 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  ActionSheetIOS,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAlert } from '../../../src/context/AlertContext';
 import { Button, Input, Card, Loading } from '../../../src/components/common';
-import vehicleService from '../../../src/services/vehicle';
+import vehicleService, { VehicleImage } from '../../../src/services/vehicle';
 import { GhanaConstants } from '../../../src/constants';
 
 const fuelTypes = [
@@ -62,6 +66,10 @@ export default function VehicleEditScreen() {
   const [showMakePicker, setShowMakePicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
+  // Image state
+  const [vehicleImage, setVehicleImage] = useState<VehicleImage | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+
   // Available makes from backend (with IDs) or constants (names only)
   const [vehicleMakes, setVehicleMakes] = useState<{ id: number; name: string }[]>([]);
 
@@ -86,6 +94,7 @@ export default function VehicleEditScreen() {
       setFuelType(vehicle.fuel_type || 'petrol');
       setTransmission(vehicle.transmission || 'automatic');
       setMileage(vehicle.mileage?.toString() || '');
+      setExistingImageUrl(vehicle.image_url || null);
     } catch (error: any) {
       showError('Error', error.message || 'Failed to load vehicle');
       router.back();
@@ -107,6 +116,91 @@ export default function VehicleEditScreen() {
       // Fall back to constants if API fails
       console.log('Using local vehicle makes');
       setVehicleMakes(GhanaConstants.popularVehicleMakes.map((name, index) => ({ id: -index - 1, name })));
+    }
+  };
+
+  // Image picker functions
+  const pickImage = async (useCamera: boolean) => {
+    try {
+      // Request permissions
+      if (useCamera) {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          showError('Permission Denied', 'Camera permission is required to take photos.');
+          return;
+        }
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showError('Permission Denied', 'Photo library permission is required to select images.');
+          return;
+        }
+      }
+
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 0.8,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 0.8,
+          });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const fileName = asset.uri.split('/').pop() || 'vehicle.jpg';
+        const fileType = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+
+        setVehicleImage({
+          uri: asset.uri,
+          name: fileName,
+          type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      showError('Error', 'Failed to select image. Please try again.');
+    }
+  };
+
+  const showImageOptions = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library', 'Remove Photo'],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: 3,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) pickImage(true);
+          else if (buttonIndex === 2) pickImage(false);
+          else if (buttonIndex === 3) {
+            setVehicleImage(null);
+            setExistingImageUrl(null);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Vehicle Photo',
+        'Choose an option',
+        [
+          { text: 'Take Photo', onPress: () => pickImage(true) },
+          { text: 'Choose from Library', onPress: () => pickImage(false) },
+          ...(vehicleImage || existingImageUrl
+            ? [{ text: 'Remove Photo', style: 'destructive' as const, onPress: () => {
+                setVehicleImage(null);
+                setExistingImageUrl(null);
+              }}]
+            : []),
+          { text: 'Cancel', style: 'cancel' as const },
+        ]
+      );
     }
   };
 
@@ -139,14 +233,14 @@ export default function VehicleEditScreen() {
       }
 
       if (isEditing && id) {
-        await vehicleService.updateVehicle(id, vehicleData);
+        await vehicleService.updateVehicle(id, vehicleData, vehicleImage || undefined);
         showSuccess(
           'Vehicle Updated',
           `Your ${makeName} ${model} has been updated successfully.`,
           () => router.back()
         );
       } else {
-        await vehicleService.createVehicle(vehicleData);
+        await vehicleService.createVehicle(vehicleData, vehicleImage || undefined);
         showSuccess(
           'Vehicle Added',
           `Your ${makeName} ${model} has been added successfully.`,
@@ -223,14 +317,46 @@ export default function VehicleEditScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 100 }}
         >
-          {/* Vehicle Icon */}
+          {/* Vehicle Image */}
           <View className="items-center py-6">
-            <View
-              className="h-24 w-24 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+            <TouchableOpacity
+              onPress={showImageOptions}
+              className="relative"
+              activeOpacity={0.8}
             >
-              <MaterialIcons name="directions-car" size={48} color="#3B82F6" />
-            </View>
+              {vehicleImage?.uri || existingImageUrl ? (
+                <View className="rounded-2xl overflow-hidden" style={{ width: 200, height: 120 }}>
+                  <Image
+                    source={{ uri: vehicleImage?.uri || existingImageUrl || '' }}
+                    style={{ width: 200, height: 120 }}
+                    resizeMode="cover"
+                  />
+                  <View className="absolute inset-0 bg-black/20 items-center justify-center">
+                    <View className="bg-white/90 rounded-full p-2">
+                      <MaterialIcons name="camera-alt" size={20} color="#3B82F6" />
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  className="rounded-2xl items-center justify-center border-2 border-dashed"
+                  style={{
+                    width: 200,
+                    height: 120,
+                    backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                    borderColor: isDark ? '#475569' : '#CBD5E1',
+                  }}
+                >
+                  <MaterialIcons name="add-a-photo" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                  <Text className={`text-sm mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Add Photo
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <Text className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              Tap to {vehicleImage || existingImageUrl ? 'change' : 'add'} vehicle photo
+            </Text>
           </View>
 
           {/* Basic Info */}
