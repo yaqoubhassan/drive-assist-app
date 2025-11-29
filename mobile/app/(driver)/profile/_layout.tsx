@@ -16,9 +16,9 @@ export default function ProfileLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
-      <Stack.Screen name="edit" options={{ animation: 'slide_from_bottom', presentation: 'modal' }} />
+      <Stack.Screen name="edit" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="vehicles" />
-      <Stack.Screen name="vehicle-edit" options={{ animation: 'slide_from_bottom', presentation: 'modal' }} />
+      <Stack.Screen name="vehicle-edit" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="settings" />
       <Stack.Screen name="history" />
       <Stack.Screen name="bookmarks" />

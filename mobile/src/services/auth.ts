@@ -336,17 +336,14 @@ export const authService = {
    * Get current user profile
    */
   async getMe(): Promise<User | DriverProfile | ExpertProfile> {
-    const response = await api.get<{ user: UserResponse }>(apiConfig.endpoints.auth.me);
+    const response = await api.get<UserResponse>(apiConfig.endpoints.auth.me);
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Failed to get user');
     }
 
-    if (!response.data.user) {
-      throw new Error('User data not found in response');
-    }
-
-    const user = transformUserResponse(response.data.user);
+    // The API returns user data directly in response.data (not wrapped in 'user' key)
+    const user = transformUserResponse(response.data);
 
     // Update local storage
     await storage.setObject(StorageKeys.USER, user);
