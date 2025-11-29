@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, Modal, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Switch, Modal, Linking, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme, ThemeMode } from '../../../src/context/ThemeContext';
+import { useAuth } from '../../../src/context/AuthContext';
 import { Card } from '../../../src/components/common';
+import { preferencesService, UserPreferences, defaultPreferences } from '../../../src/services/preferences';
 
 // TODO: Replace with actual URLs when available
 const LEGAL_URLS = {
@@ -32,14 +34,17 @@ const regions = [
 export default function SettingsScreen() {
   const router = useRouter();
   const { isDark, mode: themeMode, setMode: setThemeMode } = useTheme();
-  const [notifications, setNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [locationServices, setLocationServices] = useState(true);
-  const [offlineMode, setOfflineMode] = useState(false);
+  const { userType } = useAuth();
+  const isGuest = userType === 'guest';
+
+  // Preferences state
+  const [loading, setLoading] = useState(!isGuest);
+  const [saving, setSaving] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
+
+  // UI state
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showRegionModal, setShowRegionModal] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedRegion, setSelectedRegion] = useState('GH');
 
   const themeOptions: { value: ThemeMode; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
     { value: 'light', label: 'Light', icon: 'light-mode' },
@@ -47,8 +52,57 @@ export default function SettingsScreen() {
     { value: 'system', label: 'System', icon: 'settings-brightness' },
   ];
 
-  const currentLanguage = languages.find(l => l.code === selectedLanguage);
-  const currentRegion = regions.find(r => r.code === selectedRegion);
+  const currentLanguage = languages.find(l => l.code === preferences.language);
+  const currentRegion = regions.find(r => r.code === preferences.region);
+
+  useEffect(() => {
+    if (!isGuest) {
+      fetchPreferences();
+    }
+  }, [isGuest]);
+
+  const fetchPreferences = async () => {
+    try {
+      setLoading(true);
+      const prefs = await preferencesService.getPreferences();
+      setPreferences(prefs);
+      // Sync theme with stored preference
+      if (prefs.theme && prefs.theme !== themeMode) {
+        setThemeMode(prefs.theme);
+      }
+    } catch (error) {
+      console.error('Failed to fetch preferences:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePreference = async <K extends keyof UserPreferences>(
+    key: K,
+    value: UserPreferences[K]
+  ) => {
+    // Update local state immediately for responsiveness
+    setPreferences(prev => ({ ...prev, [key]: value }));
+
+    // Save to backend for authenticated users
+    if (!isGuest) {
+      try {
+        setSaving(true);
+        await preferencesService.updatePreference(key, value);
+      } catch (error) {
+        console.error('Failed to update preference:', error);
+        // Revert on error
+        setPreferences(prev => ({ ...prev, [key]: preferences[key] }));
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  const handleThemeChange = (newTheme: ThemeMode) => {
+    setThemeMode(newTheme);
+    updatePreference('theme', newTheme);
+  };
 
   const openLegalPage = async (url: string) => {
     try {
@@ -60,6 +114,19 @@ export default function SettingsScreen() {
       console.error('Error opening URL:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Loading settings...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -75,9 +142,14 @@ export default function SettingsScreen() {
             color={isDark ? '#FFFFFF' : '#111827'}
           />
         </TouchableOpacity>
-        <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-          Settings
-        </Text>
+        <View className="flex-1">
+          <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            Settings
+          </Text>
+        </View>
+        {saving && (
+          <ActivityIndicator size="small" color="#3B82F6" />
+        )}
       </View>
 
       <ScrollView className="flex-1 px-4 py-4" showsVerticalScrollIndicator={false}>
@@ -95,7 +167,7 @@ export default function SettingsScreen() {
                 {themeOptions.map((option) => (
                   <TouchableOpacity
                     key={option.value}
-                    onPress={() => setThemeMode(option.value)}
+                    onPress={() => handleThemeChange(option.value)}
                     className={`flex-1 p-3 rounded-xl items-center border-2 ${
                       themeMode === option.value
                         ? 'border-primary-500 bg-primary-500/10'
@@ -151,14 +223,14 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Switch
-                value={notifications}
-                onValueChange={setNotifications}
+                value={preferences.push_notifications}
+                onValueChange={(value) => updatePreference('push_notifications', value)}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={notifications ? '#3B82F6' : '#94A3B8'}
+                thumbColor={preferences.push_notifications ? '#3B82F6' : '#94A3B8'}
               />
             </View>
 
-            <View className="flex-row items-center justify-between p-4">
+            <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -176,10 +248,60 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Switch
-                value={emailNotifications}
-                onValueChange={setEmailNotifications}
+                value={preferences.email_notifications}
+                onValueChange={(value) => updatePreference('email_notifications', value)}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={emailNotifications ? '#3B82F6' : '#94A3B8'}
+                thumbColor={preferences.email_notifications ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                >
+                  <MaterialIcons name="event-available" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Appointment Reminders
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Get reminded about upcoming bookings
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={preferences.appointment_reminders}
+                onValueChange={(value) => updatePreference('appointment_reminders', value)}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={preferences.appointment_reminders ? '#3B82F6' : '#94A3B8'}
+              />
+            </View>
+
+            <View className="flex-row items-center justify-between p-4">
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                >
+                  <MaterialIcons name="build" size={22} color={isDark ? '#94A3B8' : '#64748B'} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Maintenance Reminders
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Get notified about vehicle maintenance
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={preferences.maintenance_reminders}
+                onValueChange={(value) => updatePreference('maintenance_reminders', value)}
+                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
+                thumbColor={preferences.maintenance_reminders ? '#3B82F6' : '#94A3B8'}
               />
             </View>
           </Card>
@@ -209,10 +331,10 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Switch
-                value={locationServices}
-                onValueChange={setLocationServices}
+                value={preferences.location_services}
+                onValueChange={(value) => updatePreference('location_services', value)}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={locationServices ? '#3B82F6' : '#94A3B8'}
+                thumbColor={preferences.location_services ? '#3B82F6' : '#94A3B8'}
               />
             </View>
 
@@ -234,10 +356,10 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Switch
-                value={offlineMode}
-                onValueChange={setOfflineMode}
+                value={preferences.offline_mode}
+                onValueChange={(value) => updatePreference('offline_mode', value)}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={offlineMode ? '#3B82F6' : '#94A3B8'}
+                thumbColor={preferences.offline_mode ? '#3B82F6' : '#94A3B8'}
               />
             </View>
           </Card>
@@ -364,14 +486,14 @@ export default function SettingsScreen() {
               <TouchableOpacity
                 key={language.code}
                 onPress={() => {
-                  setSelectedLanguage(language.code);
+                  updatePreference('language', language.code);
                   setShowLanguageModal(false);
                 }}
                 className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
               >
                 <View className="flex-1">
                   <Text className={`font-semibold ${
-                    selectedLanguage === language.code
+                    preferences.language === language.code
                       ? 'text-primary-500'
                       : isDark ? 'text-white' : 'text-slate-900'
                   }`}>
@@ -381,7 +503,7 @@ export default function SettingsScreen() {
                     {language.nativeName}
                   </Text>
                 </View>
-                {selectedLanguage === language.code && (
+                {preferences.language === language.code && (
                   <MaterialIcons name="check" size={24} color="#3B82F6" />
                 )}
               </TouchableOpacity>
@@ -412,14 +534,14 @@ export default function SettingsScreen() {
               <TouchableOpacity
                 key={region.code}
                 onPress={() => {
-                  setSelectedRegion(region.code);
+                  updatePreference('region', region.code);
                   setShowRegionModal(false);
                 }}
                 className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
               >
                 <View className="flex-1">
                   <Text className={`font-semibold ${
-                    selectedRegion === region.code
+                    preferences.region === region.code
                       ? 'text-primary-500'
                       : isDark ? 'text-white' : 'text-slate-900'
                   }`}>
@@ -429,7 +551,7 @@ export default function SettingsScreen() {
                     Currency: {region.currency}
                   </Text>
                 </View>
-                {selectedRegion === region.code && (
+                {preferences.region === region.code && (
                   <MaterialIcons name="check" size={24} color="#3B82F6" />
                 )}
               </TouchableOpacity>

@@ -8,6 +8,8 @@ import {
   Image,
   Linking,
   Dimensions,
+  Alert,
+  Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -65,10 +67,46 @@ export default function ExpertProfileSheet({
     return stars;
   };
 
-  const openMaps = () => {
+  const openMaps = async () => {
     if (profile?.location?.latitude && profile?.location?.longitude) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${profile.location.latitude},${profile.location.longitude}`;
-      Linking.openURL(url);
+      const lat = profile.location.latitude;
+      const lng = profile.location.longitude;
+      const label = encodeURIComponent(profile?.business_name || expert.full_name || 'Expert Location');
+
+      // Try different map URL schemes based on platform
+      const schemes = Platform.select({
+        ios: [
+          `maps://app?daddr=${lat},${lng}&q=${label}`,
+          `https://maps.apple.com/?daddr=${lat},${lng}&q=${label}`,
+          `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+        ],
+        android: [
+          `geo:${lat},${lng}?q=${lat},${lng}(${label})`,
+          `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+        ],
+        default: [
+          `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+        ],
+      }) || [`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`];
+
+      for (const url of schemes) {
+        try {
+          const canOpen = await Linking.canOpenURL(url);
+          if (canOpen) {
+            await Linking.openURL(url);
+            return;
+          }
+        } catch (error) {
+          // Continue to next URL scheme
+        }
+      }
+
+      // If no URL scheme works, show an alert with the address
+      Alert.alert(
+        'Location',
+        `${profile?.address || ''}\n${profile?.city || ''}\n\nCoordinates: ${lat}, ${lng}`,
+        [{ text: 'OK' }]
+      );
     }
   };
 

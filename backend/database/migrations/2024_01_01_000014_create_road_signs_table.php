@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->text('meaning');
-            $table->string('image');
+            $table->text('image'); // TEXT to accommodate SVG data URLs
             $table->string('thumbnail')->nullable();
             $table->json('tips')->nullable();
             $table->json('common_locations')->nullable();

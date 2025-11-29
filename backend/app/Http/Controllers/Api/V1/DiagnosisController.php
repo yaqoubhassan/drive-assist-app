@@ -189,9 +189,12 @@ class DiagnosisController extends Controller
      *     tags={"Diagnoses"},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"symptoms_description"},
-     *             @OA\Property(property="symptoms_description", type="string")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="symptoms_description", type="string"),
+     *                 @OA\Property(property="voice_recording", type="string", format="binary")
+     *             )
      *         )
      *     ),
      *     @OA\Response(response=201, description="Diagnosis created")
@@ -199,9 +202,20 @@ class DiagnosisController extends Controller
      */
     public function guestDiagnosis(Request $request): JsonResponse
     {
+        // Validate - either text or voice recording is required
         $validated = $request->validate([
-            'symptoms_description' => 'required|string|min:10|max:2000',
+            'symptoms_description' => 'nullable|string|max:2000',
+            'voice_recording' => 'nullable|file|mimes:m4a,mp3,wav,ogg,webm,mp4,mpeg|max:10240',
         ]);
+
+        // Ensure at least one input is provided
+        if (empty($validated['symptoms_description']) && !$request->hasFile('voice_recording')) {
+            return $this->error('Please provide either a text description or voice recording.', 422, [
+                'errors' => [
+                    'input' => ['Either symptoms_description or voice_recording is required.']
+                ]
+            ]);
+        }
 
         $fingerprint = $request->get('device_fingerprint');
 
@@ -219,11 +233,58 @@ class DiagnosisController extends Controller
             );
         }
 
+        $symptomsDescription = $validated['symptoms_description'] ?? '';
+        $inputType = 'text';
+        $voiceTranscription = null;
+        $voicePath = null;
+
+        // Handle voice recording
+        if ($request->hasFile('voice_recording')) {
+            $voiceFile = $request->file('voice_recording');
+            $voicePath = $voiceFile->store('diagnoses/voice', 'public');
+            $fullPath = Storage::disk('public')->path($voicePath);
+
+            try {
+                // Transcribe the voice recording
+                $voiceTranscription = $this->aiService->transcribeVoice($fullPath);
+
+                // Use transcription as symptoms if no text provided
+                if (empty($symptomsDescription)) {
+                    $symptomsDescription = $voiceTranscription;
+                    $inputType = 'voice';
+                } else {
+                    // Both text and voice provided - combine them
+                    $symptomsDescription = $symptomsDescription . "\n\n[Voice Recording Transcription]: " . $voiceTranscription;
+                    // Keep as 'text' since primary input was text, voice is supplementary
+                    $inputType = 'text';
+                }
+            } catch (\Exception $e) {
+                // Clean up the uploaded file
+                Storage::disk('public')->delete($voicePath);
+
+                return $this->error(
+                    'Failed to process voice recording. Please try again or use text description.',
+                    422,
+                    ['errors' => ['voice_recording' => [$e->getMessage()]]]
+                );
+            }
+        }
+
+        // Ensure we have some symptoms to diagnose
+        if (empty(trim($symptomsDescription))) {
+            if ($voicePath) {
+                Storage::disk('public')->delete($voicePath);
+            }
+            return $this->error('Could not extract symptoms from your input. Please try again.', 422);
+        }
+
         // Create diagnosis
         $diagnosis = Diagnosis::create([
             'device_fingerprint_id' => $fingerprint->id,
-            'input_type' => 'text',
-            'symptoms_description' => $validated['symptoms_description'],
+            'input_type' => $inputType,
+            'symptoms_description' => $symptomsDescription,
+            'voice_transcription' => $voiceTranscription,
+            'voice_file' => $voicePath,
             'status' => 'processing',
             'is_free' => true,
         ]);
@@ -233,7 +294,7 @@ class DiagnosisController extends Controller
 
         // Call AI service
         $aiResult = $this->aiService->diagnoseVehicle([
-            'symptoms' => $validated['symptoms_description'],
+            'symptoms' => $symptomsDescription,
         ]);
 
         // Update diagnosis

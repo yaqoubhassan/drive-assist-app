@@ -128,7 +128,26 @@ export default function DiagnoseLoadingScreen() {
   // Handle error
   useEffect(() => {
     if (error) {
-      showError('Diagnosis Failed', error, () => {
+      // Provide a more helpful error message
+      let title = 'Diagnosis Failed';
+      let message = error;
+
+      // Handle common error cases
+      if (error.includes('symptoms_description') || error.includes('Symptoms description')) {
+        title = 'Missing Description';
+        message = 'Please provide a text description or voice recording of your vehicle issue.';
+      } else if (error.includes('voice_recording') || error.includes('Voice recording')) {
+        title = 'Audio Upload Failed';
+        message = 'There was a problem uploading your voice recording. Please try again or use text description instead.';
+      } else if (error.includes('network') || error.includes('Network')) {
+        title = 'Connection Error';
+        message = 'Please check your internet connection and try again.';
+      } else if (error.includes('quota') || error.includes('remaining')) {
+        title = 'Diagnosis Limit Reached';
+        message = 'You have used all your free diagnoses. Please sign up to continue.';
+      }
+
+      showError(title, message, () => {
         clearError();
         router.back();
       });

@@ -138,10 +138,35 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
 
     try {
       if (isGuest) {
+        // Build guest diagnosis request
+        const guestRequest: {
+          symptoms_description?: string;
+          voice_recording?: { uri: string; name: string; type: string };
+        } = {};
+
+        // Add text description if provided
+        if (state.input.description?.trim()) {
+          guestRequest.symptoms_description = state.input.description;
+        }
+
+        // Add voice recording if provided
+        if (state.input.voiceRecordingUri) {
+          const uri = state.input.voiceRecordingUri;
+          // Extract file extension from URI
+          const extension = uri.split('.').pop()?.toLowerCase() || 'm4a';
+          const mimeType = extension === 'wav' ? 'audio/wav' :
+                          extension === 'mp3' ? 'audio/mpeg' :
+                          'audio/m4a';
+
+          guestRequest.voice_recording = {
+            uri: uri,
+            name: `voice_recording_${Date.now()}.${extension}`,
+            type: mimeType,
+          };
+        }
+
         // Guest diagnosis
-        const response: GuestDiagnosisResponse = await diagnosisService.createGuestDiagnosis({
-          symptoms_description: state.input.description,
-        });
+        const response: GuestDiagnosisResponse = await diagnosisService.createGuestDiagnosis(guestRequest);
 
         setState(prev => ({
           ...prev,
@@ -169,7 +194,22 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
         return result;
       }
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to create diagnosis';
+      // Extract user-friendly error message
+      let errorMessage = 'Failed to create diagnosis. Please try again.';
+
+      if (error?.errors) {
+        // Handle validation errors - format them nicely
+        const validationErrors = Object.entries(error.errors)
+          .map(([field, messages]) => {
+            const fieldName = field.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+            return `${fieldName}: ${(messages as string[]).join(', ')}`;
+          })
+          .join('\n');
+        errorMessage = validationErrors || error.message || errorMessage;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
       setState(prev => ({
         ...prev,
         isSubmitting: false,

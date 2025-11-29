@@ -1,12 +1,16 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Dimensions, Linking, Platform, StatusBar } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAuth } from '../../../src/context/AuthContext';
 import { Button, Card, Rating, Badge, Avatar, Chip } from '../../../src/components/common';
 import { formatCurrencyRange } from '../../../src/constants';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
 // Mock expert data
 const expertData = {
@@ -67,6 +71,59 @@ export default function ExpertDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { isDark } = useTheme();
+  const { userType, isAuthenticated } = useAuth();
+
+  const isGuest = !isAuthenticated || userType === 'guest';
+
+  // State for modals
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const handleContactPress = () => {
+    if (isGuest) {
+      setShowSignUpModal(true);
+    } else {
+      // Navigate to messaging or make a call
+      Linking.openURL(`tel:${expertData.phone}`);
+    }
+  };
+
+  const handleBookAppointment = () => {
+    if (isGuest) {
+      setShowSignUpModal(true);
+    } else {
+      router.push({
+        pathname: '/(driver)/booking',
+        params: { expertId: expertData.id },
+      });
+    }
+  };
+
+  const handleDirections = () => {
+    // Open maps with the expert's address
+    const address = encodeURIComponent(expertData.address);
+    Linking.openURL(`https://maps.google.com/?q=${address}`);
+  };
+
+  const openGallery = (index: number) => {
+    setSelectedImageIndex(index);
+    setShowGalleryModal(true);
+  };
+
+  const handleViewAllPhotos = () => {
+    setSelectedImageIndex(0);
+    setShowGalleryModal(true);
+  };
+
+  const handleViewAllReviews = () => {
+    // For now, we'll just scroll or show a message
+    // In a full implementation, this would navigate to a reviews screen
+    router.push({
+      pathname: '/(driver)/experts/reviews',
+      params: { expertId: expertData.id },
+    });
+  };
 
   return (
     <SafeAreaView
@@ -160,8 +217,8 @@ export default function ExpertDetailScreen() {
 
           {/* Action Buttons */}
           <View className="flex-row gap-3">
-            <Button title="Contact Expert" icon="phone" fullWidth className="flex-1" />
-            <Button title="Directions" icon="directions" variant="secondary" className="flex-1" />
+            <Button title="Contact Expert" icon="phone" fullWidth className="flex-1" onPress={handleContactPress} />
+            <Button title="Directions" icon="directions" variant="secondary" className="flex-1" onPress={handleDirections} />
           </View>
         </View>
 
@@ -244,18 +301,19 @@ export default function ExpertDetailScreen() {
             <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Photos
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleViewAllPhotos}>
               <Text className="text-primary-500 font-semibold">View all ({expertData.gallery.length})</Text>
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-3">
               {expertData.gallery.map((image, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: image }}
-                  className="h-24 w-24 rounded-xl"
-                />
+                <TouchableOpacity key={index} onPress={() => openGallery(index)} activeOpacity={0.8}>
+                  <Image
+                    source={{ uri: image }}
+                    className="h-24 w-24 rounded-xl"
+                  />
+                </TouchableOpacity>
               ))}
             </View>
           </ScrollView>
@@ -267,7 +325,7 @@ export default function ExpertDetailScreen() {
             <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Reviews ({expertData.reviewCount})
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleViewAllReviews}>
               <Text className="text-primary-500 font-semibold">View all</Text>
             </TouchableOpacity>
           </View>
@@ -313,10 +371,137 @@ export default function ExpertDetailScreen() {
         style={{ paddingBottom: 32 }}
       >
         <View className="flex-row gap-3">
-          <Button title="Contact Expert" icon="phone" fullWidth className="flex-1" />
-          <Button title="Save" icon="bookmark" variant="secondary" className="flex-1" />
+          <Button title="Book Appointment" icon="event" fullWidth className="flex-1" onPress={handleBookAppointment} />
+          <Button title="Contact" icon="phone" variant="secondary" className="flex-1" onPress={handleContactPress} />
         </View>
       </View>
+
+      {/* Sign Up Prompt Modal */}
+      <Modal
+        visible={showSignUpModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSignUpModal(false)}
+      >
+        <View className="flex-1 bg-black/50 items-center justify-center px-6">
+          <View className={`w-full max-w-sm rounded-2xl p-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+            <View className="items-center mb-4">
+              <View className={`h-16 w-16 rounded-full items-center justify-center mb-4 ${isDark ? 'bg-primary-500/20' : 'bg-primary-50'}`}>
+                <MaterialIcons name="lock-outline" size={32} color="#3B82F6" />
+              </View>
+              <Text className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Sign In Required
+              </Text>
+              <Text className={`text-center mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Create a free account or sign in to contact experts and book appointments.
+              </Text>
+            </View>
+            <View className="gap-3">
+              <Button
+                title="Sign Up Free"
+                fullWidth
+                onPress={() => {
+                  setShowSignUpModal(false);
+                  router.push('/(auth)/sign-up');
+                }}
+              />
+              <Button
+                title="Sign In"
+                variant="secondary"
+                fullWidth
+                onPress={() => {
+                  setShowSignUpModal(false);
+                  router.push('/(auth)/sign-in');
+                }}
+              />
+              <TouchableOpacity onPress={() => setShowSignUpModal(false)} className="py-2">
+                <Text className={`text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Maybe later
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Fullscreen Gallery Modal */}
+      <Modal
+        visible={showGalleryModal}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setShowGalleryModal(false)}
+        statusBarTranslucent
+      >
+        <View className="flex-1 bg-black">
+          {/* Header with proper top padding */}
+          <View
+            className="absolute top-0 left-0 right-0 z-10"
+            style={{ paddingTop: statusBarHeight + 8 }}
+          >
+            <View className="flex-row items-center justify-between px-4 py-2">
+              <TouchableOpacity
+                onPress={() => setShowGalleryModal(false)}
+                className="h-12 w-12 rounded-full bg-black/60 items-center justify-center"
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="close" size={28} color="#FFFFFF" />
+              </TouchableOpacity>
+              <View className="bg-black/60 px-4 py-2 rounded-full">
+                <Text className="text-white font-semibold text-base">
+                  {selectedImageIndex + 1} / {expertData.gallery.length}
+                </Text>
+              </View>
+              <View className="w-12" />
+            </View>
+          </View>
+
+          {/* Image Viewer - centered vertically */}
+          <View className="flex-1 justify-center">
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+                setSelectedImageIndex(index);
+              }}
+              contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
+            >
+              {expertData.gallery.map((image, index) => (
+                <View key={index} style={{ width: screenWidth }} className="items-center justify-center">
+                  <Image
+                    source={{ uri: image.replace('w=400', 'w=800') }}
+                    style={{ width: screenWidth, height: screenWidth }}
+                    resizeMode="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Thumbnail Navigation */}
+          <View style={{ paddingBottom: Platform.OS === 'ios' ? 34 : 16 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+            >
+              {expertData.gallery.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setSelectedImageIndex(index)}
+                  className={`rounded-lg overflow-hidden ${selectedImageIndex === index ? 'border-2 border-primary-500' : 'opacity-50'}`}
+                >
+                  <Image
+                    source={{ uri: image }}
+                    className="h-16 w-16"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

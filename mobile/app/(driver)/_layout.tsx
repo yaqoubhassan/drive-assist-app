@@ -82,6 +82,13 @@ export default function DriverLayout() {
             <MaterialIcons name="search" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: (e) => {
+            // Reset the experts stack to the index screen when tab is pressed
+            e.preventDefault();
+            router.replace('/(driver)/experts');
+          },
+        }}
       />
       <Tabs.Screen
         name="learn"
@@ -107,6 +114,13 @@ export default function DriverLayout() {
         name="booking"
         options={{
           // Hide booking from tab bar (it's accessed via navigation)
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="appointments"
+        options={{
+          // Hide appointments from tab bar (it's accessed via navigation)
           href: null,
         }}
       />

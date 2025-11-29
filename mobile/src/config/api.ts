@@ -159,6 +159,15 @@ export const apiConfig = {
       history: '/quiz/history',
     },
 
+    // Videos (Learning)
+    videos: {
+      list: '/videos',
+      categories: '/videos/categories',
+      featured: '/videos/featured',
+      byCategory: (slug: string) => `/videos/categories/${slug}`,
+      show: (slug: string) => `/videos/${slug}`,
+    },
+
     // Maintenance
     maintenance: {
       types: '/maintenance-types',
@@ -174,6 +183,25 @@ export const apiConfig = {
       submit: '/reviews',
       expertReviews: '/expert/reviews',
       respond: (id: string) => `/expert/reviews/${id}/respond`,
+    },
+
+    // Appointments (Driver)
+    appointments: {
+      list: '/appointments',
+      create: '/appointments',
+      upcomingCount: '/appointments/upcoming-count',
+      show: (id: string) => `/appointments/${id}`,
+      cancel: (id: string) => `/appointments/${id}/cancel`,
+      reschedule: (id: string) => `/appointments/${id}/reschedule`,
+    },
+
+    // Appointments (Expert)
+    expertAppointments: {
+      list: '/expert/appointments',
+      confirm: (id: string) => `/expert/appointments/${id}/confirm`,
+      reject: (id: string) => `/expert/appointments/${id}/reject`,
+      start: (id: string) => `/expert/appointments/${id}/start`,
+      complete: (id: string) => `/expert/appointments/${id}/complete`,
     },
 
     // Settings/Data

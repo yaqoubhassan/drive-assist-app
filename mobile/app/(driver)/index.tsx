@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   Image, Platform, ScrollView,
   Text,
@@ -8,9 +9,10 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, Chip, IconButton, Button } from '../../src/components/common';
+import { Badge, Card, Chip, IconButton, Button, Avatar } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { appointmentService, Appointment, formatAppointmentDate, formatAppointmentTime, getStatusLabel } from '../../src/services/appointment';
 
 const quickCategories = [
   { id: 'engine', label: 'Engine', icon: 'settings' as const },
@@ -75,6 +77,7 @@ const educationalContent = [
 const popularArticles = [
   {
     id: '1',
+    slug: 'how-to-check-engine-oil',
     title: 'How to Check Your Engine Oil',
     category: 'Maintenance',
     readTime: '5 min read',
@@ -82,6 +85,7 @@ const popularArticles = [
   },
   {
     id: '2',
+    slug: 'understanding-dashboard-warning-lights',
     title: 'Understanding Dashboard Warning Lights',
     category: 'Safety',
     readTime: '8 min read',
@@ -89,6 +93,7 @@ const popularArticles = [
   },
   {
     id: '3',
+    slug: 'when-to-change-brake-pads',
     title: 'When to Change Your Brake Pads',
     category: 'Brakes',
     readTime: '6 min read',
@@ -127,19 +132,48 @@ const topExperts = [
 ];
 
 const learnCategories = [
-  { id: '1', title: 'Road Signs', icon: 'signpost' as const, color: '#EF4444' },
-  { id: '2', title: 'Maintenance', icon: 'build' as const, color: '#3B82F6' },
-  { id: '3', title: 'Safety Tips', icon: 'security' as const, color: '#10B981' },
-  { id: '4', title: 'Driving Tips', icon: 'directions-car' as const, color: '#F59E0B' },
+  { id: '1', title: 'Road Signs', icon: 'signpost' as const, color: '#EF4444', route: '/(driver)/learn/road-signs' },
+  { id: '2', title: 'Maintenance', icon: 'build' as const, color: '#3B82F6', route: '/(driver)/learn/category/maintenance' },
+  { id: '3', title: 'Safety Tips', icon: 'security' as const, color: '#10B981', route: '/(driver)/learn/category/safety' },
+  { id: '4', title: 'Driving Tips', icon: 'directions-car' as const, color: '#F59E0B', route: '/(driver)/learn/category/driving' },
 ];
 
 export default function DriverHomeScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, userType } = useAuth();
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [appointmentsCount, setAppointmentsCount] = useState(0);
 
   const isGuest = userType === 'guest';
   const firstName = isGuest ? 'Guest' : (user?.fullName?.split(' ')[0] || 'Driver');
+
+  // Fetch upcoming appointments for authenticated users
+  useEffect(() => {
+    if (!isGuest) {
+      fetchUpcomingAppointments();
+    }
+  }, [isGuest]);
+
+  const fetchUpcomingAppointments = async () => {
+    try {
+      // Fetch upcoming count
+      const countResponse = await appointmentService.getUpcomingCount();
+      setAppointmentsCount(countResponse.count);
+
+      // Fetch pending and confirmed appointments (limit to 3 for home screen)
+      const response = await appointmentService.getAppointments({ status: 'confirmed' });
+      const pendingResponse = await appointmentService.getAppointments({ status: 'pending' });
+
+      const allUpcoming = [...response.data, ...pendingResponse.data]
+        .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+        .slice(0, 3);
+
+      setUpcomingAppointments(allUpcoming);
+    } catch (error) {
+      console.error('Failed to fetch upcoming appointments:', error);
+    }
+  };
 
   // For authenticated users, show mock data
   const recentDiagnoses = mockRecentDiagnoses;
@@ -252,7 +286,7 @@ export default function DriverHomeScreen() {
               {learnCategories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
-                  onPress={() => router.push('/(driver)/learn')}
+                  onPress={() => router.push(category.route as any)}
                   className={`flex-row items-center p-4 rounded-xl flex-1 min-w-[45%] ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
@@ -288,7 +322,7 @@ export default function DriverHomeScreen() {
               {topExperts.map((expert) => (
                 <TouchableOpacity
                   key={expert.id}
-                  onPress={() => router.push('/(driver)/experts')}
+                  onPress={() => router.push(`/(driver)/experts/${expert.id}`)}
                   className={`w-72 rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
@@ -339,7 +373,7 @@ export default function DriverHomeScreen() {
               {popularArticles.map((article) => (
                 <TouchableOpacity
                   key={article.id}
-                  onPress={() => router.push('/(driver)/learn')}
+                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
                   className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
                   style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 }}
                 >
@@ -525,6 +559,77 @@ export default function DriverHomeScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* Upcoming Appointments */}
+        {(upcomingAppointments.length > 0 || appointmentsCount > 0) && (
+          <View className="pt-6">
+            <View className="flex-row items-center justify-between px-4 pb-3">
+              <View className="flex-row items-center">
+                <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Upcoming Appointments
+                </Text>
+                {appointmentsCount > 0 && (
+                  <View className="ml-2 bg-primary-500 px-2 py-0.5 rounded-full">
+                    <Text className="text-white text-xs font-bold">{appointmentsCount}</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(driver)/appointments')}>
+                <Text className="text-primary-500 font-semibold text-sm">View All</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="px-4 gap-3">
+              {upcomingAppointments.length > 0 ? (
+                upcomingAppointments.map((appointment) => {
+                  const expertName = appointment.expert?.profile?.business_name || appointment.expert?.full_name || 'Expert';
+                  return (
+                    <Card
+                      key={appointment.id}
+                      variant="default"
+                      onPress={() => router.push(`/(driver)/appointments/${appointment.id}`)}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <Avatar
+                          size="md"
+                          name={expertName}
+                          source={appointment.expert?.avatar ? { uri: appointment.expert.avatar } : undefined}
+                        />
+                        <View className="flex-1">
+                          <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {expertName}
+                          </Text>
+                          <View className="flex-row items-center mt-1">
+                            <MaterialIcons name="event" size={14} color="#3B82F6" />
+                            <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {formatAppointmentDate(appointment.scheduled_date)} at {formatAppointmentTime(appointment.scheduled_time)}
+                            </Text>
+                          </View>
+                        </View>
+                        <Badge
+                          label={getStatusLabel(appointment.status)}
+                          variant={appointment.status === 'confirmed' ? 'info' : 'warning'}
+                          size="sm"
+                        />
+                      </View>
+                    </Card>
+                  );
+                })
+              ) : (
+                <TouchableOpacity
+                  onPress={() => router.push('/(driver)/appointments')}
+                  className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+                >
+                  <View className="flex-row items-center justify-center">
+                    <MaterialIcons name="event" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
+                    <Text className={`ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      View all appointments
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Recent Diagnoses */}
         <View className="pt-6">

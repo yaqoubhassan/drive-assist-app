@@ -34,16 +34,32 @@ export default function DiagnoseDescribeScreen() {
   const router = useRouter();
   const { category } = useLocalSearchParams<{ category: string }>();
   const { isDark } = useTheme();
-  const { updateInput, isGuest } = useDiagnosis();
+  const { input, updateInput, isGuest } = useDiagnosis();
 
   const [activeTab, setActiveTab] = useState<InputTab>('text');
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [recordedUri, setRecordedUri] = useState<string | null>(null);
+  // Use context value for persistence across navigation
+  const [recordedUri, setRecordedUri] = useState<string | null>(input.voiceRecordingUri || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [playbackDuration, setPlaybackDuration] = useState(0);
+
+  // Restore from context when component mounts
+  useEffect(() => {
+    if (input.voiceRecordingUri && !recordedUri) {
+      setRecordedUri(input.voiceRecordingUri);
+      // Switch to voice tab if there's a recording
+      setActiveTab('voice');
+    }
+    if (input.description && !description) {
+      setDescription(input.description);
+    }
+    if (input.photos && input.photos.length > 0 && photos.length === 0) {
+      setPhotos(input.photos);
+    }
+  }, []);
 
   // Speech-to-text states
   const [isListening, setIsListening] = useState(false);
@@ -248,6 +264,11 @@ export default function DiagnoseDescribeScreen() {
       const uri = audioRecorder.uri;
       setRecordedUri(uri);
       setPlaybackDuration(recordingDuration);
+
+      // Save to context for persistence across navigation
+      if (uri) {
+        updateInput({ voiceRecordingUri: uri });
+      }
     } catch (err) {
       console.error('Failed to stop recording:', err);
     }
@@ -316,6 +337,9 @@ export default function DiagnoseDescribeScreen() {
     setRecordingDuration(0);
     setPlaybackDuration(0);
     setPlaybackPosition(0);
+
+    // Clear from context as well
+    updateInput({ voiceRecordingUri: undefined });
   };
 
   // Speech-to-text functions (requires development build)

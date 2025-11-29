@@ -1,75 +1,121 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  Dimensions,
+  Image,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+  Linking,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, SearchBar } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
+import {
+  articlesService,
+  videosService,
+  Article,
+  Video,
+  VideoCategory,
+} from '../../../src/services/learn';
 
 const { width } = Dimensions.get('window');
 
 const categories = [
-  { id: 'road-signs', title: 'Road Signs Guide', subtitle: '150+ signs explained', icon: 'traffic' as const, color: '#EF4444' },
-  { id: 'car-issues', title: 'Common Car Issues', subtitle: 'Learn about frequent problems', icon: 'build' as const, color: '#F59E0B' },
-  { id: 'maintenance', title: 'Maintenance Guides', subtitle: 'Keep your car running smoothly', icon: 'checklist' as const, color: '#10B981' },
-  { id: 'driving-tips', title: 'Driving Tips', subtitle: 'Become a safer driver', icon: 'directions-car' as const, color: '#3B82F6' },
-  { id: 'ev', title: 'Electric Vehicles', subtitle: 'Everything about EVs', icon: 'electric-car' as const, color: '#8B5CF6' },
-  { id: 'bikes', title: 'E-Bikes & Scooters', subtitle: 'Alternative transportation', icon: 'two-wheeler' as const, color: '#EC4899' },
-];
-
-const featuredArticles = [
-  {
-    id: '1',
-    title: 'Winter Car Prep Checklist',
-    category: 'Maintenance',
-    readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400',
-  },
-  {
-    id: '2',
-    title: 'Understanding Dashboard Warning Lights',
-    category: 'Education',
-    readTime: '8 min read',
-    image: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400',
-  },
-];
-
-const recentArticles = [
-  {
-    id: '3',
-    title: 'How to Check Your Oil Level',
-    category: 'Beginner',
-    readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400',
-  },
-  {
-    id: '4',
-    title: 'Tire Pressure: Why It Matters',
-    category: 'Safety',
-    readTime: '3 min read',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-  },
-  {
-    id: '5',
-    title: 'Signs Your Brakes Need Attention',
-    category: 'Safety',
-    readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400',
-  },
+  { id: 'road-signs', title: 'Road Signs Guide', subtitle: 'Learn all road signs', icon: 'traffic' as const, color: '#EF4444' },
+  { id: 'videos', title: 'Video Tutorials', subtitle: 'Watch & learn', icon: 'play-circle-filled' as const, color: '#8B5CF6' },
+  { id: 'car-issues', title: 'Common Car Issues', subtitle: 'Diagnose problems', icon: 'build' as const, color: '#F59E0B' },
+  { id: 'maintenance', title: 'Maintenance Tips', subtitle: 'Keep car healthy', icon: 'checklist' as const, color: '#10B981' },
+  { id: 'driving-tips', title: 'Driving Tips', subtitle: 'Drive safer', icon: 'directions-car' as const, color: '#3B82F6' },
+  { id: 'safety', title: 'Road Safety', subtitle: 'Stay protected', icon: 'security' as const, color: '#EC4899' },
 ];
 
 export default function LearnScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // State for API data
+  const [featuredVideos, setFeaturedVideos] = useState<Video[]>([]);
+  const [videoCategories, setVideoCategories] = useState<VideoCategory[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [videosData, videoCatsData, articlesData] = await Promise.all([
+        videosService.getFeaturedVideos().catch(() => []),
+        videosService.getCategories().catch(() => []),
+        articlesService.getArticles({ page: 1 }).catch(() => ({ articles: [] })),
+      ]);
+
+      setFeaturedVideos(videosData);
+      setVideoCategories(videoCatsData);
+      setArticles(articlesData.articles || []);
+    } catch (error) {
+      console.error('Error fetching learn data:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+  };
+
+  const openYouTubeVideo = async (video: Video) => {
+    try {
+      // Try YouTube app first
+      const youtubeAppUrl = `youtube://watch?v=${video.youtube_id}`;
+      const canOpenApp = await Linking.canOpenURL(youtubeAppUrl);
+
+      if (canOpenApp) {
+        await Linking.openURL(youtubeAppUrl);
+      } else {
+        // Fall back to web URL
+        await Linking.openURL(video.youtube_url);
+      }
+    } catch (error) {
+      // Final fallback
+      await Linking.openURL(video.youtube_url);
+    }
+  };
+
+  const handleCategoryPress = (categoryId: string) => {
+    if (categoryId === 'road-signs') {
+      router.push('/(driver)/learn/road-signs');
+    } else if (categoryId === 'videos') {
+      router.push('/(driver)/learn/videos');
+    } else {
+      router.push(`/(driver)/learn/category/${categoryId}`);
+    }
+  };
 
   return (
     <SafeAreaView
       className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`}
       edges={['top']}
     >
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Header */}
         <View className="px-4 py-4">
           <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -89,13 +135,7 @@ export default function LearnScreen() {
             {categories.map((category) => (
               <TouchableOpacity
                 key={category.id}
-                onPress={() => {
-                  if (category.id === 'road-signs') {
-                    router.push('/(driver)/learn/road-signs');
-                  } else {
-                    router.push(`/(driver)/learn/category/${category.id}`);
-                  }
-                }}
+                onPress={() => handleCategoryPress(category.id)}
                 className={`flex-row items-center p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'
                   }`}
                 style={{ width: '48%' }}
@@ -160,58 +200,179 @@ export default function LearnScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Featured */}
-        <View className="pb-6">
-          <Text className={`text-lg font-bold px-4 mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Featured This Week
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
-            {featuredArticles.map((article) => (
-              <TouchableOpacity
-                key={article.id}
-                onPress={() => router.push(`/(driver)/learn/article/${article.id}`)}
-                className="relative w-72 h-44 rounded-xl overflow-hidden"
-              >
-                <Image source={{ uri: article.image }} className="h-full w-full" resizeMode="cover" />
-                <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} className="absolute inset-0" />
-                <View className="absolute bottom-4 left-4 right-4">
-                  <Badge label={article.category} variant="primary" size="sm" className="self-start mb-2" />
-                  <Text className="text-white font-bold text-lg">{article.title}</Text>
-                  <Text className="text-white/70 text-sm">{article.readTime}</Text>
-                </View>
+        {/* Featured Videos */}
+        {featuredVideos.length > 0 && (
+          <View className="pb-6">
+            <View className="flex-row items-center justify-between px-4 mb-3">
+              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Featured Videos
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/(driver)/learn/videos')}>
+                <Text className="text-primary-500 font-medium">See All</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+            >
+              {featuredVideos.slice(0, 5).map((video) => (
+                <TouchableOpacity
+                  key={video.id}
+                  onPress={() => openYouTubeVideo(video)}
+                  className="relative w-72 rounded-xl overflow-hidden"
+                >
+                  <Image
+                    source={{ uri: video.thumbnail_url }}
+                    className="h-40 w-full"
+                    resizeMode="cover"
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                    className="absolute inset-0"
+                  />
+                  {/* Play Button */}
+                  <View className="absolute inset-0 items-center justify-center">
+                    <View className="h-14 w-14 rounded-full bg-red-600 items-center justify-center">
+                      <MaterialIcons name="play-arrow" size={32} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  {/* Duration */}
+                  <View className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded">
+                    <Text className="text-white text-xs font-medium">
+                      {video.duration_formatted}
+                    </Text>
+                  </View>
+                  {/* Video Info */}
+                  <View className="absolute bottom-3 left-3 right-3">
+                    <Text className="text-white font-bold" numberOfLines={2}>
+                      {video.title}
+                    </Text>
+                    <View className="flex-row items-center mt-1">
+                      <MaterialIcons name="person" size={12} color="#FFFFFF99" />
+                      <Text className="text-white/70 text-xs ml-1">
+                        {video.channel_name}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Video Categories */}
+        {videoCategories.length > 0 && (
+          <View className="pb-6">
+            <Text className={`text-lg font-bold px-4 mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Video Categories
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+            >
+              {videoCategories.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  onPress={() => router.push(`/(driver)/learn/videos?category=${category.slug}`)}
+                  className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+                  style={{ width: 140 }}
+                >
+                  <View
+                    className="h-10 w-10 rounded-lg items-center justify-center mb-2"
+                    style={{ backgroundColor: category.color + '20' }}
+                  >
+                    <MaterialIcons
+                      name={category.icon as any || 'play-circle-filled'}
+                      size={20}
+                      color={category.color}
+                    />
+                  </View>
+                  <Text
+                    className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                    numberOfLines={1}
+                  >
+                    {category.name}
+                  </Text>
+                  <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {category.video_count} videos
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Recent Articles */}
-        <View className="px-4 pb-8">
-          <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Recently Added
-          </Text>
-          <View className="gap-3">
-            {recentArticles.map((article) => (
-              <Card
-                key={article.id}
-                variant="default"
-                padding="none"
-                className="flex-row overflow-hidden"
-                onPress={() => router.push(`/(driver)/learn/article/${article.id}`)}
-              >
-                <Image source={{ uri: article.image }} className="h-24 w-24" resizeMode="cover" />
-                <View className="flex-1 p-4 justify-center">
-                  <Badge label={article.category} variant="info" size="sm" className="self-start mb-1" />
-                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {article.title}
-                  </Text>
-                  <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {article.readTime}
-                  </Text>
-                </View>
-              </Card>
-            ))}
+        {articles.length > 0 && (
+          <View className="px-4 pb-8">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Recent Articles
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/(driver)/learn/articles')}>
+                <Text className="text-primary-500 font-medium">See All</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="gap-3">
+              {articles.slice(0, 5).map((article) => (
+                <Card
+                  key={article.id}
+                  variant="default"
+                  padding="none"
+                  className="flex-row overflow-hidden"
+                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
+                >
+                  {article.image_url ? (
+                    <Image
+                      source={{ uri: article.image_url }}
+                      className="h-24 w-24"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      className={`h-24 w-24 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}
+                    >
+                      <MaterialIcons
+                        name="article"
+                        size={32}
+                        color={isDark ? '#64748B' : '#94A3B8'}
+                      />
+                    </View>
+                  )}
+                  <View className="flex-1 p-4 justify-center">
+                    <Badge
+                      label={article.category?.name || 'Article'}
+                      variant="info"
+                      size="sm"
+                      className="self-start mb-1"
+                    />
+                    <Text
+                      className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                      numberOfLines={2}
+                    >
+                      {article.title}
+                    </Text>
+                    <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {article.read_time_minutes} min read
+                    </Text>
+                  </View>
+                </Card>
+              ))}
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <View className="items-center justify-center py-12">
+            <ActivityIndicator size="large" color="#3B82F6" />
+            <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Loading content...
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\BroadcastController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\V1\QuizController;
 use App\Http\Controllers\Api\V1\RoadSignController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\VehicleController;
+use App\Http\Controllers\Api\V1\VideoController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -67,6 +69,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/categories', [ArticleController::class, 'categories']);
         Route::get('/categories/{slug}', [ArticleController::class, 'byCategory']);
         Route::get('/{slug}', [ArticleController::class, 'show']);
+    });
+
+    // Public Videos (Learning)
+    Route::prefix('videos')->group(function () {
+        Route::get('/', [VideoController::class, 'index']);
+        Route::get('/categories', [VideoController::class, 'categories']);
+        Route::get('/featured', [VideoController::class, 'featured']);
+        Route::get('/categories/{slug}', [VideoController::class, 'byCategory']);
+        Route::get('/{slug}', [VideoController::class, 'show']);
     });
 
     // Public Quiz Routes
@@ -202,6 +213,16 @@ Route::prefix('v1')->group(function () {
 
             // Driver Package Purchase
             Route::post('packages/diagnosis/purchase', [PackageController::class, 'purchaseDiagnosisPackage']);
+
+            // Appointments (Driver)
+            Route::prefix('appointments')->group(function () {
+                Route::get('/', [AppointmentController::class, 'index']);
+                Route::post('/', [AppointmentController::class, 'store']);
+                Route::get('/upcoming-count', [AppointmentController::class, 'upcomingCount']);
+                Route::get('/{id}', [AppointmentController::class, 'show']);
+                Route::post('/{id}/cancel', [AppointmentController::class, 'cancel']);
+                Route::post('/{id}/reschedule', [AppointmentController::class, 'reschedule']);
+            });
         });
 
         // ===========================================
@@ -256,6 +277,15 @@ Route::prefix('v1')->group(function () {
                 Route::post('packages/lead/purchase', [PackageController::class, 'purchaseLeadPackage']);
                 Route::post('packages/subscription/subscribe', [PackageController::class, 'subscribe']);
                 Route::post('packages/subscription/cancel', [PackageController::class, 'cancelSubscription']);
+
+                // Appointments (Expert)
+                Route::prefix('expert/appointments')->group(function () {
+                    Route::get('/', [AppointmentController::class, 'expertIndex']);
+                    Route::post('/{id}/confirm', [AppointmentController::class, 'confirm']);
+                    Route::post('/{id}/reject', [AppointmentController::class, 'reject']);
+                    Route::post('/{id}/start', [AppointmentController::class, 'start']);
+                    Route::post('/{id}/complete', [AppointmentController::class, 'complete']);
+                });
             });
         });
 
