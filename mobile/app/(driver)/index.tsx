@@ -1,18 +1,24 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Image, Platform, ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
+  RefreshControl,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, Chip, IconButton, Button, Avatar } from '../../src/components/common';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import appointmentService, { Appointment, formatAppointmentDate, getStatusLabel } from '../../src/services/appointment';
+import vehicleService, { Vehicle, formatMileage } from '../../src/services/vehicle';
+import diagnosisService, { DiagnosisResult } from '../../src/services/diagnosis';
+import maintenanceService, { MaintenanceReminder } from '../../src/services/maintenance';
+import { articlesService, Article } from '../../src/services/learn';
 
 const quickCategories = [
   { id: 'engine', label: 'Engine', icon: 'settings' as const },
@@ -20,57 +26,6 @@ const quickCategories = [
   { id: 'tires', label: 'Tires', icon: 'tire-repair' as const },
   { id: 'battery', label: 'Battery', icon: 'battery-charging-full' as const },
   { id: 'electrical', label: 'Electrical', icon: 'electrical-services' as const },
-];
-
-// Mock data for authenticated users (will come from API later)
-const mockRecentDiagnoses = [
-  {
-    id: '1',
-    title: 'P0420 - Catalyst System',
-    date: 'May 20, 2024',
-    status: 'pending' as const,
-  },
-  {
-    id: '2',
-    title: 'Brake Fluid Low',
-    date: 'May 15, 2024',
-    status: 'completed' as const,
-  },
-];
-
-const mockVehicles = [
-  {
-    id: '1',
-    name: 'Toyota Camry',
-    year: 2018,
-    mileage: '45,000 km',
-    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400',
-  },
-  {
-    id: '2',
-    name: 'Honda Civic',
-    year: 2020,
-    mileage: '28,000 km',
-    image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400',
-  },
-];
-
-const educationalContent = [
-  {
-    id: '1',
-    title: 'Basic Car Maintenance',
-    image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400',
-  },
-  {
-    id: '2',
-    title: 'Understanding Warning Lights',
-    image: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400',
-  },
-  {
-    id: '3',
-    title: 'Seasonal Car Care Tips',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-  },
 ];
 
 // Guest-specific content
@@ -142,42 +97,120 @@ export default function DriverHomeScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, userType } = useAuth();
+
+  // State for authenticated users
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [appointmentsCount, setAppointmentsCount] = useState(0);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [recentDiagnoses, setRecentDiagnoses] = useState<DiagnosisResult[]>([]);
+  const [maintenanceReminders, setMaintenanceReminders] = useState<MaintenanceReminder[]>([]);
+  const [maintenanceCount, setMaintenanceCount] = useState(0);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const isGuest = userType === 'guest';
   const firstName = isGuest ? 'Guest' : (user?.fullName?.split(' ')[0] || 'Driver');
 
-  // Fetch upcoming appointments for authenticated users
-  useEffect(() => {
-    if (!isGuest) {
-      fetchUpcomingAppointments();
+  // Fetch all data for authenticated users
+  const fetchAllData = useCallback(async () => {
+    if (isGuest) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Fetch all data in parallel
+      const [
+        appointmentsResult,
+        vehiclesResult,
+        diagnosesResult,
+        maintenanceResult,
+        articlesResult,
+      ] = await Promise.allSettled([
+        // Appointments
+        (async () => {
+          const countResponse = await appointmentService.getUpcomingCount();
+          const confirmed = await appointmentService.getAppointments({ status: 'confirmed' });
+          const pending = await appointmentService.getAppointments({ status: 'pending' });
+          return { count: countResponse, confirmed: confirmed.data, pending: pending.data };
+        })(),
+        // Vehicles
+        vehicleService.getVehicles(),
+        // Diagnoses
+        diagnosisService.getDiagnoses(1),
+        // Maintenance
+        (async () => {
+          const reminders = await maintenanceService.getReminders();
+          const dueReminders = reminders.filter(r => r.status === 'due' || r.status === 'overdue');
+          return { reminders: dueReminders, count: dueReminders.length };
+        })(),
+        // Articles (for Learn Something New)
+        articlesService.getArticles({ page: 1 }),
+      ]);
+
+      // Process appointments
+      if (appointmentsResult.status === 'fulfilled') {
+        const { count, confirmed, pending } = appointmentsResult.value;
+        setAppointmentsCount(count);
+        const allUpcoming = [...confirmed, ...pending]
+          .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+          .slice(0, 3);
+        setUpcomingAppointments(allUpcoming);
+      }
+
+      // Process vehicles
+      if (vehiclesResult.status === 'fulfilled') {
+        setVehicles(vehiclesResult.value);
+      }
+
+      // Process diagnoses
+      if (diagnosesResult.status === 'fulfilled') {
+        setRecentDiagnoses(diagnosesResult.value.diagnoses.slice(0, 3));
+      }
+
+      // Process maintenance
+      if (maintenanceResult.status === 'fulfilled') {
+        setMaintenanceReminders(maintenanceResult.value.reminders);
+        setMaintenanceCount(maintenanceResult.value.count);
+      }
+
+      // Process articles
+      if (articlesResult.status === 'fulfilled') {
+        setArticles(articlesResult.value.articles.slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Failed to fetch home data:', error);
+    } finally {
+      setLoading(false);
     }
   }, [isGuest]);
 
-  const fetchUpcomingAppointments = async () => {
-    try {
-      // Fetch upcoming count
-      const countResponse = await appointmentService.getUpcomingCount();
-      setAppointmentsCount(countResponse.count);
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
-      // Fetch pending and confirmed appointments (limit to 3 for home screen)
-      const response = await appointmentService.getAppointments({ status: 'confirmed' });
-      const pendingResponse = await appointmentService.getAppointments({ status: 'pending' });
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAllData();
+    setRefreshing(false);
+  }, [fetchAllData]);
 
-      const allUpcoming = [...response.data, ...pendingResponse.data]
-        .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
-        .slice(0, 3);
-
-      setUpcomingAppointments(allUpcoming);
-    } catch (error) {
-      console.error('Failed to fetch upcoming appointments:', error);
-    }
+  // Format diagnosis date
+  const formatDiagnosisDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // For authenticated users, show mock data
-  const recentDiagnoses = mockRecentDiagnoses;
-  const vehicles = mockVehicles;
+  // Get diagnosis title from AI diagnosis or symptoms
+  const getDiagnosisTitle = (diagnosis: DiagnosisResult) => {
+    if (diagnosis.ai_diagnosis) {
+      // Get first line or first 50 chars of AI diagnosis
+      const firstLine = diagnosis.ai_diagnosis.split('\n')[0];
+      return firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
+    }
+    return diagnosis.symptoms_description?.substring(0, 50) + '...' || 'Diagnosis';
+  };
 
   // Render guest home screen
   if (isGuest) {
@@ -430,6 +463,9 @@ export default function DriverHomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-4">
@@ -527,38 +563,40 @@ export default function DriverHomeScreen() {
         </View>
 
         {/* Maintenance Reminder Banner */}
-        <View className="px-4 pt-4">
-          <TouchableOpacity
-            onPress={() => router.push('/(driver)/profile/reminders')}
-            activeOpacity={0.8}
-          >
-            <View className={`rounded-xl overflow-hidden border ${
-              isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
-            }`}>
-              <View className="p-4">
-                <View className="flex-row items-center">
-                  <View className="h-10 w-10 rounded-full bg-amber-500/20 items-center justify-center mr-3">
-                    <MaterialIcons name="event" size={22} color="#F59E0B" />
-                  </View>
-                  <View className="flex-1">
-                    <View className="flex-row items-center">
-                      <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        Maintenance Due
-                      </Text>
-                      <View className="ml-2 bg-amber-500 px-2 py-0.5 rounded-full">
-                        <Text className="text-white text-xs font-bold">3</Text>
-                      </View>
+        {maintenanceCount > 0 && (
+          <View className="px-4 pt-4">
+            <TouchableOpacity
+              onPress={() => router.push('/(driver)/profile/reminders')}
+              activeOpacity={0.8}
+            >
+              <View className={`rounded-xl overflow-hidden border ${
+                isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
+              }`}>
+                <View className="p-4">
+                  <View className="flex-row items-center">
+                    <View className="h-10 w-10 rounded-full bg-amber-500/20 items-center justify-center mr-3">
+                      <MaterialIcons name="event" size={22} color="#F59E0B" />
                     </View>
-                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                      Oil change overdue • Tire rotation due soon
-                    </Text>
+                    <View className="flex-1">
+                      <View className="flex-row items-center">
+                        <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          Maintenance Due
+                        </Text>
+                        <View className="ml-2 bg-amber-500 px-2 py-0.5 rounded-full">
+                          <Text className="text-white text-xs font-bold">{maintenanceCount}</Text>
+                        </View>
+                      </View>
+                      <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`} numberOfLines={1}>
+                        {maintenanceReminders.slice(0, 2).map(r => r.maintenance_type?.name || 'Maintenance').join(' • ')}
+                      </Text>
+                    </View>
+                    <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
                   </View>
-                  <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
                 </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Upcoming Appointments */}
         {(upcomingAppointments.length > 0 || appointmentsCount > 0) && (
@@ -649,42 +687,60 @@ export default function DriverHomeScreen() {
             )}
           </View>
           <View className="px-4 gap-3">
-            {recentDiagnoses.map((diagnosis) => (
-              <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/results?id=${diagnosis.id}`)}>
-                <View className="flex-row items-center gap-4">
-                  <View
-                    className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
-                      ? 'bg-green-500/20'
-                      : 'bg-orange-500/20'
-                      }`}
-                  >
-                    <MaterialIcons
-                      name={diagnosis.status === 'completed' ? 'check-circle' : 'error'}
-                      size={24}
-                      color={diagnosis.status === 'completed' ? '#22C55E' : '#F97316'}
+            {recentDiagnoses.length > 0 ? (
+              recentDiagnoses.map((diagnosis) => (
+                <Card key={diagnosis.id} variant="default" onPress={() => router.push(`/(driver)/diagnose/results?id=${diagnosis.id}`)}>
+                  <View className="flex-row items-center gap-4">
+                    <View
+                      className={`h-12 w-12 rounded-full items-center justify-center ${diagnosis.status === 'completed'
+                        ? 'bg-green-500/20'
+                        : diagnosis.status === 'failed'
+                        ? 'bg-red-500/20'
+                        : 'bg-orange-500/20'
+                        }`}
+                    >
+                      <MaterialIcons
+                        name={diagnosis.status === 'completed' ? 'check-circle' : diagnosis.status === 'failed' ? 'error' : 'pending'}
+                        size={24}
+                        color={diagnosis.status === 'completed' ? '#22C55E' : diagnosis.status === 'failed' ? '#EF4444' : '#F97316'}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text
+                        className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                        numberOfLines={1}
+                      >
+                        {getDiagnosisTitle(diagnosis)}
+                      </Text>
+                      <Text
+                        className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                      >
+                        {formatDiagnosisDate(diagnosis.created_at)}
+                      </Text>
+                    </View>
+                    <Badge
+                      label={diagnosis.status === 'completed' ? 'Complete' : diagnosis.status === 'failed' ? 'Failed' : 'Pending'}
+                      variant={diagnosis.status === 'completed' ? 'success' : diagnosis.status === 'failed' ? 'error' : 'warning'}
                     />
                   </View>
-                  <View className="flex-1">
-                    <Text
-                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                    >
-                      {diagnosis.title}
-                    </Text>
-                    <Text
-                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                    >
-                      {diagnosis.date}
-                    </Text>
-                  </View>
-                  <Badge
-                    label={diagnosis.status === 'completed' ? 'Complete' : 'Pending'}
-                    variant={diagnosis.status === 'completed' ? 'success' : 'warning'}
-                  />
+                </Card>
+              ))
+            ) : (
+              <TouchableOpacity
+                onPress={() => router.push('/(driver)/diagnose')}
+                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="items-center py-4">
+                  <MaterialIcons name="search" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                  <Text className={`mt-2 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    No diagnoses yet
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Tap to diagnose your first issue
+                  </Text>
                 </View>
-              </Card>
-            ))}
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -707,86 +763,149 @@ export default function DriverHomeScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-          >
-            {vehicles.map((vehicle) => (
-              <Card
-                key={vehicle.id}
-                variant="default"
-                padding="none"
-                className="w-64"
-                onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
-              >
-                <View className={`h-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                  <Image
-                    source={{ uri: vehicle.image }}
-                    className="h-full w-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <View className="flex-row items-center justify-between p-4">
-                  <View>
-                    <Text
-                      className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                    >
-                      {vehicle.year} {vehicle.name}
-                    </Text>
-                    <Text
-                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                    >
-                      {vehicle.mileage}
-                    </Text>
+          {vehicles.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+            >
+              {vehicles.map((vehicle) => (
+                <Card
+                  key={vehicle.id}
+                  variant="default"
+                  padding="none"
+                  className="w-64"
+                  onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+                >
+                  <View className={`h-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                    {vehicle.image_url ? (
+                      <Image
+                        source={{ uri: vehicle.image_url }}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <MaterialIcons name="directions-car" size={48} color={isDark ? '#475569' : '#94A3B8'} />
+                    )}
+                    {vehicle.is_primary && (
+                      <View className="absolute top-2 right-2 bg-primary-500 px-2 py-0.5 rounded-full">
+                        <Text className="text-white text-xs font-bold">Primary</Text>
+                      </View>
+                    )}
                   </View>
-                  <IconButton
-                    icon="edit"
-                    size="sm"
-                    onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
-                  />
+                  <View className="flex-row items-center justify-between p-4">
+                    <View className="flex-1">
+                      <Text
+                        className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                        numberOfLines={1}
+                      >
+                        {vehicle.year} {vehicle.make} {vehicle.model}
+                      </Text>
+                      <Text
+                        className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                      >
+                        {formatMileage(vehicle.mileage)}
+                      </Text>
+                    </View>
+                    <IconButton
+                      icon="edit"
+                      size="sm"
+                      onPress={() => router.push(`/(driver)/profile/vehicle-edit?id=${vehicle.id}`)}
+                    />
+                  </View>
+                </Card>
+              ))}
+            </ScrollView>
+          ) : (
+            <View className="px-4">
+              <TouchableOpacity
+                onPress={() => router.push('/(driver)/profile/vehicle-edit')}
+                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="items-center py-4">
+                  <MaterialIcons name="directions-car" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                  <Text className={`mt-2 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    No vehicles added
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Tap to add your first vehicle
+                  </Text>
                 </View>
-              </Card>
-            ))}
-          </ScrollView>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
-        {/* Educational Highlights */}
+        {/* Learn Something New */}
         <View className="pt-6 pb-8">
-          <Text
-            className={`text-lg font-bold px-4 pb-3 ${isDark ? 'text-white' : 'text-slate-900'
-              }`}
-          >
-            Learn Something New
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-          >
-            {educationalContent.map((content) => (
+          <View className="flex-row items-center justify-between px-4 pb-3">
+            <Text
+              className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
+            >
+              Learn Something New
+            </Text>
+            <TouchableOpacity onPress={() => router.push('/(driver)/learn')}>
+              <Text className="text-primary-500 font-semibold text-sm">
+                View All
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {articles.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+            >
+              {articles.map((article) => (
+                <TouchableOpacity
+                  key={article.id}
+                  className="w-60 h-36 rounded-xl overflow-hidden"
+                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
+                >
+                  {article.image_url ? (
+                    <Image
+                      source={{ uri: article.image_url }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className={`h-full w-full items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                      <MaterialIcons name="article" size={48} color={isDark ? '#475569' : '#94A3B8'} />
+                    </View>
+                  )}
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.7)']}
+                    className="absolute inset-0"
+                  />
+                  <View className="absolute bottom-3 left-3 right-3">
+                    <Text className="text-xs text-white/80 mb-1">
+                      {article.category?.name || 'Article'}
+                    </Text>
+                    <Text className="font-bold text-white" numberOfLines={2}>
+                      {article.title}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ) : (
+            <View className="px-4">
               <TouchableOpacity
-                key={content.id}
-                className="w-60 h-36 rounded-xl overflow-hidden"
                 onPress={() => router.push('/(driver)/learn')}
+                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
               >
-                <Image
-                  source={{ uri: content.image }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.7)']}
-                  className="absolute inset-0"
-                />
-                <Text className="absolute bottom-3 left-3 font-bold text-white">
-                  {content.title}
-                </Text>
+                <View className="items-center py-4">
+                  <MaterialIcons name="school" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                  <Text className={`mt-2 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Explore learning content
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Road signs, maintenance tips, and more
+                  </Text>
+                </View>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

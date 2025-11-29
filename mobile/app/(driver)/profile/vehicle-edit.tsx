@@ -1,23 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Button, Input, Card } from '../../../src/components/common';
+import { useAlert } from '../../../src/context/AlertContext';
+import { Button, Input, Card, Loading } from '../../../src/components/common';
+import vehicleService from '../../../src/services/vehicle';
 import { GhanaConstants } from '../../../src/constants';
 
-const fuelTypes = ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'LPG'];
-const transmissionTypes = ['Automatic', 'Manual', 'CVT'];
+const fuelTypes = [
+  { value: 'petrol', label: 'Petrol' },
+  { value: 'diesel', label: 'Diesel' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'electric', label: 'Electric' },
+  { value: 'lpg', label: 'LPG' },
+];
+
+const transmissionTypes = [
+  { value: 'automatic', label: 'Automatic' },
+  { value: 'manual', label: 'Manual' },
+  { value: 'cvt', label: 'CVT' },
+];
+
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
 export default function VehicleEditScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { showSuccess, showError, showConfirm } = useAlert();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const isEditing = !!id;
+
+  // Loading states
+  const [loadingVehicle, setLoadingVehicle] = useState(isEditing);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Form state
   const [make, setMake] = useState('');
@@ -26,29 +53,135 @@ export default function VehicleEditScreen() {
   const [plateNumber, setPlateNumber] = useState('');
   const [vin, setVin] = useState('');
   const [color, setColor] = useState('');
-  const [fuelType, setFuelType] = useState('Petrol');
-  const [transmission, setTransmission] = useState('Automatic');
+  const [fuelType, setFuelType] = useState('petrol');
+  const [transmission, setTransmission] = useState('automatic');
   const [mileage, setMileage] = useState('');
-  const [saving, setSaving] = useState(false);
+
+  // Picker states
   const [showMakePicker, setShowMakePicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
+  // Available makes from backend or constants
+  const [vehicleMakes, setVehicleMakes] = useState<string[]>(GhanaConstants.popularVehicleMakes);
+
+  // Load vehicle data if editing
+  useEffect(() => {
+    if (isEditing && id) {
+      loadVehicle(id);
+    }
+    loadVehicleMakes();
+  }, [id, isEditing]);
+
+  const loadVehicle = async (vehicleId: string) => {
+    try {
+      const vehicle = await vehicleService.getVehicle(vehicleId);
+      setMake(vehicle.make || '');
+      setModel(vehicle.model || '');
+      setYear(vehicle.year || currentYear);
+      setPlateNumber(vehicle.plate_number || '');
+      setVin(vehicle.vin || '');
+      setColor(vehicle.color || '');
+      setFuelType(vehicle.fuel_type || 'petrol');
+      setTransmission(vehicle.transmission || 'automatic');
+      setMileage(vehicle.mileage?.toString() || '');
+    } catch (error: any) {
+      showError('Error', error.message || 'Failed to load vehicle');
+      router.back();
+    } finally {
+      setLoadingVehicle(false);
+    }
+  };
+
+  const loadVehicleMakes = async () => {
+    try {
+      const makes = await vehicleService.getVehicleMakes();
+      if (makes.length > 0) {
+        setVehicleMakes(makes.map(m => m.name));
+      }
+    } catch (error) {
+      // Fall back to constants if API fails
+      console.log('Using local vehicle makes');
+    }
+  };
+
   const handleSave = async () => {
     if (!make || !model || !year) {
-      Alert.alert('Required Fields', 'Please fill in make, model, and year.');
+      showError('Required Fields', 'Please fill in make, model, and year.');
       return;
     }
 
     setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setSaving(false);
 
-    Alert.alert(
-      isEditing ? 'Vehicle Updated' : 'Vehicle Added',
-      `Your ${make} ${model} has been ${isEditing ? 'updated' : 'saved'}.`,
-      [{ text: 'OK', onPress: () => router.back() }]
-    );
+    try {
+      const vehicleData = {
+        make,
+        model,
+        year,
+        plate_number: plateNumber || undefined,
+        vin: vin || undefined,
+        color: color || undefined,
+        fuel_type: fuelType,
+        transmission,
+        mileage: mileage ? parseInt(mileage, 10) : undefined,
+      };
+
+      if (isEditing && id) {
+        await vehicleService.updateVehicle(id, vehicleData);
+        showSuccess(
+          'Vehicle Updated',
+          `Your ${make} ${model} has been updated successfully.`,
+          () => router.back()
+        );
+      } else {
+        await vehicleService.createVehicle(vehicleData);
+        showSuccess(
+          'Vehicle Added',
+          `Your ${make} ${model} has been added successfully.`,
+          () => router.back()
+        );
+      }
+    } catch (error: any) {
+      showError(
+        isEditing ? 'Update Failed' : 'Add Failed',
+        error.message || `Failed to ${isEditing ? 'update' : 'add'} vehicle. Please try again.`
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleDelete = () => {
+    showConfirm({
+      title: 'Delete Vehicle',
+      message: `Are you sure you want to delete your ${make} ${model}? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await vehicleService.deleteVehicle(id!);
+          showSuccess(
+            'Vehicle Deleted',
+            'Your vehicle has been deleted successfully.',
+            () => router.back()
+          );
+        } catch (error: any) {
+          showError('Delete Failed', error.message || 'Failed to delete vehicle.');
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
+
+  if (loadingVehicle) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`} edges={['top']}>
+        <Loading message="Loading vehicle..." />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`} edges={['top']}>
@@ -66,223 +199,258 @@ export default function VehicleEditScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1 px-4 py-4" showsVerticalScrollIndicator={false}>
-        {/* Vehicle Icon */}
-        <View className="items-center py-6">
-          <View
-            className="h-24 w-24 rounded-2xl items-center justify-center"
-            style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
-          >
-            <MaterialIcons name="directions-car" size={48} color="#3B82F6" />
-          </View>
-        </View>
-
-        {/* Basic Info */}
-        <View className="mb-6">
-          <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            BASIC INFORMATION
-          </Text>
-
-          {/* Make Picker */}
-          <View className="mb-4">
-            <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Make
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowMakePicker(!showMakePicker)}
-              className={`flex-row items-center justify-between p-4 rounded-xl border ${
-                isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-              }`}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          className="flex-1 px-4 py-4"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* Vehicle Icon */}
+          <View className="items-center py-6">
+            <View
+              className="h-24 w-24 rounded-2xl items-center justify-center"
+              style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
             >
-              <Text className={make ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')}>
-                {make || 'Select make'}
-              </Text>
-              <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
-            </TouchableOpacity>
-
-            {showMakePicker && (
-              <Card variant="default" className="mt-2 max-h-48">
-                <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                  {GhanaConstants.popularVehicleMakes.map((vehicleMake) => (
-                    <TouchableOpacity
-                      key={vehicleMake}
-                      onPress={() => {
-                        setMake(vehicleMake);
-                        setShowMakePicker(false);
-                      }}
-                      className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
-                    >
-                      <Text className={`${make === vehicleMake ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {vehicleMake}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </Card>
-            )}
-          </View>
-
-          <Input
-            label="Model"
-            placeholder="e.g., Corolla, Civic, Elantra"
-            value={model}
-            onChangeText={setModel}
-          />
-
-          {/* Year Picker */}
-          <View className="mb-4">
-            <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Year
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowYearPicker(!showYearPicker)}
-              className={`flex-row items-center justify-between p-4 rounded-xl border ${
-                isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-              }`}
-            >
-              <Text className={isDark ? 'text-white' : 'text-slate-900'}>
-                {year}
-              </Text>
-              <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
-            </TouchableOpacity>
-
-            {showYearPicker && (
-              <Card variant="default" className="mt-2 max-h-48">
-                <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                  {years.map((y) => (
-                    <TouchableOpacity
-                      key={y}
-                      onPress={() => {
-                        setYear(y);
-                        setShowYearPicker(false);
-                      }}
-                      className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
-                    >
-                      <Text className={`${year === y ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {y}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </Card>
-            )}
-          </View>
-
-          <Input
-            label="Color"
-            placeholder="e.g., Silver, White, Black"
-            value={color}
-            onChangeText={setColor}
-          />
-        </View>
-
-        {/* Registration Info */}
-        <View className="mb-6">
-          <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            REGISTRATION
-          </Text>
-
-          <Input
-            label="Plate Number"
-            placeholder="e.g., GR-1234-20"
-            value={plateNumber}
-            onChangeText={setPlateNumber}
-            autoCapitalize="characters"
-          />
-
-          <Input
-            label="VIN (Optional)"
-            placeholder="17-character Vehicle Identification Number"
-            value={vin}
-            onChangeText={setVin}
-            autoCapitalize="characters"
-            maxLength={17}
-          />
-        </View>
-
-        {/* Technical Info */}
-        <View className="mb-6">
-          <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            TECHNICAL DETAILS
-          </Text>
-
-          {/* Fuel Type */}
-          <View className="mb-4">
-            <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Fuel Type
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {fuelTypes.map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => setFuelType(type)}
-                  className={`px-4 py-2 rounded-full ${
-                    fuelType === type
-                      ? 'bg-primary-500'
-                      : isDark
-                      ? 'bg-slate-800'
-                      : 'bg-slate-100'
-                  }`}
-                >
-                  <Text
-                    className={`font-medium ${
-                      fuelType === type
-                        ? 'text-white'
-                        : isDark
-                        ? 'text-slate-300'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    {type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              <MaterialIcons name="directions-car" size={48} color="#3B82F6" />
             </View>
           </View>
 
-          {/* Transmission */}
-          <View className="mb-4">
-            <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Transmission
+          {/* Basic Info */}
+          <View className="mb-6">
+            <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              BASIC INFORMATION
             </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {transmissionTypes.map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => setTransmission(type)}
-                  className={`px-4 py-2 rounded-full ${
-                    transmission === type
-                      ? 'bg-primary-500'
-                      : isDark
-                      ? 'bg-slate-800'
-                      : 'bg-slate-100'
-                  }`}
-                >
-                  <Text
-                    className={`font-medium ${
-                      transmission === type
-                        ? 'text-white'
-                        : isDark
-                        ? 'text-slate-300'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    {type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+
+            {/* Make Picker */}
+            <View className="mb-4">
+              <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Make *
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowMakePicker(!showMakePicker);
+                  setShowYearPicker(false);
+                }}
+                className={`flex-row items-center justify-between p-4 rounded-xl border ${
+                  isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+                }`}
+              >
+                <Text className={make ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')}>
+                  {make || 'Select make'}
+                </Text>
+                <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              </TouchableOpacity>
+
+              {showMakePicker && (
+                <Card variant="default" className="mt-2 max-h-48">
+                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {vehicleMakes.map((vehicleMake) => (
+                      <TouchableOpacity
+                        key={vehicleMake}
+                        onPress={() => {
+                          setMake(vehicleMake);
+                          setShowMakePicker(false);
+                        }}
+                        className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                      >
+                        <Text className={`${make === vehicleMake ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {vehicleMake}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </Card>
+              )}
             </View>
+
+            <Input
+              label="Model *"
+              placeholder="e.g., Corolla, Civic, Elantra"
+              value={model}
+              onChangeText={setModel}
+            />
+
+            {/* Year Picker */}
+            <View className="mb-4">
+              <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Year *
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowYearPicker(!showYearPicker);
+                  setShowMakePicker(false);
+                }}
+                className={`flex-row items-center justify-between p-4 rounded-xl border ${
+                  isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+                }`}
+              >
+                <Text className={isDark ? 'text-white' : 'text-slate-900'}>
+                  {year}
+                </Text>
+                <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              </TouchableOpacity>
+
+              {showYearPicker && (
+                <Card variant="default" className="mt-2 max-h-48">
+                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {years.map((y) => (
+                      <TouchableOpacity
+                        key={y}
+                        onPress={() => {
+                          setYear(y);
+                          setShowYearPicker(false);
+                        }}
+                        className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                      >
+                        <Text className={`${year === y ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {y}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </Card>
+              )}
+            </View>
+
+            <Input
+              label="Color"
+              placeholder="e.g., Silver, White, Black"
+              value={color}
+              onChangeText={setColor}
+            />
           </View>
 
-          <Input
-            label="Current Mileage (km)"
-            placeholder="e.g., 45000"
-            value={mileage}
-            onChangeText={setMileage}
-            keyboardType="numeric"
-          />
-        </View>
-      </ScrollView>
+          {/* Registration Info */}
+          <View className="mb-6">
+            <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              REGISTRATION
+            </Text>
+
+            <Input
+              label="Plate Number"
+              placeholder="e.g., GR-1234-20"
+              value={plateNumber}
+              onChangeText={setPlateNumber}
+              autoCapitalize="characters"
+            />
+
+            <Input
+              label="VIN (Optional)"
+              placeholder="17-character Vehicle Identification Number"
+              value={vin}
+              onChangeText={setVin}
+              autoCapitalize="characters"
+              maxLength={17}
+            />
+          </View>
+
+          {/* Technical Info */}
+          <View className="mb-6">
+            <Text className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              TECHNICAL DETAILS
+            </Text>
+
+            {/* Fuel Type */}
+            <View className="mb-4">
+              <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Fuel Type
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {fuelTypes.map((type) => (
+                  <TouchableOpacity
+                    key={type.value}
+                    onPress={() => setFuelType(type.value)}
+                    className={`px-4 py-2 rounded-full ${
+                      fuelType === type.value
+                        ? 'bg-primary-500'
+                        : isDark
+                        ? 'bg-slate-800'
+                        : 'bg-slate-100'
+                    }`}
+                  >
+                    <Text
+                      className={`font-medium ${
+                        fuelType === type.value
+                          ? 'text-white'
+                          : isDark
+                          ? 'text-slate-300'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Transmission */}
+            <View className="mb-4">
+              <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Transmission
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {transmissionTypes.map((type) => (
+                  <TouchableOpacity
+                    key={type.value}
+                    onPress={() => setTransmission(type.value)}
+                    className={`px-4 py-2 rounded-full ${
+                      transmission === type.value
+                        ? 'bg-primary-500'
+                        : isDark
+                        ? 'bg-slate-800'
+                        : 'bg-slate-100'
+                    }`}
+                  >
+                    <Text
+                      className={`font-medium ${
+                        transmission === type.value
+                          ? 'text-white'
+                          : isDark
+                          ? 'text-slate-300'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <Input
+              label="Current Mileage (km)"
+              placeholder="e.g., 45000"
+              value={mileage}
+              onChangeText={setMileage}
+              keyboardType="numeric"
+            />
+          </View>
+
+          {/* Delete Button (only when editing) */}
+          {isEditing && (
+            <View className="mb-6">
+              <TouchableOpacity
+                onPress={handleDelete}
+                disabled={deleting}
+                className={`flex-row items-center justify-center py-4 rounded-xl border ${
+                  isDark ? 'border-red-500/30 bg-red-500/10' : 'border-red-200 bg-red-50'
+                }`}
+              >
+                <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
+                <Text className="text-red-500 font-semibold ml-2">
+                  {deleting ? 'Deleting...' : 'Delete Vehicle'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Save Button */}
       <View className={`px-4 py-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
