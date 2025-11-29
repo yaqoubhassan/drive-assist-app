@@ -197,22 +197,37 @@ export const diagnosisService = {
     lastPage: number;
     total: number;
   }> {
+    // Laravel's ResourceCollection with pagination returns:
+    // { data: [...], links: {...}, meta: { current_page, last_page, total, ... } }
     const response = await api.get<{
       data: DiagnosisResult[];
-      current_page: number;
-      last_page: number;
-      total: number;
+      meta?: {
+        current_page: number;
+        last_page: number;
+        total: number;
+      };
+      // Also support direct pagination fields for backwards compatibility
+      current_page?: number;
+      last_page?: number;
+      total?: number;
     }>(apiConfig.endpoints.diagnoses.list, { page });
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Failed to fetch diagnoses');
     }
 
+    // Handle both Laravel ResourceCollection format (with meta) and direct format
+    const data = response.data;
+    const diagnoses = Array.isArray(data.data) ? data.data : [];
+    const currentPage = data.meta?.current_page ?? data.current_page ?? 1;
+    const lastPage = data.meta?.last_page ?? data.last_page ?? 1;
+    const total = data.meta?.total ?? data.total ?? 0;
+
     return {
-      diagnoses: response.data.data,
-      currentPage: response.data.current_page,
-      lastPage: response.data.last_page,
-      total: response.data.total,
+      diagnoses,
+      currentPage,
+      lastPage,
+      total,
     };
   },
 

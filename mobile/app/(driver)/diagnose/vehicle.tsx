@@ -1,32 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAuth } from '../../../src/context/AuthContext';
 import { Button, Input, Card } from '../../../src/components/common';
 import { GhanaConstants } from '../../../src/constants';
-
-const savedVehicles = [
-  { id: '1', name: '2018 Toyota Camry', mileage: '45,000 km' },
-  { id: '2', name: '2020 Honda Civic', mileage: '28,000 km' },
-];
+import vehicleService, { Vehicle, formatMileage } from '../../../src/services/vehicle';
 
 export default function DiagnoseVehicleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isDark } = useTheme();
+  const { userType } = useAuth();
 
+  const [savedVehicles, setSavedVehicles] = useState<Vehicle[]>([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [year, setYear] = useState('');
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [mileage, setMileage] = useState('');
+
+  const isGuest = userType === 'guest';
+
+  // Fetch user's saved vehicles
+  const fetchVehicles = useCallback(async () => {
+    if (isGuest) {
+      setLoadingVehicles(false);
+      return;
+    }
+
+    try {
+      setLoadingVehicles(true);
+      const vehicles = await vehicleService.getVehicles();
+      setSavedVehicles(vehicles);
+    } catch (error) {
+      console.error('Failed to fetch vehicles:', error);
+    } finally {
+      setLoadingVehicles(false);
+    }
+  }, [isGuest]);
+
+  // Fetch vehicles on mount and when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchVehicles();
+    }, [fetchVehicles])
+  );
 
   const handleContinue = () => {
     router.push({
@@ -113,7 +142,7 @@ export default function DiagnoseVehicleScreen() {
         </View>
 
         {/* Saved Vehicles */}
-        {savedVehicles.length > 0 && (
+        {!isGuest && (
           <View className="mb-6">
             <Text
               className={`text-base font-semibold mb-3 ${
@@ -122,49 +151,77 @@ export default function DiagnoseVehicleScreen() {
             >
               Or select from saved vehicles
             </Text>
-            {savedVehicles.map((vehicle) => (
-              <TouchableOpacity
-                key={vehicle.id}
-                onPress={() => setSelectedVehicle(vehicle.id)}
-                className={`flex-row items-center p-4 rounded-xl mb-2 ${
-                  selectedVehicle === vehicle.id
-                    ? 'bg-primary-500/10 border-2 border-primary-500'
-                    : isDark
-                    ? 'bg-slate-800'
-                    : 'bg-slate-100'
-                }`}
-              >
-                <View
-                  className={`h-5 w-5 rounded-full border-2 mr-4 items-center justify-center ${
-                    selectedVehicle === vehicle.id
-                      ? 'border-primary-500 bg-primary-500'
+            {loadingVehicles ? (
+              <View className="py-4 items-center">
+                <ActivityIndicator size="small" color="#3B82F6" />
+                <Text className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Loading your vehicles...
+                </Text>
+              </View>
+            ) : savedVehicles.length > 0 ? (
+              savedVehicles.map((vehicle) => (
+                <TouchableOpacity
+                  key={vehicle.id}
+                  onPress={() => setSelectedVehicle(vehicle.id.toString())}
+                  className={`flex-row items-center p-4 rounded-xl mb-2 ${
+                    selectedVehicle === vehicle.id.toString()
+                      ? 'bg-primary-500/10 border-2 border-primary-500'
                       : isDark
-                      ? 'border-slate-600'
-                      : 'border-slate-300'
+                      ? 'bg-slate-800'
+                      : 'bg-slate-100'
                   }`}
                 >
-                  {selectedVehicle === vehicle.id && (
-                    <View className="h-2 w-2 rounded-full bg-white" />
-                  )}
-                </View>
-                <View className="flex-1">
-                  <Text
-                    className={`font-semibold ${
-                      isDark ? 'text-white' : 'text-slate-900'
+                  <View
+                    className={`h-5 w-5 rounded-full border-2 mr-4 items-center justify-center ${
+                      selectedVehicle === vehicle.id.toString()
+                        ? 'border-primary-500 bg-primary-500'
+                        : isDark
+                        ? 'border-slate-600'
+                        : 'border-slate-300'
                     }`}
                   >
-                    {vehicle.name}
-                  </Text>
-                  <Text
-                    className={`text-sm ${
-                      isDark ? 'text-slate-400' : 'text-slate-500'
-                    }`}
-                  >
-                    {vehicle.mileage}
+                    {selectedVehicle === vehicle.id.toString() && (
+                      <View className="h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </View>
+                  <View className="flex-1">
+                    <View className="flex-row items-center">
+                      <Text
+                        className={`font-semibold ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}
+                      >
+                        {vehicle.year} {vehicle.make} {vehicle.model}
+                      </Text>
+                      {vehicle.is_primary && (
+                        <View className="ml-2 bg-primary-500 px-2 py-0.5 rounded-full">
+                          <Text className="text-white text-xs font-bold">Primary</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
+                      className={`text-sm ${
+                        isDark ? 'text-slate-400' : 'text-slate-500'
+                      }`}
+                    >
+                      {formatMileage(vehicle.mileage)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <TouchableOpacity
+                onPress={() => router.push('/(driver)/profile/vehicle-edit')}
+                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="flex-row items-center justify-center">
+                  <MaterialIcons name="add" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
+                  <Text className={`ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Add a vehicle for better diagnosis
                   </Text>
                 </View>
               </TouchableOpacity>
-            ))}
+            )}
           </View>
         )}
 
@@ -175,7 +232,7 @@ export default function DiagnoseVehicleScreen() {
               isDark ? 'text-white' : 'text-slate-900'
             }`}
           >
-            {savedVehicles.length > 0 ? 'Or enter details manually' : 'Enter vehicle details'}
+            {!isGuest && savedVehicles.length > 0 ? 'Or enter details manually' : 'Enter vehicle details'}
           </Text>
 
           <View className="flex-row gap-3">
