@@ -219,8 +219,20 @@ export const diagnosisService = {
       throw new Error(response.message || 'Failed to fetch diagnoses');
     }
 
-    // Handle both Laravel ResourceCollection format (with meta) and direct format
     const data = response.data;
+
+    // Handle case where data is directly an array (when $this->success() flattens ResourceCollection)
+    if (Array.isArray(data)) {
+      console.log('[DiagnosisService] getDiagnoses - data is direct array, length:', data.length);
+      return {
+        diagnoses: data,
+        currentPage: 1,
+        lastPage: 1,
+        total: data.length,
+      };
+    }
+
+    // Handle both Laravel ResourceCollection format (with meta) and direct format
     console.log('[DiagnosisService] getDiagnoses data structure:', {
       hasDataArray: Array.isArray(data.data),
       dataLength: Array.isArray(data.data) ? data.data.length : 0,
