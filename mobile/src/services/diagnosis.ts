@@ -212,10 +212,7 @@ export const diagnosisService = {
       total?: number;
     }>(apiConfig.endpoints.diagnoses.list, { page });
 
-    console.log('[DiagnosisService] getDiagnoses raw response:', JSON.stringify(response, null, 2));
-
     if (!response.success || !response.data) {
-      console.log('[DiagnosisService] getDiagnoses failed - success:', response.success, 'data:', !!response.data);
       throw new Error(response.message || 'Failed to fetch diagnoses');
     }
 
@@ -223,7 +220,6 @@ export const diagnosisService = {
 
     // Handle case where data is directly an array (when $this->success() flattens ResourceCollection)
     if (Array.isArray(data)) {
-      console.log('[DiagnosisService] getDiagnoses - data is direct array, length:', data.length);
       return {
         diagnoses: data,
         currentPage: 1,
@@ -233,12 +229,6 @@ export const diagnosisService = {
     }
 
     // Handle both Laravel ResourceCollection format (with meta) and direct format
-    console.log('[DiagnosisService] getDiagnoses data structure:', {
-      hasDataArray: Array.isArray(data.data),
-      dataLength: Array.isArray(data.data) ? data.data.length : 0,
-      hasMeta: !!data.meta,
-      meta: data.meta,
-    });
     const diagnoses = Array.isArray(data.data) ? data.data : [];
     const currentPage = data.meta?.current_page ?? data.current_page ?? 1;
     const lastPage = data.meta?.last_page ?? data.last_page ?? 1;
