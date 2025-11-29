@@ -66,7 +66,7 @@ export default function DiagnoseCategoryScreen() {
           Step 1 of 4
         </Text>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(driver)/')}
           className="h-12 w-12 items-center justify-center"
         >
           <MaterialIcons

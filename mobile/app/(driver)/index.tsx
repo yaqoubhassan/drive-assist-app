@@ -163,8 +163,12 @@ export default function DriverHomeScreen() {
       }
 
       // Process diagnoses
+      console.log('[Home] Diagnoses result:', JSON.stringify(diagnosesResult, null, 2));
       if (diagnosesResult.status === 'fulfilled' && diagnosesResult.value?.diagnoses) {
+        console.log('[Home] Setting recent diagnoses:', diagnosesResult.value.diagnoses.length, 'items');
         setRecentDiagnoses(diagnosesResult.value.diagnoses.slice(0, 3));
+      } else {
+        console.log('[Home] No diagnoses found or request failed');
       }
 
       // Process maintenance

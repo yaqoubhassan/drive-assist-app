@@ -38,6 +38,8 @@ class DiagnosisController extends Controller
             ->latest()
             ->paginate(15);
 
+        \Log::info('[DiagnosisController] index - user: ' . $request->user()->id . ', count: ' . $diagnoses->count() . ', total: ' . $diagnoses->total());
+
         return $this->success(DiagnosisResource::collection($diagnoses));
     }
 

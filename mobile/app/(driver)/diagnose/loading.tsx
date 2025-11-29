@@ -149,7 +149,8 @@ export default function DiagnoseLoadingScreen() {
 
       showError(title, message, () => {
         clearError();
-        router.back();
+        // Use replace to go back to diagnose start instead of back() which might fail if no history
+        router.replace('/(driver)/diagnose');
       });
     }
   }, [error, showError, clearError, router]);
