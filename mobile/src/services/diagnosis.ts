@@ -61,7 +61,12 @@ export interface CreateDiagnosisRequest {
 }
 
 export interface GuestDiagnosisRequest {
-  symptoms_description: string;
+  symptoms_description?: string;
+  voice_recording?: {
+    uri: string;
+    name: string;
+    type: string;
+  };
 }
 
 export interface GuestQuotaResponse {
@@ -94,11 +99,41 @@ export const diagnosisService = {
   /**
    * Create a guest diagnosis (no authentication required)
    * Requires device headers to be set in API client
+   * Supports text, audio, or both
    */
   async createGuestDiagnosis(data: GuestDiagnosisRequest): Promise<GuestDiagnosisResponse> {
+    // If there's a voice recording, use FormData
+    if (data.voice_recording) {
+      const formData = new FormData();
+
+      // Add text description if provided
+      if (data.symptoms_description) {
+        formData.append('symptoms_description', data.symptoms_description);
+      }
+
+      // Add voice recording as a file
+      formData.append('voice_recording', {
+        uri: data.voice_recording.uri,
+        name: data.voice_recording.name,
+        type: data.voice_recording.type,
+      } as unknown as Blob);
+
+      const response = await api.postFormData<GuestDiagnosisResponse>(
+        apiConfig.endpoints.diagnoses.guest,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Failed to create diagnosis');
+      }
+
+      return response.data;
+    }
+
+    // No voice recording, use JSON
     const response = await api.post<GuestDiagnosisResponse>(
       apiConfig.endpoints.diagnoses.guest,
-      data
+      { symptoms_description: data.symptoms_description }
     );
 
     if (!response.success || !response.data) {
