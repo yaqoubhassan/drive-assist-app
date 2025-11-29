@@ -66,7 +66,7 @@ export interface UserResponse {
   phone: string | null;
   avatar: string | null;
   role: 'driver' | 'expert' | 'admin';
-  email_verified_at: string | null;
+  email_verified: boolean;
   is_onboarded: boolean;
   free_diagnoses_remaining: number;
   created_at: string;
@@ -116,7 +116,7 @@ export interface ExpertProfileResponse {
  */
 function transformUserResponse(apiUser: UserResponse): User | DriverProfile | ExpertProfile {
   // Check email verification status from API response
-  const isEmailVerified = !!apiUser.email_verified_at;
+  const isEmailVerified = apiUser.email_verified === true;
 
   const baseUser: User = {
     id: apiUser.id.toString(),
@@ -168,7 +168,7 @@ function transformUserResponse(apiUser: UserResponse): User | DriverProfile | Ex
       },
       gallery: [],
       priceRange: 'average',
-      emailVerified: !!apiUser.email_verified_at,
+      emailVerified: isEmailVerified,
       onboardingComplete: ep.is_onboarding_complete,
       kycStatus: ep.kyc_status,
       businessAddress: ep.address || undefined,
