@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Schema(
@@ -22,7 +23,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="mileage", type="integer", example=50000),
  *     @OA\Property(property="mileage_unit", type="string", enum={"km","miles"}),
  *     @OA\Property(property="nickname", type="string"),
- *     @OA\Property(property="image", type="string"),
+ *     @OA\Property(property="image_url", type="string"),
  *     @OA\Property(property="is_primary", type="boolean")
  * )
  */
@@ -38,7 +39,9 @@ class VehicleResource extends JsonResource
         return [
             'id' => $this->id,
             'make' => $this->make_name,
+            'make_id' => $this->vehicle_make_id,
             'model' => $this->model_name,
+            'model_id' => $this->vehicle_model_id,
             'display_name' => $this->display_name,
             'year' => $this->year,
             'color' => $this->color,
@@ -49,7 +52,7 @@ class VehicleResource extends JsonResource
             'mileage' => $this->mileage,
             'mileage_unit' => $this->mileage_unit,
             'nickname' => $this->nickname,
-            'image' => $this->image,
+            'image_url' => $this->image ? Storage::disk('public')->url($this->image) : null,
             'is_primary' => $this->is_primary,
             'vehicle_make' => $this->when($this->relationLoaded('make'), function () {
                 return new VehicleMakeResource($this->make);

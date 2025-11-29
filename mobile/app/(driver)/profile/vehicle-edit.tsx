@@ -9,6 +9,8 @@ import {
   Image,
   ActionSheetIOS,
   Alert,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,7 +55,8 @@ export default function VehicleEditScreen() {
   // Form state
   const [makeId, setMakeId] = useState<number | null>(null);
   const [makeName, setMakeName] = useState('');
-  const [model, setModel] = useState('');
+  const [modelId, setModelId] = useState<number | null>(null);
+  const [modelName, setModelName] = useState('');
   const [year, setYear] = useState<number>(currentYear);
   const [licensePlate, setLicensePlate] = useState('');
   const [vin, setVin] = useState('');
@@ -64,14 +67,17 @@ export default function VehicleEditScreen() {
 
   // Picker states
   const [showMakePicker, setShowMakePicker] = useState(false);
+  const [showModelPicker, setShowModelPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
   // Image state
   const [vehicleImage, setVehicleImage] = useState<VehicleImage | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
-  // Available makes from backend (with IDs) or constants (names only)
+  // Available makes and models from backend
   const [vehicleMakes, setVehicleMakes] = useState<{ id: number; name: string }[]>([]);
+  const [vehicleModels, setVehicleModels] = useState<{ id: number; name: string }[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
 
   // Load vehicle data if editing
   useEffect(() => {
@@ -86,15 +92,21 @@ export default function VehicleEditScreen() {
       const vehicle = await vehicleService.getVehicle(vehicleId);
       setMakeId(vehicle.make_id || null);
       setMakeName(vehicle.make || '');
-      setModel(vehicle.model || '');
+      setModelId(vehicle.model_id || null);
+      setModelName(vehicle.model || '');
       setYear(vehicle.year || currentYear);
-      setLicensePlate(vehicle.plate_number || '');
+      setLicensePlate(vehicle.license_plate || '');
       setVin(vehicle.vin || '');
       setColor(vehicle.color || '');
       setFuelType(vehicle.fuel_type || 'petrol');
       setTransmission(vehicle.transmission || 'automatic');
       setMileage(vehicle.mileage?.toString() || '');
       setExistingImageUrl(vehicle.image_url || null);
+
+      // Load models for this make if we have a make_id
+      if (vehicle.make_id) {
+        loadVehicleModels(vehicle.make_id);
+      }
     } catch (error: any) {
       showError('Error', error.message || 'Failed to load vehicle');
       router.back();
@@ -119,6 +131,34 @@ export default function VehicleEditScreen() {
     }
   };
 
+  const loadVehicleModels = async (makeIdToLoad: number) => {
+    if (makeIdToLoad <= 0) {
+      setVehicleModels([]);
+      return;
+    }
+
+    setLoadingModels(true);
+    try {
+      const models = await vehicleService.getVehicleModels(makeIdToLoad);
+      setVehicleModels(models.map(m => ({ id: m.id, name: m.name })));
+    } catch (error) {
+      console.log('Failed to load models:', error);
+      setVehicleModels([]);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  // Filter makes based on typed input
+  const filteredMakes = makeName
+    ? vehicleMakes.filter(m => m.name.toLowerCase().includes(makeName.toLowerCase()))
+    : vehicleMakes;
+
+  // Filter models based on typed input
+  const filteredModels = modelName
+    ? vehicleModels.filter(m => m.name.toLowerCase().includes(modelName.toLowerCase()))
+    : vehicleModels;
+
   // Image picker functions
   const pickImage = async (useCamera: boolean) => {
     try {
@@ -139,13 +179,13 @@ export default function VehicleEditScreen() {
 
       const result = useCamera
         ? await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [16, 9],
             quality: 0.8,
           })
         : await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [16, 9],
             quality: 0.8,
@@ -205,7 +245,7 @@ export default function VehicleEditScreen() {
   };
 
   const handleSave = async () => {
-    if (!makeName || !model || !year) {
+    if (!makeName || !modelName || !year) {
       showError('Required Fields', 'Please fill in make, model, and year.');
       return;
     }
@@ -216,7 +256,6 @@ export default function VehicleEditScreen() {
       // Build request data with correct field names for backend
       const vehicleData: any = {
         year,
-        custom_model: model, // Always send model as custom_model for simplicity
         license_plate: licensePlate || undefined,
         vin: vin || undefined,
         color: color || undefined,
@@ -232,18 +271,25 @@ export default function VehicleEditScreen() {
         vehicleData.custom_make = makeName;
       }
 
+      // Use vehicle_model_id if we have a valid ID from the API, otherwise use custom_model
+      if (modelId && modelId > 0) {
+        vehicleData.vehicle_model_id = modelId;
+      } else {
+        vehicleData.custom_model = modelName;
+      }
+
       if (isEditing && id) {
         await vehicleService.updateVehicle(id, vehicleData, vehicleImage || undefined);
         showSuccess(
           'Vehicle Updated',
-          `Your ${makeName} ${model} has been updated successfully.`,
+          `Your ${makeName} ${modelName} has been updated successfully.`,
           () => router.back()
         );
       } else {
         await vehicleService.createVehicle(vehicleData, vehicleImage || undefined);
         showSuccess(
           'Vehicle Added',
-          `Your ${makeName} ${model} has been added successfully.`,
+          `Your ${makeName} ${modelName} has been added successfully.`,
           () => router.back()
         );
       }
@@ -260,7 +306,7 @@ export default function VehicleEditScreen() {
   const handleDelete = () => {
     showConfirm({
       title: 'Delete Vehicle',
-      message: `Are you sure you want to delete your ${makeName} ${model}? This action cannot be undone.`,
+      message: `Are you sure you want to delete your ${makeName} ${modelName}? This action cannot be undone.`,
       variant: 'danger',
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
@@ -365,55 +411,175 @@ export default function VehicleEditScreen() {
               BASIC INFORMATION
             </Text>
 
-            {/* Make Picker */}
+            {/* Make Autocomplete */}
             <View className="mb-4">
               <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 Make *
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowMakePicker(!showMakePicker);
-                  setShowYearPicker(false);
-                }}
-                className={`flex-row items-center justify-between p-4 rounded-xl border ${
-                  isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-                }`}
-              >
-                <Text className={makeName ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-500' : 'text-slate-400')}>
-                  {makeName || 'Select make'}
-                </Text>
-                <MaterialIcons name="arrow-drop-down" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
-              </TouchableOpacity>
+              <View className="relative">
+                <View
+                  className={`flex-row items-center rounded-xl border ${
+                    showMakePicker
+                      ? 'border-primary-500'
+                      : isDark ? 'border-slate-700' : 'border-slate-200'
+                  } ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+                >
+                  <TextInput
+                    value={makeName}
+                    onChangeText={(text) => {
+                      setMakeName(text);
+                      setMakeId(null); // Clear ID when typing custom value
+                      setShowMakePicker(true);
+                      setShowModelPicker(false);
+                      setShowYearPicker(false);
+                      // Reset model when make changes
+                      setModelName('');
+                      setModelId(null);
+                      setVehicleModels([]);
+                    }}
+                    onFocus={() => {
+                      setShowMakePicker(true);
+                      setShowModelPicker(false);
+                      setShowYearPicker(false);
+                    }}
+                    placeholder="Type or select make"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`flex-1 p-4 ${isDark ? 'text-white' : 'text-slate-900'}`}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowMakePicker(!showMakePicker);
+                      setShowModelPicker(false);
+                      setShowYearPicker(false);
+                    }}
+                    className="pr-3"
+                  >
+                    <MaterialIcons
+                      name={showMakePicker ? "arrow-drop-up" : "arrow-drop-down"}
+                      size={24}
+                      color={isDark ? '#64748B' : '#94A3B8'}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              {showMakePicker && (
-                <Card variant="default" className="mt-2 max-h-48">
-                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {vehicleMakes.map((vehicleMake) => (
-                      <TouchableOpacity
-                        key={vehicleMake.id}
-                        onPress={() => {
-                          setMakeId(vehicleMake.id);
-                          setMakeName(vehicleMake.name);
-                          setShowMakePicker(false);
-                        }}
-                        className={`py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
-                      >
-                        <Text className={`${makeName === vehicleMake.name ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {vehicleMake.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </Card>
-              )}
+                {showMakePicker && filteredMakes.length > 0 && (
+                  <View
+                    className={`absolute top-14 left-0 right-0 z-50 rounded-xl shadow-lg ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+                    style={{ maxHeight: 200, elevation: 5 }}
+                  >
+                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                      {filteredMakes.map((vehicleMake) => (
+                        <TouchableOpacity
+                          key={vehicleMake.id}
+                          onPress={() => {
+                            setMakeId(vehicleMake.id);
+                            setMakeName(vehicleMake.name);
+                            setShowMakePicker(false);
+                            // Load models for selected make
+                            if (vehicleMake.id > 0) {
+                              loadVehicleModels(vehicleMake.id);
+                            }
+                            // Reset model when make changes
+                            setModelName('');
+                            setModelId(null);
+                          }}
+                          className={`p-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                        >
+                          <Text className={`${makeId === vehicleMake.id ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {vehicleMake.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
             </View>
 
-            <Input
-              label="Model *"
-              placeholder="e.g., Corolla, Civic, Elantra"
-              value={model}
-              onChangeText={setModel}
-            />
+            {/* Model Autocomplete */}
+            <View className="mb-4">
+              <Text className={`text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                Model *
+              </Text>
+              <View className="relative">
+                <View
+                  className={`flex-row items-center rounded-xl border ${
+                    showModelPicker
+                      ? 'border-primary-500'
+                      : isDark ? 'border-slate-700' : 'border-slate-200'
+                  } ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+                >
+                  <TextInput
+                    value={modelName}
+                    onChangeText={(text) => {
+                      setModelName(text);
+                      setModelId(null); // Clear ID when typing custom value
+                      setShowModelPicker(true);
+                      setShowMakePicker(false);
+                      setShowYearPicker(false);
+                    }}
+                    onFocus={() => {
+                      setShowModelPicker(true);
+                      setShowMakePicker(false);
+                      setShowYearPicker(false);
+                    }}
+                    placeholder={makeId && makeId > 0 ? "Type or select model" : "Enter model name"}
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`flex-1 p-4 ${isDark ? 'text-white' : 'text-slate-900'}`}
+                  />
+                  {loadingModels ? (
+                    <View className="pr-3">
+                      <ActivityIndicator size="small" color="#3B82F6" />
+                    </View>
+                  ) : vehicleModels.length > 0 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowModelPicker(!showModelPicker);
+                        setShowMakePicker(false);
+                        setShowYearPicker(false);
+                      }}
+                      className="pr-3"
+                    >
+                      <MaterialIcons
+                        name={showModelPicker ? "arrow-drop-up" : "arrow-drop-down"}
+                        size={24}
+                        color={isDark ? '#64748B' : '#94A3B8'}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {showModelPicker && filteredModels.length > 0 && (
+                  <View
+                    className={`absolute top-14 left-0 right-0 z-50 rounded-xl shadow-lg ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+                    style={{ maxHeight: 200, elevation: 5 }}
+                  >
+                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                      {filteredModels.map((vehicleModel) => (
+                        <TouchableOpacity
+                          key={vehicleModel.id}
+                          onPress={() => {
+                            setModelId(vehicleModel.id);
+                            setModelName(vehicleModel.name);
+                            setShowModelPicker(false);
+                          }}
+                          className={`p-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                        >
+                          <Text className={`${modelId === vehicleModel.id ? 'text-primary-500 font-semibold' : isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {vehicleModel.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+              {!makeId && makeName && (
+                <Text className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Tip: Select a make from the list to see available models
+                </Text>
+              )}
+            </View>
 
             {/* Year Picker */}
             <View className="mb-4">
@@ -424,6 +590,7 @@ export default function VehicleEditScreen() {
                 onPress={() => {
                   setShowYearPicker(!showYearPicker);
                   setShowMakePicker(false);
+                  setShowModelPicker(false);
                 }}
                 className={`flex-row items-center justify-between p-4 rounded-xl border ${
                   isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'

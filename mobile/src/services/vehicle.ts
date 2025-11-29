@@ -16,7 +16,7 @@ export interface Vehicle {
   model_id?: number;
   year: number;
   color: string | null;
-  plate_number: string | null;
+  license_plate: string | null;
   vin: string | null;
   fuel_type: 'petrol' | 'diesel' | 'hybrid' | 'electric' | 'lpg' | null;
   transmission: 'automatic' | 'manual' | 'cvt' | null;
