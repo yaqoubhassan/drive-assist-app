@@ -159,9 +159,13 @@ export const api = {
 
   /**
    * PUT request with FormData (for file uploads)
+   * Uses POST with _method=PUT because PHP doesn't parse multipart/form-data for PUT requests
    */
   async putFormData<T>(url: string, formData: FormData): Promise<ApiResponse<T>> {
-    const response = await apiClient.put<ApiResponse<T>>(url, formData, {
+    // Add Laravel method spoofing for PUT
+    formData.append('_method', 'PUT');
+
+    const response = await apiClient.post<ApiResponse<T>>(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
