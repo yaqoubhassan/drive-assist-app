@@ -551,13 +551,15 @@ export default function DriverHomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
           >
-            {quickCategories.map((category, index) => (
+            {quickCategories.map((category) => (
               <Chip
                 key={category.id}
                 label={category.label}
                 icon={category.icon}
-                selected={index === 0}
-                onPress={() => router.push('/(driver)/diagnose')}
+                onPress={() => router.push({
+                  pathname: '/(driver)/diagnose/describe',
+                  params: { category: category.id },
+                })}
               />
             ))}
           </ScrollView>

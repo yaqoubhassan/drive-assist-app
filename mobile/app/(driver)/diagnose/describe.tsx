@@ -507,6 +507,17 @@ export default function DiagnoseDescribeScreen() {
             >
               The more details, the better
             </Text>
+            {/* Category Badge */}
+            {category && (
+              <View className="flex-row mt-3">
+                <View className={`flex-row items-center px-3 py-1.5 rounded-full ${isDark ? 'bg-primary-500/20' : 'bg-primary-50'}`}>
+                  <MaterialIcons name="category" size={14} color="#3B82F6" />
+                  <Text className="text-primary-500 font-medium text-sm ml-1.5 capitalize">
+                    {category === 'other' ? 'General Issue' : category}
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Input Tabs - Text or Voice */}
