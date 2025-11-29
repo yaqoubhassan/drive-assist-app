@@ -63,7 +63,8 @@ class VehicleController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return $this->success(VehicleResource::collection($vehicles));
+        // Use resolve() to avoid double data wrapping
+        return $this->success(VehicleResource::collection($vehicles)->resolve($request));
     }
 
     /**
