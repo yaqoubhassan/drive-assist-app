@@ -150,8 +150,8 @@ export default function DriverHomeScreen() {
       ]);
 
       // Process appointments
-      if (appointmentsResult.status === 'fulfilled') {
-        const { count, confirmed, pending } = appointmentsResult.value;
+      if (appointmentsResult.status === 'fulfilled' && appointmentsResult.value) {
+        const { count = 0, confirmed = [], pending = [] } = appointmentsResult.value;
         setAppointmentsCount(count);
         const allUpcoming = [...confirmed, ...pending]
           .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
@@ -160,23 +160,23 @@ export default function DriverHomeScreen() {
       }
 
       // Process vehicles
-      if (vehiclesResult.status === 'fulfilled') {
+      if (vehiclesResult.status === 'fulfilled' && vehiclesResult.value) {
         setVehicles(vehiclesResult.value);
       }
 
       // Process diagnoses
-      if (diagnosesResult.status === 'fulfilled') {
+      if (diagnosesResult.status === 'fulfilled' && diagnosesResult.value?.diagnoses) {
         setRecentDiagnoses(diagnosesResult.value.diagnoses.slice(0, 3));
       }
 
       // Process maintenance
-      if (maintenanceResult.status === 'fulfilled') {
+      if (maintenanceResult.status === 'fulfilled' && maintenanceResult.value?.reminders) {
         setMaintenanceReminders(maintenanceResult.value.reminders);
-        setMaintenanceCount(maintenanceResult.value.count);
+        setMaintenanceCount(maintenanceResult.value.count || 0);
       }
 
       // Process articles
-      if (articlesResult.status === 'fulfilled') {
+      if (articlesResult.status === 'fulfilled' && articlesResult.value?.articles) {
         setArticles(articlesResult.value.articles.slice(0, 5));
       }
     } catch (error) {

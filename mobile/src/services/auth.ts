@@ -342,6 +342,10 @@ export const authService = {
       throw new Error(response.message || 'Failed to get user');
     }
 
+    if (!response.data.user) {
+      throw new Error('User data not found in response');
+    }
+
     const user = transformUserResponse(response.data.user);
 
     // Update local storage
