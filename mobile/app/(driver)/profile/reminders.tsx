@@ -1064,8 +1064,9 @@ export default function RemindersScreen() {
       {/* Complete Service Modal - Fixed keyboard issue */}
       <Modal visible={showCompleteModal} animationType="slide" transparent>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
           <View className="flex-1 justify-end">
             <TouchableOpacity
@@ -1075,13 +1076,14 @@ export default function RemindersScreen() {
             />
             <View
               className={`rounded-t-3xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
-              style={{ maxHeight: SCREEN_HEIGHT * 0.85 }}
+              style={{ maxHeight: SCREEN_HEIGHT * 0.90 }}
             >
               <DragHandle isDark={isDark} />
               <ScrollView
-                className="px-6 pb-6"
+                className="px-6"
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 300 : 40 }}
               >
                 <View className="flex-row items-center justify-between mb-6">
                   <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
