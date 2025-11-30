@@ -1,0 +1,148 @@
+/**
+ * Profile Service
+ * Handles all profile-related API calls
+ */
+
+import api from './api';
+import { apiConfig } from '../config/api';
+import { storage, StorageKeys, clearAuthStorage } from './storage';
+import { User, DriverProfile, ExpertProfile } from '../types';
+
+export interface UpdateProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+export interface UpdateProfileResponse {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  avatar: string | null;
+  role: string;
+}
+
+export interface UpdateAvatarResponse {
+  avatar: string;
+}
+
+export const profileService = {
+  /**
+   * Update user profile
+   */
+  async updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
+    const response = await api.put<UpdateProfileResponse>(
+      apiConfig.endpoints.profile.update,
+      data
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to update profile');
+    }
+
+    // Update local storage with new user data
+    const storedUser = await storage.getObject<User | DriverProfile | ExpertProfile>(StorageKeys.USER);
+    if (storedUser) {
+      const updatedUser = {
+        ...storedUser,
+        fullName: `${response.data.first_name} ${response.data.last_name}`,
+        phone: response.data.phone || undefined,
+      };
+      await storage.setObject(StorageKeys.USER, updatedUser);
+    }
+
+    return response.data;
+  },
+
+  /**
+   * Update user avatar
+   */
+  async updateAvatar(imageUri: string): Promise<string> {
+    const formData = new FormData();
+
+    // Get the file extension from the URI
+    const uriParts = imageUri.split('.');
+    const fileType = uriParts[uriParts.length - 1];
+
+    formData.append('avatar', {
+      uri: imageUri,
+      name: `avatar.${fileType}`,
+      type: `image/${fileType}`,
+    } as unknown as Blob);
+
+    const response = await api.postFormData<UpdateAvatarResponse>(
+      apiConfig.endpoints.profile.updateAvatar,
+      formData
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to update avatar');
+    }
+
+    // Update local storage with new avatar
+    const storedUser = await storage.getObject<User | DriverProfile | ExpertProfile>(StorageKeys.USER);
+    if (storedUser) {
+      const updatedUser = {
+        ...storedUser,
+        avatar: response.data.avatar,
+      };
+      await storage.setObject(StorageKeys.USER, updatedUser);
+    }
+
+    return response.data.avatar;
+  },
+
+  /**
+   * Delete user avatar
+   */
+  async deleteAvatar(): Promise<void> {
+    const response = await api.delete(apiConfig.endpoints.profile.deleteAvatar);
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to delete avatar');
+    }
+
+    // Update local storage to remove avatar
+    const storedUser = await storage.getObject<User | DriverProfile | ExpertProfile>(StorageKeys.USER);
+    if (storedUser) {
+      const updatedUser = {
+        ...storedUser,
+        avatar: undefined,
+      };
+      await storage.setObject(StorageKeys.USER, updatedUser);
+    }
+  },
+
+  /**
+   * Update password
+   */
+  async updatePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const response = await api.put(apiConfig.endpoints.profile.updatePassword, {
+      current_password: currentPassword,
+      password: newPassword,
+      password_confirmation: newPassword,
+    });
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update password');
+    }
+  },
+
+  /**
+   * Delete user account
+   */
+  async deleteAccount(password: string): Promise<void> {
+    const response = await api.delete(apiConfig.endpoints.profile.deleteAccount, { password });
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to delete account');
+    }
+
+    // Clear all local storage
+    await clearAuthStorage();
+  },
+};
+
+export default profileService;

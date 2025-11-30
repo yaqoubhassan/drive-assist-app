@@ -37,6 +37,7 @@ export const apiConfig = {
       updatePassword: '/profile/password',
       updateAvatar: '/profile/avatar',
       deleteAvatar: '/profile/avatar',
+      deleteAccount: '/profile/account',
       preferences: '/preferences',
       updatePreferences: '/preferences',
     },

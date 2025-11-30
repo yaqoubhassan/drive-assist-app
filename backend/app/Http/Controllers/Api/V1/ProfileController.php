@@ -99,4 +99,26 @@ class ProfileController extends Controller
             'Preferences updated'
         );
     }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|current_password',
+        ]);
+
+        $user = $request->user();
+
+        // Delete avatar if exists
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        // Delete the user (this will cascade delete related records if configured)
+        $user->delete();
+
+        return $this->success(null, 'Account deleted successfully');
+    }
 }

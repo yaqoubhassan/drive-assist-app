@@ -125,6 +125,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/password', [ProfileController::class, 'updatePassword']);
             Route::post('/avatar', [ProfileController::class, 'updateAvatar']);
             Route::delete('/avatar', [ProfileController::class, 'deleteAvatar']);
+            Route::delete('/account', [ProfileController::class, 'deleteAccount']);
         });
 
         // User Preferences
