@@ -570,140 +570,112 @@ export default function DriverHomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Maintenance Reminders */}
-        <View className="pt-6">
-          <View className="flex-row items-center justify-between px-4 pb-3">
-            <View className="flex-row items-center">
-              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Maintenance Reminders
-              </Text>
-              {maintenanceCount > 0 && (
-                <View className="ml-2 bg-amber-500 px-2 py-0.5 rounded-full">
-                  <Text className="text-white text-xs font-bold">{maintenanceCount}</Text>
-                </View>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => router.push('/(driver)/profile/reminders')}>
-              <Text className="text-primary-500 font-semibold text-sm">View All</Text>
-            </TouchableOpacity>
-          </View>
-          <View className="px-4">
-            {maintenanceCount > 0 ? (
-              <TouchableOpacity
-                onPress={() => router.push('/(driver)/profile/reminders')}
-                activeOpacity={0.8}
-              >
-                <View className={`rounded-xl overflow-hidden border ${
-                  isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
-                }`}>
-                  <View className="p-4">
-                    <View className="flex-row items-center">
-                      <View className="h-10 w-10 rounded-full bg-amber-500/20 items-center justify-center mr-3">
-                        <MaterialIcons name="build" size={22} color="#F59E0B" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {maintenanceCount} item{maintenanceCount > 1 ? 's' : ''} due
-                        </Text>
-                        <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`} numberOfLines={1}>
-                          {maintenanceReminders.slice(0, 2).map(r => r.maintenance_type?.name || 'Maintenance').join(' • ')}
-                        </Text>
-                      </View>
-                      <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+        {/* Maintenance Reminder Banner */}
+        {maintenanceCount > 0 && (
+          <View className="px-4 pt-4">
+            <TouchableOpacity
+              onPress={() => router.push('/(driver)/profile/reminders')}
+              activeOpacity={0.8}
+            >
+              <View className={`rounded-xl overflow-hidden border ${
+                isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
+              }`}>
+                <View className="p-4">
+                  <View className="flex-row items-center">
+                    <View className="h-10 w-10 rounded-full bg-amber-500/20 items-center justify-center mr-3">
+                      <MaterialIcons name="build" size={22} color="#F59E0B" />
                     </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => router.push('/(driver)/profile/reminders')}
-                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
-              >
-                <View className="items-center py-2">
-                  <MaterialIcons name="notifications-none" size={28} color={isDark ? '#64748B' : '#94A3B8'} />
-                  <Text className={`mt-2 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    No maintenance reminders
-                  </Text>
-                  <Text className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Tap to set up reminders for your vehicle
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Upcoming Appointments */}
-        <View className="pt-6">
-          <View className="flex-row items-center justify-between px-4 pb-3">
-            <View className="flex-row items-center">
-              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Upcoming Appointments
-              </Text>
-              {appointmentsCount > 0 && (
-                <View className="ml-2 bg-primary-500 px-2 py-0.5 rounded-full">
-                  <Text className="text-white text-xs font-bold">{appointmentsCount}</Text>
-                </View>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => router.push('/(driver)/appointments')}>
-              <Text className="text-primary-500 font-semibold text-sm">View All</Text>
-            </TouchableOpacity>
-          </View>
-          <View className="px-4 gap-3">
-            {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appointment) => {
-                const expertName = appointment.expert?.profile?.business_name || appointment.expert?.full_name || 'Expert';
-                return (
-                  <Card
-                    key={appointment.id}
-                    variant="default"
-                    onPress={() => router.push(`/(driver)/appointments/${appointment.id}`)}
-                  >
-                    <View className="flex-row items-center gap-3">
-                      <Avatar
-                        size="md"
-                        name={expertName}
-                        source={appointment.expert?.avatar ? { uri: appointment.expert.avatar } : undefined}
-                      />
-                      <View className="flex-1">
+                    <View className="flex-1">
+                      <View className="flex-row items-center">
                         <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {expertName}
+                          Maintenance Due
                         </Text>
-                        <View className="flex-row items-center mt-1">
-                          <MaterialIcons name="event" size={14} color="#3B82F6" />
-                          <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            {formatAppointmentDate(appointment.scheduled_date, appointment.scheduled_time)}
-                          </Text>
+                        <View className="ml-2 bg-amber-500 px-2 py-0.5 rounded-full">
+                          <Text className="text-white text-xs font-bold">{maintenanceCount}</Text>
                         </View>
                       </View>
-                      <Badge
-                        label={getStatusLabel(appointment.status)}
-                        variant={appointment.status === 'confirmed' ? 'info' : 'warning'}
-                        size="sm"
-                      />
+                      <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`} numberOfLines={1}>
+                        {maintenanceReminders.slice(0, 2).map(r => r.maintenance_type?.name || 'Maintenance').join(' • ')}
+                      </Text>
                     </View>
-                  </Card>
-                );
-              })
-            ) : (
-              <TouchableOpacity
-                onPress={() => router.push('/(driver)/experts')}
-                className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
-              >
-                <View className="items-center py-2">
-                  <MaterialIcons name="event-available" size={28} color={isDark ? '#64748B' : '#94A3B8'} />
-                  <Text className={`mt-2 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    No upcoming appointments
-                  </Text>
-                  <Text className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Find an expert to book an appointment
-                  </Text>
+                    <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+                  </View>
                 </View>
-              </TouchableOpacity>
-            )}
+              </View>
+            </TouchableOpacity>
           </View>
-        </View>
+        )}
+
+        {/* Upcoming Appointments */}
+        {(upcomingAppointments.length > 0 || appointmentsCount > 0) && (
+          <View className="pt-6">
+            <View className="flex-row items-center justify-between px-4 pb-3">
+              <View className="flex-row items-center">
+                <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Upcoming Appointments
+                </Text>
+                {appointmentsCount > 0 && (
+                  <View className="ml-2 bg-primary-500 px-2 py-0.5 rounded-full">
+                    <Text className="text-white text-xs font-bold">{appointmentsCount}</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(driver)/appointments')}>
+                <Text className="text-primary-500 font-semibold text-sm">View All</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="px-4 gap-3">
+              {upcomingAppointments.length > 0 ? (
+                upcomingAppointments.map((appointment) => {
+                  const expertName = appointment.expert?.profile?.business_name || appointment.expert?.full_name || 'Expert';
+                  return (
+                    <Card
+                      key={appointment.id}
+                      variant="default"
+                      onPress={() => router.push(`/(driver)/appointments/${appointment.id}`)}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <Avatar
+                          size="md"
+                          name={expertName}
+                          source={appointment.expert?.avatar ? { uri: appointment.expert.avatar } : undefined}
+                        />
+                        <View className="flex-1">
+                          <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {expertName}
+                          </Text>
+                          <View className="flex-row items-center mt-1">
+                            <MaterialIcons name="event" size={14} color="#3B82F6" />
+                            <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {formatAppointmentDate(appointment.scheduled_date, appointment.scheduled_time)}
+                            </Text>
+                          </View>
+                        </View>
+                        <Badge
+                          label={getStatusLabel(appointment.status)}
+                          variant={appointment.status === 'confirmed' ? 'info' : 'warning'}
+                          size="sm"
+                        />
+                      </View>
+                    </Card>
+                  );
+                })
+              ) : (
+                <TouchableOpacity
+                  onPress={() => router.push('/(driver)/appointments')}
+                  className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+                >
+                  <View className="flex-row items-center justify-center">
+                    <MaterialIcons name="event" size={20} color={isDark ? '#64748B' : '#94A3B8'} />
+                    <Text className={`ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      View all appointments
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Recent Diagnoses */}
         <View className="pt-6">
