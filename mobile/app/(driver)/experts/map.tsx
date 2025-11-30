@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, Platform, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -147,7 +148,11 @@ export default function ExpertsMapScreen() {
   // Map Loading Skeleton
   if (loading) {
     return (
-      <View className="flex-1" style={{ backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }}>
+      <SafeAreaView
+        className="flex-1"
+        style={{ backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }}
+        edges={['top']}
+      >
         {/* Map Placeholder with subtle pattern */}
         <View className="flex-1 items-center justify-center">
           <MaterialIcons name="map" size={80} color={isDark ? '#334155' : '#CBD5E1'} />
@@ -157,7 +162,7 @@ export default function ExpertsMapScreen() {
         </View>
 
         {/* Top Controls Skeleton */}
-        <View style={{ position: 'absolute', top: insets.top + 16, left: 16, right: 16 }}>
+        <View className="absolute top-4 left-4 right-4">
           <View className="flex-row items-center gap-3">
             {/* Back button skeleton */}
             <Skeleton width={44} height={44} borderRadius={22} />
@@ -180,8 +185,7 @@ export default function ExpertsMapScreen() {
 
         {/* Legend Skeleton */}
         <View
-          style={{ position: 'absolute', left: 16, bottom: insets.bottom + 100 }}
-          className={`rounded-xl p-3 ${isDark ? 'bg-slate-800/95' : 'bg-white/95'}`}
+          className={`absolute left-4 bottom-24 rounded-xl p-3 ${isDark ? 'bg-slate-800/95' : 'bg-white/95'}`}
         >
           <Skeleton width={50} height={14} style={{ marginBottom: 8 }} />
           <View className="flex-row items-center mb-1">
@@ -199,10 +203,10 @@ export default function ExpertsMapScreen() {
         </View>
 
         {/* My Location Button Skeleton */}
-        <View style={{ position: 'absolute', right: 16, bottom: insets.bottom + 100 }}>
+        <View className="absolute right-4 bottom-24">
           <Skeleton width={44} height={44} borderRadius={22} />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
