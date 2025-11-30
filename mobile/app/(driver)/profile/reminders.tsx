@@ -1,8 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import BottomSheet from '@gorhom/bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Dimensions,
   KeyboardAvoidingView,
@@ -15,10 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Badge, Button, Card, Chip, DraggableBottomSheet } from '../../../src/components/common';
+import { Badge, Button, Card, Chip } from '../../../src/components/common';
 import { Skeleton } from '../../../src/components/common/Skeleton';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAlert } from '../../../src/context/AlertContext';
@@ -161,12 +159,6 @@ export default function RemindersScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { showSuccess, showError } = useAlert();
-
-  // Bottom sheet refs
-  const addReminderSheetRef = useRef<BottomSheet>(null);
-
-  // Snap points for bottom sheets
-  const addReminderSnapPoints = useMemo(() => ['60%', '92%'], []);
 
   // Loading states
   const [loading, setLoading] = useState(true);
@@ -466,20 +458,19 @@ export default function RemindersScreen() {
     }
   };
 
-  // Handler to open add reminder sheet
+  // Handler to open/close add reminder modal
   const openAddReminderSheet = useCallback(() => {
-    addReminderSheetRef.current?.expand();
+    setShowAddModal(true);
   }, []);
 
   const closeAddReminderSheet = useCallback(() => {
-    addReminderSheetRef.current?.close();
+    setShowAddModal(false);
   }, []);
 
   // Loading skeleton
   if (loading) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
         {/* Header */}
         <View className={`px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
           <View className="flex-row items-center justify-between">
@@ -518,14 +509,12 @@ export default function RemindersScreen() {
             ))}
           </View>
         </ScrollView>
-        </SafeAreaView>
-      </GestureHandlerRootView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
       {/* Header */}
       <View className={`px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
         <View className="flex-row items-center justify-between">
@@ -846,220 +835,243 @@ export default function RemindersScreen() {
         )}
       </ScrollView>
 
-      {/* Add Reminder Bottom Sheet - Draggable */}
-      <DraggableBottomSheet
-        ref={addReminderSheetRef}
-        title="Add Reminder"
-        snapPoints={addReminderSnapPoints}
-        onClose={closeAddReminderSheet}
-        initialIndex={-1}
-      >
-        {vehicles.length === 0 ? (
-          <View className="items-center py-8">
-            <MaterialIcons
-              name="directions-car"
-              size={48}
-              color={isDark ? '#475569' : '#94A3B8'}
-            />
-            <Text
-              className={`text-center mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-            >
-              You need to add a vehicle first before creating maintenance reminders.
-            </Text>
-            <Button
-              title="Add Vehicle"
-              onPress={() => {
-                closeAddReminderSheet();
-                router.push('/(driver)/profile/vehicle-edit');
-              }}
-              variant="outline"
-              className="mt-4"
-            />
-          </View>
-        ) : (
-          <>
-            {/* Vehicle Selection */}
-            <Text className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Select Vehicle
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="mb-4"
-              contentContainerStyle={{ gap: 8 }}
-            >
-              {vehicles.map((vehicle) => (
-                <Chip
-                  key={vehicle.id}
-                  label={vehicle.display_name || `${vehicle.make} ${vehicle.model}`}
-                  selected={newReminderVehicleId === vehicle.id}
-                  onPress={() => setNewReminderVehicleId(vehicle.id)}
-                />
-              ))}
-            </ScrollView>
-
-            {/* Maintenance Type Selection - Improved with custom types */}
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Maintenance Type
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  closeAddReminderSheet();
-                  openCustomTypeModal();
-                }}
-                className="flex-row items-center"
-              >
-                <MaterialIcons name="add" size={18} color="#3B82F6" />
-                <Text className="text-primary-500 text-sm ml-1">Add Custom</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* System Types Section */}
-            <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              STANDARD TYPES
-            </Text>
-            <View className="gap-2 mb-4">
-              {maintenanceTypes.filter(t => t.is_system).map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  onPress={() => setNewReminderTypeId(type.id)}
-                  className={`flex-row items-center p-3 rounded-xl border-2 ${
-                    newReminderTypeId === type.id
-                      ? 'border-primary-500 bg-primary-500/10'
-                      : isDark
-                        ? 'border-slate-700 bg-slate-700/50'
-                        : 'border-slate-200 bg-slate-50'
-                  }`}
-                >
-                  <View
-                    className="h-10 w-10 rounded-lg items-center justify-center mr-3"
-                    style={{ backgroundColor: (type.color || '#64748B') + '20' }}
-                  >
-                    <MaterialIcons
-                      name={getMaintenanceIcon(type.slug)}
-                      size={20}
-                      color={type.color || '#64748B'}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Text
-                      className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
-                    >
-                      {type.name}
-                    </Text>
-                    <Text
-                      className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      {type.default_interval_km
-                        ? `Every ${type.default_interval_km.toLocaleString()} km`
-                        : ''}
-                      {type.default_interval_km && type.default_interval_months ? ' or ' : ''}
-                      {type.default_interval_months
-                        ? `${type.default_interval_months} months`
-                        : ''}
-                    </Text>
-                  </View>
-                  {newReminderTypeId === type.id && (
-                    <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Custom Types Section */}
-            {maintenanceTypes.filter(t => !t.is_system).length > 0 && (
-              <>
-                <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  YOUR CUSTOM TYPES
+      {/* Add Reminder Modal */}
+      <Modal visible={showAddModal} animationType="slide" transparent>
+        <View className="flex-1 justify-end">
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={closeAddReminderSheet}
+          />
+          <View
+            className={`rounded-t-3xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+            style={{ maxHeight: SCREEN_HEIGHT * 0.90 }}
+          >
+            <DragHandle isDark={isDark} />
+            <View className="px-6 pb-2">
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Add Reminder
                 </Text>
-                <View className="gap-2 mb-4">
-                  {maintenanceTypes.filter(t => !t.is_system).map((type) => (
+                <TouchableOpacity onPress={closeAddReminderSheet}>
+                  <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <ScrollView
+              className="px-6"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 40 }}
+            >
+              {vehicles.length === 0 ? (
+                <View className="items-center py-8">
+                  <MaterialIcons
+                    name="directions-car"
+                    size={48}
+                    color={isDark ? '#475569' : '#94A3B8'}
+                  />
+                  <Text
+                    className={`text-center mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                  >
+                    You need to add a vehicle first before creating maintenance reminders.
+                  </Text>
+                  <Button
+                    title="Add Vehicle"
+                    onPress={() => {
+                      closeAddReminderSheet();
+                      router.push('/(driver)/profile/vehicle-edit');
+                    }}
+                    variant="outline"
+                    className="mt-4"
+                  />
+                </View>
+              ) : (
+                <>
+                  {/* Vehicle Selection */}
+                  <Text className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Select Vehicle
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    className="mb-4"
+                    contentContainerStyle={{ gap: 8 }}
+                  >
+                    {vehicles.map((vehicle) => (
+                      <Chip
+                        key={vehicle.id}
+                        label={vehicle.display_name || `${vehicle.make} ${vehicle.model}`}
+                        selected={newReminderVehicleId === vehicle.id}
+                        onPress={() => setNewReminderVehicleId(vehicle.id)}
+                      />
+                    ))}
+                  </ScrollView>
+
+                  {/* Maintenance Type Selection - Improved with custom types */}
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      Maintenance Type
+                    </Text>
                     <TouchableOpacity
-                      key={type.id}
-                      onPress={() => setNewReminderTypeId(type.id)}
-                      className={`flex-row items-center p-3 rounded-xl border-2 ${
-                        newReminderTypeId === type.id
-                          ? 'border-primary-500 bg-primary-500/10'
-                          : isDark
-                            ? 'border-slate-700 bg-slate-700/50'
-                            : 'border-slate-200 bg-slate-50'
-                      }`}
+                      onPress={() => {
+                        closeAddReminderSheet();
+                        openCustomTypeModal();
+                      }}
+                      className="flex-row items-center"
                     >
-                      <View
-                        className="h-10 w-10 rounded-lg items-center justify-center mr-3"
-                        style={{ backgroundColor: (type.color || '#64748B') + '20' }}
+                      <MaterialIcons name="add" size={18} color="#3B82F6" />
+                      <Text className="text-primary-500 text-sm ml-1">Add Custom</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* System Types Section */}
+                  <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    STANDARD TYPES
+                  </Text>
+                  <View className="gap-2 mb-4">
+                    {maintenanceTypes.filter(t => t.is_system).map((type) => (
+                      <TouchableOpacity
+                        key={type.id}
+                        onPress={() => setNewReminderTypeId(type.id)}
+                        className={`flex-row items-center p-3 rounded-xl border-2 ${
+                          newReminderTypeId === type.id
+                            ? 'border-primary-500 bg-primary-500/10'
+                            : isDark
+                              ? 'border-slate-700 bg-slate-700/50'
+                              : 'border-slate-200 bg-slate-50'
+                        }`}
                       >
-                        <MaterialIcons
-                          name="build"
-                          size={20}
-                          color={type.color || '#64748B'}
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <View className="flex-row items-center">
+                        <View
+                          className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                          style={{ backgroundColor: (type.color || '#64748B') + '20' }}
+                        >
+                          <MaterialIcons
+                            name={getMaintenanceIcon(type.slug)}
+                            size={20}
+                            color={type.color || '#64748B'}
+                          />
+                        </View>
+                        <View className="flex-1">
                           <Text
                             className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
                           >
                             {type.name}
                           </Text>
-                          <View className="ml-2 px-2 py-0.5 rounded-full bg-primary-500/20">
-                            <Text className="text-xs text-primary-500">Custom</Text>
-                          </View>
-                        </View>
-                        <Text
-                          className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                        >
-                          {type.default_interval_km
-                            ? `Every ${type.default_interval_km.toLocaleString()} km`
-                            : ''}
-                          {type.default_interval_km && type.default_interval_months ? ' or ' : ''}
-                          {type.default_interval_months
-                            ? `${type.default_interval_months} months`
-                            : ''}
-                          {!type.default_interval_km && !type.default_interval_months ? 'No interval set' : ''}
-                        </Text>
-                      </View>
-                      {newReminderTypeId === type.id ? (
-                        <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
-                      ) : (
-                        <View className="flex-row">
-                          <TouchableOpacity
-                            onPress={() => {
-                              closeAddReminderSheet();
-                              openCustomTypeModal(type);
-                            }}
-                            className="p-1"
+                          <Text
+                            className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                           >
-                            <MaterialIcons name="edit" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleDeleteCustomType(type)}
-                            className="p-1 ml-1"
-                            disabled={deletingType}
-                          >
-                            <MaterialIcons name="delete" size={18} color="#EF4444" />
-                          </TouchableOpacity>
+                            {type.default_interval_km
+                              ? `Every ${type.default_interval_km.toLocaleString()} km`
+                              : ''}
+                            {type.default_interval_km && type.default_interval_months ? ' or ' : ''}
+                            {type.default_interval_months
+                              ? `${type.default_interval_months} months`
+                              : ''}
+                          </Text>
                         </View>
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </>
-            )}
+                        {newReminderTypeId === type.id && (
+                          <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
 
-            <Button
-              title="Add Reminder"
-              onPress={() => {
-                handleAddReminder();
-                closeAddReminderSheet();
-              }}
-              loading={adding}
-              fullWidth
-            />
-          </>
-        )}
-      </DraggableBottomSheet>
+                  {/* Custom Types Section */}
+                  {maintenanceTypes.filter(t => !t.is_system).length > 0 && (
+                    <>
+                      <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        YOUR CUSTOM TYPES
+                      </Text>
+                      <View className="gap-2 mb-4">
+                        {maintenanceTypes.filter(t => !t.is_system).map((type) => (
+                          <TouchableOpacity
+                            key={type.id}
+                            onPress={() => setNewReminderTypeId(type.id)}
+                            className={`flex-row items-center p-3 rounded-xl border-2 ${
+                              newReminderTypeId === type.id
+                                ? 'border-primary-500 bg-primary-500/10'
+                                : isDark
+                                  ? 'border-slate-700 bg-slate-700/50'
+                                  : 'border-slate-200 bg-slate-50'
+                            }`}
+                          >
+                            <View
+                              className="h-10 w-10 rounded-lg items-center justify-center mr-3"
+                              style={{ backgroundColor: (type.color || '#64748B') + '20' }}
+                            >
+                              <MaterialIcons
+                                name="build"
+                                size={20}
+                                color={type.color || '#64748B'}
+                              />
+                            </View>
+                            <View className="flex-1">
+                              <View className="flex-row items-center">
+                                <Text
+                                  className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                                >
+                                  {type.name}
+                                </Text>
+                                <View className="ml-2 px-2 py-0.5 rounded-full bg-primary-500/20">
+                                  <Text className="text-xs text-primary-500">Custom</Text>
+                                </View>
+                              </View>
+                              <Text
+                                className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                              >
+                                {type.default_interval_km
+                                  ? `Every ${type.default_interval_km.toLocaleString()} km`
+                                  : ''}
+                                {type.default_interval_km && type.default_interval_months ? ' or ' : ''}
+                                {type.default_interval_months
+                                  ? `${type.default_interval_months} months`
+                                  : ''}
+                                {!type.default_interval_km && !type.default_interval_months ? 'No interval set' : ''}
+                              </Text>
+                            </View>
+                            {newReminderTypeId === type.id ? (
+                              <MaterialIcons name="check-circle" size={24} color="#3B82F6" />
+                            ) : (
+                              <View className="flex-row">
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    closeAddReminderSheet();
+                                    openCustomTypeModal(type);
+                                  }}
+                                  className="p-1"
+                                >
+                                  <MaterialIcons name="edit" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  onPress={() => handleDeleteCustomType(type)}
+                                  className="p-1 ml-1"
+                                  disabled={deletingType}
+                                >
+                                  <MaterialIcons name="delete" size={18} color="#EF4444" />
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </>
+                  )}
+
+                  <Button
+                    title="Add Reminder"
+                    onPress={() => {
+                      handleAddReminder();
+                      closeAddReminderSheet();
+                    }}
+                    loading={adding}
+                    fullWidth
+                  />
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Complete Service Modal - Fixed keyboard issue */}
       <Modal visible={showCompleteModal} animationType="slide" transparent>
@@ -1414,7 +1426,6 @@ export default function RemindersScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+    </SafeAreaView>
   );
 }
