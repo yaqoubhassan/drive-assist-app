@@ -118,6 +118,9 @@ function transformUserResponse(apiUser: UserResponse): User | DriverProfile | Ex
   // Check email verification status from API response
   const isEmailVerified = apiUser.email_verified === true;
 
+  // Debug log avatar URL from API
+  console.log('[Auth] User avatar from API:', apiUser.avatar);
+
   const baseUser: User = {
     id: apiUser.id.toString(),
     email: apiUser.email,

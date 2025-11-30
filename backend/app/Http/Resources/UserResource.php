@@ -44,7 +44,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'role' => $this->role,
-            'avatar' => $this->avatar,
+            'avatar' => $this->getAvatarUrl($request),
             'email_verified' => $this->email_verified_at !== null,
             'phone_verified' => $this->phone_verified_at !== null,
             'onboarding_completed' => $this->onboarding_completed,
@@ -63,5 +63,20 @@ class UserResource extends JsonResource
                 return VehicleResource::collection($this->vehicles);
             }),
         ];
+    }
+
+    /**
+     * Get the full avatar URL using the request's base URL
+     * Same approach as VehicleResource for image_url
+     */
+    private function getAvatarUrl(Request $request): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        // Build URL using the request's scheme and host (works with ngrok, localhost, etc.)
+        $baseUrl = $request->getSchemeAndHttpHost();
+        return $baseUrl . '/storage/' . $this->avatar;
     }
 }

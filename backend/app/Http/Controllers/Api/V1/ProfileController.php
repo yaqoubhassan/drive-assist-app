@@ -57,7 +57,11 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->update(['avatar' => $path]);
 
-        return $this->success(['avatar' => Storage::disk('public')->url($path)], 'Avatar updated');
+        // Build URL using the request's scheme and host (works with ngrok, localhost, etc.)
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $avatarUrl = $baseUrl . '/storage/' . $path;
+
+        return $this->success(['avatar' => $avatarUrl], 'Avatar updated');
     }
 
     public function deleteAvatar(Request $request): JsonResponse
