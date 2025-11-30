@@ -84,7 +84,7 @@ export default function ExpertsMapScreen() {
         latitude: lat,
         longitude: lng,
         radius: radius + 10, // Fetch a bit more to show experts outside the circle too
-        limit: 30,
+        limit: 20,
       });
       setExperts(nearbyExperts);
     } catch (error) {

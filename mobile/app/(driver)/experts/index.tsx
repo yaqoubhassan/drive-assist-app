@@ -105,7 +105,7 @@ export default function ExpertsSearchScreen() {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
           radius: maxDistance,
-          limit: 50,
+          limit: 20,
           specialization_id: specId,
         });
       } else {
