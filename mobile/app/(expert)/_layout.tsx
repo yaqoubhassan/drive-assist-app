@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -8,6 +10,7 @@ export default function ExpertLayout() {
   const { isDark } = useTheme();
   const { userType, isAuthenticated } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // Route protection - only experts can access these routes
   useEffect(() => {
@@ -27,6 +30,10 @@ export default function ExpertLayout() {
     return null;
   }
 
+  // Calculate proper bottom padding for Android navigation bar
+  const bottomPadding = Platform.OS === 'ios' ? 20 : Math.max(insets.bottom, 8);
+  const tabBarHeight = Platform.OS === 'ios' ? 80 : 56 + bottomPadding;
+
   return (
     <Tabs
       screenOptions={{
@@ -34,8 +41,8 @@ export default function ExpertLayout() {
         tabBarStyle: {
           backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
           borderTopColor: isDark ? '#1E293B' : '#E2E8F0',
-          height: 80,
-          paddingBottom: 20,
+          height: tabBarHeight,
+          paddingBottom: bottomPadding,
           paddingTop: 10,
         },
         tabBarActiveTintColor: '#3B82F6',

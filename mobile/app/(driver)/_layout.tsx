@@ -4,11 +4,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function DriverLayout() {
   const { isDark } = useTheme();
   const { userType } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const isGuest = userType === 'guest';
 
@@ -29,6 +31,10 @@ export default function DriverLayout() {
   const activeColor = '#3B82F6';
   const inactiveColor = isDark ? '#64748B' : '#94A3B8';
 
+  // Calculate proper bottom padding for Android navigation bar
+  const bottomPadding = Platform.OS === 'ios' ? 28 : Math.max(insets.bottom, 8);
+  const tabBarHeight = Platform.OS === 'ios' ? 88 : 56 + bottomPadding;
+
   return (
     <Tabs
       screenOptions={{
@@ -37,9 +43,9 @@ export default function DriverLayout() {
           backgroundColor: tabBarBackground,
           borderTopColor: tabBarBorder,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 64,
+          height: tabBarHeight,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          paddingBottom: bottomPadding,
         },
         tabBarActiveTintColor: activeColor,
         tabBarInactiveTintColor: inactiveColor,
