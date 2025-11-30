@@ -73,6 +73,7 @@ export default function VehicleEditScreen() {
   // Image state
   const [vehicleImage, setVehicleImage] = useState<VehicleImage | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [shouldRemoveImage, setShouldRemoveImage] = useState(false);
 
   // Available makes and models from backend
   const [vehicleMakes, setVehicleMakes] = useState<{ id: number; name: string }[]>([]);
@@ -201,11 +202,22 @@ export default function VehicleEditScreen() {
           name: fileName,
           type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
         });
+        // Reset remove flag since we're adding a new image
+        setShouldRemoveImage(false);
       }
     } catch (error) {
       console.error('Error picking image:', error);
       showError('Error', 'Failed to select image. Please try again.');
     }
+  };
+
+  const handleRemoveImage = () => {
+    // If there's an existing image from the server, mark it for removal
+    if (existingImageUrl) {
+      setShouldRemoveImage(true);
+    }
+    setVehicleImage(null);
+    setExistingImageUrl(null);
   };
 
   const showImageOptions = () => {
@@ -219,10 +231,7 @@ export default function VehicleEditScreen() {
         (buttonIndex) => {
           if (buttonIndex === 1) pickImage(true);
           else if (buttonIndex === 2) pickImage(false);
-          else if (buttonIndex === 3) {
-            setVehicleImage(null);
-            setExistingImageUrl(null);
-          }
+          else if (buttonIndex === 3) handleRemoveImage();
         }
       );
     } else {
@@ -233,10 +242,7 @@ export default function VehicleEditScreen() {
           { text: 'Take Photo', onPress: () => pickImage(true) },
           { text: 'Choose from Library', onPress: () => pickImage(false) },
           ...(vehicleImage || existingImageUrl
-            ? [{ text: 'Remove Photo', style: 'destructive' as const, onPress: () => {
-                setVehicleImage(null);
-                setExistingImageUrl(null);
-              }}]
+            ? [{ text: 'Remove Photo', style: 'destructive' as const, onPress: handleRemoveImage }]
             : []),
           { text: 'Cancel', style: 'cancel' as const },
         ]
@@ -279,7 +285,13 @@ export default function VehicleEditScreen() {
       }
 
       if (isEditing && id) {
-        await vehicleService.updateVehicle(id, vehicleData, vehicleImage || undefined);
+        // Pass shouldRemoveImage flag if user removed the existing image
+        await vehicleService.updateVehicle(
+          id,
+          vehicleData,
+          vehicleImage || undefined,
+          shouldRemoveImage
+        );
         showSuccess(
           'Vehicle Updated',
           `Your ${makeName} ${modelName} has been updated successfully.`,

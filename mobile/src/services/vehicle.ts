@@ -152,12 +152,17 @@ export async function createVehicle(data: CreateVehicleRequest, image?: VehicleI
 export async function updateVehicle(
   id: number | string,
   data: UpdateVehicleRequest,
-  image?: VehicleImage
+  image?: VehicleImage,
+  removeImage?: boolean
 ): Promise<Vehicle> {
   let response;
 
-  if (image) {
+  // If removing image, we need to use FormData to send the remove_image flag
+  if (image || removeImage) {
     const formData = createVehicleFormData(data, image);
+    if (removeImage) {
+      formData.append('remove_image', 'true');
+    }
     response = await api.putFormData<Vehicle>(
       apiConfig.endpoints.vehicles.update(id.toString()),
       formData

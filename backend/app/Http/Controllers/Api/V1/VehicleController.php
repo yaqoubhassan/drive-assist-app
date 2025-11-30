@@ -185,16 +185,25 @@ class VehicleController extends Controller
             'mileage_unit' => 'nullable|in:km,miles',
             'nickname' => 'nullable|string|max:100',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'remove_image' => 'nullable|boolean',
         ]);
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
+        // Handle image removal
+        if ($request->boolean('remove_image') && $vehicle->image) {
+            Storage::disk('public')->delete($vehicle->image);
+            $validated['image'] = null;
+        }
+        // Handle image upload (only if not removing)
+        elseif ($request->hasFile('image')) {
             // Delete old image
             if ($vehicle->image) {
                 Storage::disk('public')->delete($vehicle->image);
             }
             $validated['image'] = $request->file('image')->store('vehicles', 'public');
         }
+
+        // Remove remove_image from validated data (it's not a column)
+        unset($validated['remove_image']);
 
         $vehicle->update($validated);
 
