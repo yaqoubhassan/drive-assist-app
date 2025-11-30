@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Badge, Card, SearchBar, Skeleton } from '../../../src/components/common';
+import { Badge, Card, Chip, SearchBar, Skeleton } from '../../../src/components/common';
 import { articlesService, Article, ArticleCategory } from '../../../src/services/learn';
 
 export default function ArticlesScreen() {
@@ -49,7 +49,7 @@ export default function ArticlesScreen() {
     </View>
   );
 
-  // Skeleton for category chips
+  // Skeleton for category chips - matches Chip component (h-10 = 40px)
   const CategoryChipsSkeleton = () => (
     <ScrollView
       horizontal
@@ -57,7 +57,7 @@ export default function ArticlesScreen() {
       contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
     >
       {[1, 2, 3, 4].map((i) => (
-        <Skeleton key={i} width={i === 1 ? 50 : 90} height={32} borderRadius={16} />
+        <Skeleton key={i} width={i === 1 ? 50 : 90} height={40} borderRadius={20} />
       ))}
     </ScrollView>
   );
@@ -162,32 +162,18 @@ export default function ArticlesScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
         >
-          <TouchableOpacity
+          <Chip
+            label="All"
+            selected={!selectedCategory}
             onPress={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-full ${
-              !selectedCategory
-                ? 'bg-primary-500'
-                : isDark ? 'bg-slate-800' : 'bg-white'
-            }`}
-          >
-            <Text className={!selectedCategory ? 'text-white font-medium' : isDark ? 'text-slate-300' : 'text-slate-700'}>
-              All
-            </Text>
-          </TouchableOpacity>
+          />
           {categories.map((cat) => (
-            <TouchableOpacity
+            <Chip
               key={cat.id}
+              label={cat.name}
+              selected={selectedCategory === cat.slug}
               onPress={() => setSelectedCategory(cat.slug)}
-              className={`px-4 py-2 rounded-full ${
-                selectedCategory === cat.slug
-                  ? 'bg-primary-500'
-                  : isDark ? 'bg-slate-800' : 'bg-white'
-              }`}
-            >
-              <Text className={selectedCategory === cat.slug ? 'text-white font-medium' : isDark ? 'text-slate-300' : 'text-slate-700'}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
+            />
           ))}
         </ScrollView>
       ) : null}
