@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch, RefreshControl, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { useAuth } from '../../../src/context/AuthContext';
 import {
   SearchBar,
   Card,
@@ -34,10 +35,16 @@ const ghanaLocations = [
 export default function ExpertsSearchScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
+  const { isAuthenticated, userType } = useAuth();
+  const isGuest = !isAuthenticated || userType === 'guest';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [contactExpert, setContactExpert] = useState<Expert | null>(null);
   const [selectedLocation, setSelectedLocation] = useState('Accra, Greater Accra');
 
   // Data states
@@ -194,6 +201,41 @@ export default function ExpertsSearchScreen() {
   const handleSelectLocation = (location: string) => {
     setSelectedLocation(location);
     setShowLocationModal(false);
+  };
+
+  const handleContactPress = (expert: Expert) => {
+    if (isGuest) {
+      setShowSignUpModal(true);
+    } else {
+      setContactExpert(expert);
+      setShowContactModal(true);
+    }
+  };
+
+  const handleCall = () => {
+    if (contactExpert?.profile?.whatsapp_number) {
+      Linking.openURL(`tel:${contactExpert.profile.whatsapp_number}`);
+    }
+    setShowContactModal(false);
+  };
+
+  const handleWhatsApp = () => {
+    if (contactExpert?.profile?.whatsapp_number) {
+      // Format phone number for WhatsApp (remove any non-digit characters)
+      const phone = contactExpert.profile.whatsapp_number.replace(/\D/g, '');
+      Linking.openURL(`whatsapp://send?phone=${phone}`);
+    }
+    setShowContactModal(false);
+  };
+
+  const handleMessage = () => {
+    if (contactExpert) {
+      router.push({
+        pathname: '/(shared)/messages/[id]',
+        params: { id: contactExpert.id.toString(), expertId: contactExpert.id.toString() },
+      });
+    }
+    setShowContactModal(false);
   };
 
   // Build filter chips from specializations
@@ -450,14 +492,16 @@ export default function ExpertsSearchScreen() {
                 {/* Actions */}
                 <View className="flex-row gap-3 mt-3">
                   <TouchableOpacity
-                    className={`flex-1 h-10 rounded-lg items-center justify-center ${
+                    className={`flex-1 h-10 rounded-lg items-center justify-center flex-row gap-2 ${
                       isDark ? 'bg-slate-700' : 'bg-slate-100'
                     }`}
-                    onPress={() => router.push({
-                      pathname: '/(shared)/messages/[id]',
-                      params: { id: expert.id.toString(), expertId: expert.id.toString() },
-                    })}
+                    onPress={() => handleContactPress(expert)}
                   >
+                    <MaterialIcons
+                      name="chat"
+                      size={18}
+                      color={isDark ? '#CBD5E1' : '#475569'}
+                    />
                     <Text
                       className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
                     >
@@ -624,6 +668,155 @@ export default function ExpertsSearchScreen() {
             ))}
           </ScrollView>
         </SafeAreaView>
+      </Modal>
+
+      {/* Contact Options Modal */}
+      <Modal
+        visible={showContactModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowContactModal(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-end"
+          activeOpacity={1}
+          onPress={() => setShowContactModal(false)}
+        >
+          <View
+            className={`rounded-t-3xl px-4 pt-6 pb-8 ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+            onStartShouldSetResponder={() => true}
+          >
+            {/* Header */}
+            <View className="items-center mb-6">
+              <View className={`w-12 h-1 rounded-full mb-4 ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`} />
+              <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Contact {contactExpert?.profile?.business_name || contactExpert?.full_name}
+              </Text>
+            </View>
+
+            {/* Contact Options */}
+            <View className="gap-3">
+              {/* Call Option */}
+              {contactExpert?.profile?.whatsapp_number && (
+                <TouchableOpacity
+                  onPress={handleCall}
+                  className={`flex-row items-center p-4 rounded-xl ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
+                >
+                  <View className="h-12 w-12 rounded-full bg-green-500 items-center justify-center">
+                    <MaterialIcons name="phone" size={24} color="#FFFFFF" />
+                  </View>
+                  <View className="ml-4 flex-1">
+                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      Call
+                    </Text>
+                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Direct phone call
+                    </Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+                </TouchableOpacity>
+              )}
+
+              {/* WhatsApp Option */}
+              {contactExpert?.profile?.whatsapp_number && (
+                <TouchableOpacity
+                  onPress={handleWhatsApp}
+                  className={`flex-row items-center p-4 rounded-xl ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
+                >
+                  <View className="h-12 w-12 rounded-full bg-[#25D366] items-center justify-center">
+                    <MaterialIcons name="chat" size={24} color="#FFFFFF" />
+                  </View>
+                  <View className="ml-4 flex-1">
+                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      WhatsApp
+                    </Text>
+                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Chat on WhatsApp
+                    </Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+                </TouchableOpacity>
+              )}
+
+              {/* In-App Message Option */}
+              <TouchableOpacity
+                onPress={handleMessage}
+                className={`flex-row items-center p-4 rounded-xl ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
+              >
+                <View className="h-12 w-12 rounded-full bg-primary-500 items-center justify-center">
+                  <MaterialIcons name="message" size={24} color="#FFFFFF" />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    In-App Message
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Send a message within the app
+                  </Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Cancel Button */}
+            <TouchableOpacity
+              onPress={() => setShowContactModal(false)}
+              className="mt-4 py-3"
+            >
+              <Text className={`text-center font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Sign Up Prompt Modal (for guests) */}
+      <Modal
+        visible={showSignUpModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSignUpModal(false)}
+      >
+        <View className="flex-1 bg-black/50 items-center justify-center px-6">
+          <View className={`w-full max-w-sm rounded-2xl p-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+            <View className="items-center mb-4">
+              <View className={`h-16 w-16 rounded-full items-center justify-center mb-4 ${isDark ? 'bg-primary-500/20' : 'bg-primary-50'}`}>
+                <MaterialIcons name="lock-outline" size={32} color="#3B82F6" />
+              </View>
+              <Text className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Sign In Required
+              </Text>
+              <Text className={`text-center mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Create a free account or sign in to contact experts.
+              </Text>
+            </View>
+            <View className="gap-3">
+              <Button
+                title="Sign Up Free"
+                fullWidth
+                onPress={() => {
+                  setShowSignUpModal(false);
+                  router.push('/(auth)/sign-up');
+                }}
+              />
+              <Button
+                title="Sign In"
+                variant="secondary"
+                fullWidth
+                onPress={() => {
+                  setShowSignUpModal(false);
+                  router.push('/(auth)/sign-in');
+                }}
+              />
+              <TouchableOpacity onPress={() => setShowSignUpModal(false)} className="py-2">
+                <Text className={`text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Maybe later
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
