@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   View,
   RefreshControl,
-  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, Chip, IconButton, Button, Avatar } from '../../src/components/common';
+import { HomeScreenSkeleton } from '../../src/components/skeletons';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import appointmentService, { Appointment, formatAppointmentDate, getStatusLabel } from '../../src/services/appointment';
@@ -453,6 +453,11 @@ export default function DriverHomeScreen() {
         </ScrollView>
       </SafeAreaView>
     );
+  }
+
+  // Show skeleton while loading for authenticated users
+  if (loading) {
+    return <HomeScreenSkeleton />;
   }
 
   // Render authenticated user home screen
