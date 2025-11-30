@@ -354,7 +354,7 @@ export default function LearnScreen() {
                       {article.title}
                     </Text>
                     <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {article.read_time_minutes} min read
+                      {article.read_time_minutes ?? 3} min read
                     </Text>
                   </View>
                 </Card>

@@ -121,7 +121,11 @@ export default function ArticlesScreen() {
       </View>
 
       {/* Category Filter */}
-      {categories.length > 0 && (
+      {loading ? (
+        <View className="py-3">
+          <SkeletonChips count={4} />
+        </View>
+      ) : categories.length > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -155,15 +159,11 @@ export default function ArticlesScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
+      ) : null}
 
       {/* Articles List */}
       {loading ? (
         <View className="flex-1 pt-4">
-          {/* Category chips skeleton */}
-          <View className="mb-4">
-            <SkeletonChips count={4} />
-          </View>
           {/* Articles skeleton */}
           <SkeletonArticlesScreen />
         </View>
@@ -230,7 +230,7 @@ export default function ArticlesScreen() {
                     <View className="flex-row items-center mt-2">
                       <MaterialIcons name="schedule" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
                       <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {article.read_time_minutes} min read
+                        {article.read_time_minutes ?? 3} min read
                       </Text>
                       <View className="flex-row items-center ml-3">
                         <MaterialIcons name="visibility" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
