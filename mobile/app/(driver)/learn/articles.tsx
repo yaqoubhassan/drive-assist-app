@@ -122,14 +122,15 @@ export default function ArticlesScreen() {
 
       {/* Category Filter */}
       {loading ? (
-        <View className="pb-3">
+        <View style={{ height: 44, justifyContent: 'flex-start', paddingBottom: 12 }}>
           <SkeletonChips count={4} />
         </View>
       ) : categories.length > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+          style={{ height: 44 }}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12, alignItems: 'center' }}
         >
           <TouchableOpacity
             onPress={() => setSelectedCategory(null)}
