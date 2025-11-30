@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Badge, Card, SearchBar, SkeletonArticlesScreen, SkeletonChips } from '../../../src/components/common';
+import { Badge, Card, SearchBar, Skeleton } from '../../../src/components/common';
 import { articlesService, Article, ArticleCategory } from '../../../src/services/learn';
 
 export default function ArticlesScreen() {
@@ -28,6 +28,39 @@ export default function ArticlesScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // Inline skeleton component following ExpertsSearchScreen pattern
+  const ArticlesSkeleton = () => (
+    <View className="gap-3">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <View
+          key={i}
+          className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+        >
+          <Skeleton width={112} height={112} borderRadius={0} />
+          <View className="flex-1 p-4 justify-center">
+            <Skeleton width={60} height={18} borderRadius={9} style={{ marginBottom: 8 }} />
+            <Skeleton width="90%" height={14} style={{ marginBottom: 6 }} />
+            <Skeleton width="70%" height={14} style={{ marginBottom: 8 }} />
+            <Skeleton width="50%" height={12} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
+  // Skeleton for category chips
+  const CategoryChipsSkeleton = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+    >
+      {[1, 2, 3, 4].map((i) => (
+        <Skeleton key={i} width={i === 1 ? 50 : 90} height={32} borderRadius={16} />
+      ))}
+    </ScrollView>
+  );
 
   const fetchArticles = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
@@ -122,15 +155,12 @@ export default function ArticlesScreen() {
 
       {/* Category Filter */}
       {loading ? (
-        <View style={{ height: 44, justifyContent: 'flex-start', paddingBottom: 12 }}>
-          <SkeletonChips count={4} />
-        </View>
+        <CategoryChipsSkeleton />
       ) : categories.length > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ height: 44 }}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12, alignItems: 'center' }}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
         >
           <TouchableOpacity
             onPress={() => setSelectedCategory(null)}
@@ -162,97 +192,92 @@ export default function ArticlesScreen() {
         </ScrollView>
       ) : null}
 
-      {/* Articles List */}
-      {loading ? (
-        <View className="flex-1 pt-4">
-          {/* Articles skeleton */}
-          <SkeletonArticlesScreen />
-        </View>
-      ) : (
-        <ScrollView
-          className="flex-1 px-4"
-          showsVerticalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={400}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          {articles.length === 0 ? (
-            <View className="items-center justify-center py-12">
-              <MaterialIcons name="article" size={64} color={isDark ? '#475569' : '#94A3B8'} />
-              <Text className={`mt-4 text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                No articles found
-              </Text>
-              <Text className={`mt-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                {searchQuery ? 'Try a different search term' : 'Check back later for new content'}
-              </Text>
-            </View>
-          ) : (
-            <View className="gap-3 pb-6">
-              {articles.map((article) => (
-                <Card
-                  key={article.id}
-                  variant="default"
-                  padding="none"
-                  className="flex-row overflow-hidden"
-                  onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
-                >
-                  {article.featured_image ? (
-                    <Image
-                      source={{ uri: article.featured_image }}
-                      className="h-28 w-28"
-                      resizeMode="cover"
+      {/* Articles List - Single ScrollView with conditional content */}
+      <ScrollView
+        className="flex-1 px-4"
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {loading ? (
+          <ArticlesSkeleton />
+        ) : articles.length === 0 ? (
+          <View className="items-center justify-center py-12">
+            <MaterialIcons name="article" size={64} color={isDark ? '#475569' : '#94A3B8'} />
+            <Text className={`mt-4 text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              No articles found
+            </Text>
+            <Text className={`mt-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              {searchQuery ? 'Try a different search term' : 'Check back later for new content'}
+            </Text>
+          </View>
+        ) : (
+          <View className="gap-3 pb-6">
+            {articles.map((article) => (
+              <Card
+                key={article.id}
+                variant="default"
+                padding="none"
+                className="flex-row overflow-hidden"
+                onPress={() => router.push(`/(driver)/learn/article/${article.slug}`)}
+              >
+                {article.featured_image ? (
+                  <Image
+                    source={{ uri: article.featured_image }}
+                    className="h-28 w-28"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    className={`h-28 w-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}
+                  >
+                    <MaterialIcons
+                      name="article"
+                      size={36}
+                      color={isDark ? '#64748B' : '#94A3B8'}
                     />
-                  ) : (
-                    <View
-                      className={`h-28 w-28 items-center justify-center ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}
-                    >
-                      <MaterialIcons
-                        name="article"
-                        size={36}
-                        color={isDark ? '#64748B' : '#94A3B8'}
-                      />
-                    </View>
-                  )}
-                  <View className="flex-1 p-4 justify-center">
-                    <Badge
-                      label={article.category?.name || 'Article'}
-                      variant="info"
-                      size="sm"
-                      className="self-start mb-1"
-                    />
-                    <Text
-                      className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
-                      numberOfLines={2}
-                    >
-                      {article.title}
+                  </View>
+                )}
+                <View className="flex-1 p-4 justify-center">
+                  <Badge
+                    label={article.category?.name || 'Article'}
+                    variant="info"
+                    size="sm"
+                    className="self-start mb-1"
+                  />
+                  <Text
+                    className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                    numberOfLines={2}
+                  >
+                    {article.title}
+                  </Text>
+                  <View className="flex-row items-center mt-2">
+                    <MaterialIcons name="schedule" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
+                    <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {article.read_time ?? 3} min read
                     </Text>
-                    <View className="flex-row items-center mt-2">
-                      <MaterialIcons name="schedule" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
+                    <View className="flex-row items-center ml-3">
+                      <MaterialIcons name="visibility" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
                       <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {article.read_time ?? 3} min read
+                        {article.views_count}
                       </Text>
-                      <View className="flex-row items-center ml-3">
-                        <MaterialIcons name="visibility" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
-                        <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {article.views_count}
-                        </Text>
-                      </View>
                     </View>
                   </View>
-                </Card>
-              ))}
-
-              {loadingMore && (
-                <View className="py-4 items-center">
-                  <ActivityIndicator size="small" color="#3B82F6" />
                 </View>
-              )}
-            </View>
-          )}
-        </ScrollView>
-      )}
+              </Card>
+            ))}
+
+            {loadingMore && (
+              <View className="py-4 items-center">
+                <ActivityIndicator size="small" color="#3B82F6" />
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
