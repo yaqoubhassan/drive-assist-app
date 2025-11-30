@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useTheme } from '../../../src/context/ThemeContext';
 import {
   SearchBar,
@@ -12,7 +14,10 @@ import {
   Badge,
   Avatar,
   Button,
+  Skeleton,
+  EmptyState,
 } from '../../../src/components/common';
+import expertService, { Expert, Specialization } from '../../../src/services/expert';
 
 const ghanaLocations = [
   'Accra, Greater Accra',
@@ -26,103 +31,206 @@ const ghanaLocations = [
   'Koforidua, Eastern',
 ];
 
-const filterChips = [
-  'All',
-  'Engine Specialists',
-  'Brake Experts',
-  'Electrical',
-  '4.5★ & Up',
-  'Open Now',
-];
-
-const experts = [
-  {
-    id: '1',
-    name: "Kofi's Auto Repair",
-    rating: 4.9,
-    reviewCount: 234,
-    distance: 2.3,
-    status: 'open',
-    closingTime: '6:00 PM',
-    specialties: ['Engine', 'Brakes', 'Electrical'],
-    priceRange: 'average',
-    verified: true,
-    recentReview: {
-      text: 'Quick, honest service...',
-      author: 'Sarah M.',
-    },
-    image: 'https://images.unsplash.com/photo-1580273916550-e323e7a39554?w=400',
-  },
-  {
-    id: '2',
-    name: 'Precision Auto Works',
-    rating: 4.8,
-    reviewCount: 189,
-    distance: 3.1,
-    status: 'open',
-    closingTime: '7:00 PM',
-    specialties: ['Transmission', 'Engine'],
-    priceRange: 'premium',
-    verified: true,
-    recentReview: {
-      text: 'Very professional team...',
-      author: 'Kwame A.',
-    },
-    image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400',
-  },
-  {
-    id: '3',
-    name: 'Quick Fix Garage',
-    rating: 4.5,
-    reviewCount: 156,
-    distance: 1.8,
-    status: 'closed',
-    closingTime: 'Opens 8:00 AM',
-    specialties: ['Oil Change', 'Tires'],
-    priceRange: 'budget',
-    verified: false,
-    recentReview: {
-      text: 'Affordable and fast...',
-      author: 'Ama B.',
-    },
-    image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400',
-  },
-];
-
-const priceRangeLabels: Record<string, string> = {
-  budget: '$',
-  average: '$$',
-  premium: '$$$',
-};
-
 export default function ExpertsSearchScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('All');
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('Accra, Greater Accra');
 
+  // Data states
+  const [experts, setExperts] = useState<Expert[]>([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+
   // Filter states
   const [minRating, setMinRating] = useState(0);
   const [openNowOnly, setOpenNowOnly] = useState(false);
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [maxDistance, setMaxDistance] = useState(50);
 
-  const handleExpertPress = (expertId: string) => {
+  // Fetch user location
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      } catch (error) {
+        console.error('Error getting location:', error);
+      }
+    })();
+  }, []);
+
+  // Fetch specializations
+  useEffect(() => {
+    (async () => {
+      try {
+        const specs = await expertService.getSpecializations();
+        setSpecializations(specs);
+      } catch (error) {
+        console.error('Failed to fetch specializations:', error);
+      }
+    })();
+  }, []);
+
+  // Fetch experts
+  const fetchExperts = useCallback(async (refresh: boolean = false) => {
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      let fetchedExperts: Expert[] = [];
+
+      if (userLocation) {
+        // Use getNearbyExperts for location-based search
+        const specId = selectedFilter !== 'all'
+          ? specializations.find(s => s.slug === selectedFilter)?.id
+          : undefined;
+
+        fetchedExperts = await expertService.getNearbyExperts({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          radius: maxDistance,
+          limit: 50,
+          specialization_id: specId,
+        });
+      } else {
+        // Fallback to regular getExperts
+        const result = await expertService.getExperts({ radius: maxDistance });
+        fetchedExperts = Array.isArray(result) ? result : result.data || [];
+      }
+
+      // Sort experts by priority metrics:
+      // 1. Priority listing (subscribed experts first)
+      // 2. Availability (available first)
+      // 3. Distance (closer first)
+      // 4. Rating (higher first)
+      // 5. Jobs completed (more is better)
+      const sortedExperts = [...fetchedExperts].sort((a, b) => {
+        // Priority listing first
+        const aPriority = a.profile?.is_priority_listed ? 1 : 0;
+        const bPriority = b.profile?.is_priority_listed ? 1 : 0;
+        if (bPriority !== aPriority) return bPriority - aPriority;
+
+        // Available first
+        const aAvailable = a.profile?.is_available ? 1 : 0;
+        const bAvailable = b.profile?.is_available ? 1 : 0;
+        if (bAvailable !== aAvailable) return bAvailable - aAvailable;
+
+        // Distance (closer first)
+        const aDist = a.distance_km ?? 999;
+        const bDist = b.distance_km ?? 999;
+        if (Math.abs(aDist - bDist) > 0.5) return aDist - bDist;
+
+        // Rating (higher first)
+        const aRating = a.profile?.rating ?? 0;
+        const bRating = b.profile?.rating ?? 0;
+        if (bRating !== aRating) return bRating - aRating;
+
+        // Jobs completed (more first)
+        const aJobs = a.profile?.jobs_completed ?? 0;
+        const bJobs = b.profile?.jobs_completed ?? 0;
+        return bJobs - aJobs;
+      });
+
+      setExperts(sortedExperts);
+    } catch (error) {
+      console.error('Failed to fetch experts:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [userLocation, maxDistance, selectedFilter, specializations]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchExperts();
+    }, [fetchExperts])
+  );
+
+  const onRefresh = useCallback(() => {
+    fetchExperts(true);
+  }, [fetchExperts]);
+
+  // Filter experts by search query and other filters
+  const filteredExperts = experts.filter((expert) => {
+    const name = expert.profile?.business_name || expert.full_name || '';
+    const matchesSearch = searchQuery === '' ||
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expert.profile?.specializations?.some(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    const matchesRating = (expert.profile?.rating ?? 0) >= minRating;
+    const matchesAvailability = !openNowOnly || expert.profile?.is_available;
+    const matchesDistance = (expert.distance_km ?? 0) <= maxDistance;
+
+    return matchesSearch && matchesRating && matchesAvailability && matchesDistance;
+  });
+
+  const handleExpertPress = (expertId: number) => {
     router.push(`/(driver)/experts/${expertId}`);
   };
 
   const handleApplyFilters = () => {
     setShowFilterModal(false);
+    fetchExperts();
   };
 
   const handleSelectLocation = (location: string) => {
     setSelectedLocation(location);
     setShowLocationModal(false);
   };
+
+  // Build filter chips from specializations
+  const filterChips = [
+    { id: 'all', label: 'All' },
+    ...specializations.slice(0, 5).map(s => ({ id: s.slug, label: s.name })),
+  ];
+
+  // Skeleton Component
+  const ExpertsSkeleton = () => (
+    <View className="gap-4">
+      {[1, 2, 3].map((i) => (
+        <View
+          key={i}
+          className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+        >
+          <View className="flex-row">
+            <Skeleton width={80} height={80} borderRadius={12} />
+            <View className="flex-1 ml-4">
+              <Skeleton width="70%" height={18} style={{ marginBottom: 8 }} />
+              <Skeleton width="50%" height={14} style={{ marginBottom: 8 }} />
+              <Skeleton width="60%" height={12} />
+            </View>
+          </View>
+          <View className="flex-row gap-2 mt-3">
+            <Skeleton width={60} height={24} borderRadius={12} />
+            <Skeleton width={70} height={24} borderRadius={12} />
+            <Skeleton width={50} height={24} borderRadius={12} />
+          </View>
+          <View className="flex-row gap-3 mt-3">
+            <Skeleton width="48%" height={40} borderRadius={8} />
+            <Skeleton width="48%" height={40} borderRadius={8} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <SafeAreaView
@@ -190,49 +298,39 @@ export default function ExpertsSearchScreen() {
           <View className="flex-row gap-2">
             {filterChips.map((filter) => (
               <Chip
-                key={filter}
-                label={filter}
-                selected={selectedFilter === filter}
-                onPress={() => setSelectedFilter(filter)}
+                key={filter.id}
+                label={filter.label}
+                selected={selectedFilter === filter.id}
+                onPress={() => setSelectedFilter(filter.id)}
               />
             ))}
           </View>
         </ScrollView>
 
         {/* View Toggle */}
-        <View className="flex-row justify-end gap-2 mt-2">
-          <TouchableOpacity
-            onPress={() => setViewMode('list')}
-            className={`h-10 w-10 rounded-lg items-center justify-center ${
-              viewMode === 'list'
-                ? 'bg-primary-500'
-                : isDark
-                ? 'bg-slate-800'
-                : 'bg-slate-200'
-            }`}
-          >
-            <MaterialIcons
-              name="view-list"
-              size={20}
-              color={viewMode === 'list' ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push('/(driver)/experts/map')}
-            className={`h-10 w-10 rounded-lg items-center justify-center ${
-              viewMode === 'map'
-                ? 'bg-primary-500'
-                : isDark
-                ? 'bg-slate-800'
-                : 'bg-slate-200'
-            }`}
-          >
-            <MaterialIcons
-              name="map"
-              size={20}
-              color={viewMode === 'map' ? '#FFFFFF' : isDark ? '#94A3B8' : '#64748B'}
-            />
-          </TouchableOpacity>
+        <View className="flex-row justify-between items-center mt-2">
+          <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            {loading ? 'Loading...' : `${filteredExperts.length} experts found`}
+          </Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              className="h-10 w-10 rounded-lg items-center justify-center bg-primary-500"
+            >
+              <MaterialIcons name="view-list" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push('/(driver)/experts/map')}
+              className={`h-10 w-10 rounded-lg items-center justify-center ${
+                isDark ? 'bg-slate-800' : 'bg-slate-200'
+              }`}
+            >
+              <MaterialIcons
+                name="map"
+                size={20}
+                color={isDark ? '#94A3B8' : '#64748B'}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -240,119 +338,149 @@ export default function ExpertsSearchScreen() {
       <ScrollView
         className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {experts.map((expert) => (
-          <Card
-            key={expert.id}
-            variant="default"
-            padding="md"
-            className="mb-4"
-            onPress={() => handleExpertPress(expert.id)}
-          >
-            <View className="flex-row">
-              <Image
-                source={{ uri: expert.image }}
-                className="h-20 w-20 rounded-xl"
-              />
-              <View className="flex-1 ml-4">
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center gap-1">
-                    <Text
-                      className={`font-bold ${
-                        isDark ? 'text-white' : 'text-slate-900'
-                      }`}
-                    >
-                      {expert.name}
-                    </Text>
-                    {expert.verified && (
-                      <MaterialIcons name="verified" size={16} color="#3B82F6" />
-                    )}
-                  </View>
-                </View>
-                <Rating
-                  value={expert.rating}
-                  reviewCount={expert.reviewCount}
-                  size="sm"
-                />
-                <View className="flex-row items-center mt-1 gap-3">
-                  <View className="flex-row items-center gap-1">
-                    <MaterialIcons
-                      name="location-on"
-                      size={14}
-                      color={isDark ? '#64748B' : '#94A3B8'}
-                    />
-                    <Text
-                      className={`text-sm ${
-                        isDark ? 'text-slate-400' : 'text-slate-500'
-                      }`}
-                    >
-                      {expert.distance} km away
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <MaterialIcons
-                      name="schedule"
-                      size={14}
-                      color={expert.status === 'open' ? '#10B981' : '#EF4444'}
-                    />
-                    <Text
-                      className={`text-sm ${
-                        expert.status === 'open' ? 'text-green-500' : 'text-red-500'
-                      }`}
-                    >
-                      {expert.status === 'open' ? 'Open' : 'Closed'} • {expert.closingTime}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Specialties */}
-            <View className="flex-row flex-wrap gap-2 mt-3">
-              {expert.specialties.map((specialty) => (
-                <Badge key={specialty} label={specialty} variant="default" size="sm" />
-              ))}
-              <Badge
-                label={priceRangeLabels[expert.priceRange]}
-                variant="info"
-                size="sm"
-              />
-            </View>
-
-            {/* Recent Review */}
-            <View className={`mt-3 pt-3 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-              <Text
-                className={`text-sm italic ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-              >
-                "{expert.recentReview.text}" - {expert.recentReview.author}
-              </Text>
-            </View>
-
-            {/* Actions */}
-            <View className="flex-row gap-3 mt-3">
-              <TouchableOpacity
-                className={`flex-1 h-10 rounded-lg items-center justify-center ${
-                  isDark ? 'bg-slate-700' : 'bg-slate-100'
-                }`}
-                onPress={() => router.push(`/(shared)/messages?expertId=${expert.id}`)}
-              >
-                <Text
-                  className={`font-semibold ${
-                    isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
-                >
-                  Contact
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-1 h-10 rounded-lg items-center justify-center bg-primary-500"
+        {loading ? (
+          <ExpertsSkeleton />
+        ) : filteredExperts.length > 0 ? (
+          <View className="gap-4 pb-8">
+            {filteredExperts.map((expert) => (
+              <Card
+                key={expert.id}
+                variant="default"
+                padding="md"
                 onPress={() => handleExpertPress(expert.id)}
               >
-                <Text className="font-semibold text-white">View Profile</Text>
-              </TouchableOpacity>
-            </View>
-          </Card>
-        ))}
+                <View className="flex-row">
+                  {expert.avatar ? (
+                    <Image
+                      source={{ uri: expert.avatar }}
+                      className="h-20 w-20 rounded-xl"
+                    />
+                  ) : (
+                    <View className="h-20 w-20">
+                      <Avatar name={expert.full_name} size="lg" />
+                    </View>
+                  )}
+                  <View className="flex-1 ml-4">
+                    <View className="flex-row items-center gap-1 flex-wrap">
+                      <Text
+                        className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                        numberOfLines={1}
+                      >
+                        {expert.profile?.business_name || expert.full_name}
+                      </Text>
+                      {expert.profile?.is_priority_listed && (
+                        <>
+                          <MaterialIcons name="verified" size={16} color="#3B82F6" />
+                          <View className="bg-amber-500 px-1.5 py-0.5 rounded">
+                            <Text className="text-white text-xs font-bold">PRO</Text>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                    <Rating
+                      value={expert.profile?.rating ?? 0}
+                      reviewCount={expert.profile?.rating_count ?? 0}
+                      size="sm"
+                    />
+                    <View className="flex-row items-center mt-1 gap-3 flex-wrap">
+                      {expert.distance_km !== undefined && (
+                        <View className="flex-row items-center gap-1">
+                          <MaterialIcons
+                            name="location-on"
+                            size={14}
+                            color={isDark ? '#64748B' : '#94A3B8'}
+                          />
+                          <Text
+                            className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                          >
+                            {expert.distance_km.toFixed(1)} km
+                          </Text>
+                        </View>
+                      )}
+                      <View className="flex-row items-center gap-1">
+                        <MaterialIcons
+                          name="schedule"
+                          size={14}
+                          color={expert.profile?.is_available ? '#10B981' : '#EF4444'}
+                        />
+                        <Text
+                          className={`text-sm ${
+                            expert.profile?.is_available ? 'text-green-500' : 'text-red-500'
+                          }`}
+                        >
+                          {expert.profile?.is_available ? 'Available' : 'Busy'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Specialties */}
+                {expert.profile?.specializations && expert.profile.specializations.length > 0 && (
+                  <View className="flex-row flex-wrap gap-2 mt-3">
+                    {expert.profile.specializations.slice(0, 3).map((specialty) => (
+                      <Badge key={specialty.id} label={specialty.name} variant="default" size="sm" />
+                    ))}
+                    {expert.profile.experience_years > 0 && (
+                      <Badge
+                        label={`${expert.profile.experience_years} yrs`}
+                        variant="info"
+                        size="sm"
+                      />
+                    )}
+                  </View>
+                )}
+
+                {/* Bio */}
+                {expert.profile?.bio && (
+                  <View className={`mt-3 pt-3 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+                    <Text
+                      className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                      numberOfLines={2}
+                    >
+                      {expert.profile.bio}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Actions */}
+                <View className="flex-row gap-3 mt-3">
+                  <TouchableOpacity
+                    className={`flex-1 h-10 rounded-lg items-center justify-center ${
+                      isDark ? 'bg-slate-700' : 'bg-slate-100'
+                    }`}
+                    onPress={() => router.push({
+                      pathname: '/(shared)/messages/[id]',
+                      params: { id: expert.id.toString(), expertId: expert.id.toString() },
+                    })}
+                  >
+                    <Text
+                      className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+                    >
+                      Contact
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="flex-1 h-10 rounded-lg items-center justify-center bg-primary-500"
+                    onPress={() => handleExpertPress(expert.id)}
+                  >
+                    <Text className="font-semibold text-white">View Profile</Text>
+                  </TouchableOpacity>
+                </View>
+              </Card>
+            ))}
+          </View>
+        ) : (
+          <EmptyState
+            icon="search-off"
+            title="No Experts Found"
+            description="Try adjusting your filters or search in a different area."
+          />
+        )}
       </ScrollView>
 
       {/* Filter Modal */}
@@ -373,7 +501,6 @@ export default function ExpertsSearchScreen() {
             <TouchableOpacity onPress={() => {
               setMinRating(0);
               setOpenNowOnly(false);
-              setVerifiedOnly(false);
               setMaxDistance(50);
             }}>
               <Text className="text-primary-500 font-semibold">Reset</Text>
@@ -405,14 +532,14 @@ export default function ExpertsSearchScreen() {
               </View>
             </View>
 
-            {/* Open Now Toggle */}
+            {/* Available Now Toggle */}
             <View className={`flex-row items-center justify-between py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
               <View>
                 <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Open Now
+                  Available Now
                 </Text>
                 <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Only show currently open shops
+                  Only show currently available experts
                 </Text>
               </View>
               <Switch
@@ -420,24 +547,6 @@ export default function ExpertsSearchScreen() {
                 onValueChange={setOpenNowOnly}
                 trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
                 thumbColor={openNowOnly ? '#3B82F6' : '#94A3B8'}
-              />
-            </View>
-
-            {/* Verified Only Toggle */}
-            <View className={`flex-row items-center justify-between py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-              <View>
-                <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Verified Only
-                </Text>
-                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Only show verified experts
-                </Text>
-              </View>
-              <Switch
-                value={verifiedOnly}
-                onValueChange={setVerifiedOnly}
-                trackColor={{ false: '#E2E8F0', true: '#3B82F680' }}
-                thumbColor={verifiedOnly ? '#3B82F6' : '#94A3B8'}
               />
             </View>
 

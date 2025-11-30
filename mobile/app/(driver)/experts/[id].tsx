@@ -1,91 +1,73 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Dimensions, Linking, Platform, StatusBar } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Linking, RefreshControl } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Button, Card, Rating, Badge, Avatar, Chip } from '../../../src/components/common';
-import { formatCurrencyRange } from '../../../src/constants';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
-
-// Mock expert data
-const expertData = {
-  id: '1',
-  name: "Kofi's Auto Repair",
-  rating: 4.9,
-  reviewCount: 234,
-  bio: 'Family-owned auto repair shop serving Accra since 2005. Specializing in Japanese and German vehicles. We pride ourselves on honest, transparent service and customer education.',
-  yearsExperience: 18,
-  verified: true,
-  certifications: ['ASE Certified', 'Licensed', 'Insured'],
-  distance: 2.3,
-  address: '123 Independence Ave, Osu, Accra',
-  phone: '+233 24 123 4567',
-  hours: {
-    weekday: '8:00 AM - 6:00 PM',
-    saturday: '9:00 AM - 3:00 PM',
-    sunday: 'Closed',
-  },
-  currentStatus: 'open',
-  specialties: ['Engine Diagnostics', 'Brake Service', 'Electrical Systems', 'Oil Changes'],
-  services: [
-    { name: 'Oil Change', priceMin: 80, priceMax: 150 },
-    { name: 'Brake Pad Replacement', priceMin: 200, priceMax: 400 },
-    { name: 'Diagnostic Fee', priceMin: 100, priceMax: 100 },
-    { name: 'Engine Tune-Up', priceMin: 300, priceMax: 600 },
-  ],
-  gallery: [
-    'https://images.unsplash.com/photo-1580273916550-e323e7a39554?w=400',
-    'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400',
-    'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400',
-  ],
-  reviews: [
-    {
-      id: '1',
-      author: 'Sarah M.',
-      rating: 5,
-      date: '3 days ago',
-      text: 'Fast and honest service. Kofi explained everything clearly and didn\'t try to upsell me.',
-      service: 'Brake Repair',
-      helpful: 12,
-    },
-    {
-      id: '2',
-      author: 'Kwame A.',
-      rating: 5,
-      date: '1 week ago',
-      text: 'Best mechanic in Accra! Very knowledgeable and fair pricing.',
-      service: 'Engine Diagnostics',
-      helpful: 8,
-    },
-  ],
-  coverImage: 'https://images.unsplash.com/photo-1580273916550-e323e7a39554?w=800',
-  profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-};
+import { Button, Card, Rating, Badge, Avatar, Chip, Skeleton } from '../../../src/components/common';
+import expertService, { Expert, Review } from '../../../src/services/expert';
 
 export default function ExpertDetailScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { isDark } = useTheme();
   const { userType, isAuthenticated } = useAuth();
 
   const isGuest = !isAuthenticated || userType === 'guest';
 
-  // State for modals
+  // Data states
+  const [expert, setExpert] = useState<Expert | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Modal states
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [showGalleryModal, setShowGalleryModal] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Fetch expert data
+  const fetchExpertData = useCallback(async (refresh: boolean = false) => {
+    if (!id) return;
+
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const [expertData, reviewsData] = await Promise.all([
+        expertService.getExpert(parseInt(id)),
+        expertService.getExpertReviews(parseInt(id), 1).catch(() => ({ reviews: [], currentPage: 1, lastPage: 1, total: 0 })),
+      ]);
+
+      setExpert(expertData);
+      setReviews(reviewsData.reviews);
+    } catch (error) {
+      console.error('Failed to fetch expert data:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchExpertData();
+    }, [fetchExpertData])
+  );
+
+  const onRefresh = useCallback(() => {
+    fetchExpertData(true);
+  }, [fetchExpertData]);
 
   const handleContactPress = () => {
     if (isGuest) {
       setShowSignUpModal(true);
-    } else {
-      // Navigate to messaging or make a call
-      Linking.openURL(`tel:${expertData.phone}`);
+    } else if (expert?.profile?.whatsapp_number) {
+      Linking.openURL(`tel:${expert.profile.whatsapp_number}`);
     }
   };
 
@@ -95,49 +77,142 @@ export default function ExpertDetailScreen() {
     } else {
       router.push({
         pathname: '/(driver)/booking',
-        params: { expertId: expertData.id },
+        params: { expertId: id },
       });
     }
   };
 
   const handleDirections = () => {
-    // Open maps with the expert's address
-    const address = encodeURIComponent(expertData.address);
-    Linking.openURL(`https://maps.google.com/?q=${address}`);
+    if (expert?.profile?.address) {
+      const address = encodeURIComponent(expert.profile.address);
+      Linking.openURL(`https://maps.google.com/?q=${address}`);
+    }
   };
 
-  const openGallery = (index: number) => {
-    setSelectedImageIndex(index);
-    setShowGalleryModal(true);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const handleViewAllPhotos = () => {
-    setSelectedImageIndex(0);
-    setShowGalleryModal(true);
-  };
+  // Skeleton Loading Component
+  const ExpertDetailSkeleton = () => (
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      {/* Cover Image Skeleton */}
+      <Skeleton width="100%" height={192} borderRadius={0} />
 
-  const handleViewAllReviews = () => {
-    // For now, we'll just scroll or show a message
-    // In a full implementation, this would navigate to a reviews screen
-    router.push({
-      pathname: '/(driver)/experts/reviews',
-      params: { expertId: expertData.id },
-    });
-  };
+      {/* Profile Header Skeleton */}
+      <View className="px-4 -mt-12 items-center">
+        <Skeleton width={96} height={96} borderRadius={48} />
+        <View className="items-center mt-4 w-full">
+          <Skeleton width="60%" height={24} style={{ marginBottom: 8 }} />
+          <Skeleton width="40%" height={16} style={{ marginBottom: 8 }} />
+          <View className="flex-row gap-2">
+            <Skeleton width={80} height={24} borderRadius={12} />
+            <Skeleton width={80} height={24} borderRadius={12} />
+          </View>
+        </View>
+
+        {/* Quick Info Skeleton */}
+        <View className="flex-row justify-around py-6 w-full">
+          {[1, 2, 3].map((i) => (
+            <View key={i} className="items-center">
+              <Skeleton width={24} height={24} borderRadius={12} style={{ marginBottom: 4 }} />
+              <Skeleton width={40} height={16} style={{ marginBottom: 4 }} />
+              <Skeleton width={50} height={12} />
+            </View>
+          ))}
+        </View>
+
+        {/* Action Buttons Skeleton */}
+        <View className="flex-row gap-3 w-full">
+          <Skeleton width="48%" height={44} borderRadius={12} />
+          <Skeleton width="48%" height={44} borderRadius={12} />
+        </View>
+      </View>
+
+      {/* About Skeleton */}
+      <View className="px-4 py-6">
+        <Skeleton width={80} height={20} style={{ marginBottom: 8 }} />
+        <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
+        <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
+        <Skeleton width="70%" height={14} />
+      </View>
+
+      {/* Specialties Skeleton */}
+      <View className="px-4 pb-6">
+        <Skeleton width={100} height={20} style={{ marginBottom: 12 }} />
+        <View className="flex-row flex-wrap gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} width={80} height={32} borderRadius={16} />
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView
+        className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}
+        edges={['top']}
+      >
+        <ExpertDetailSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  if (!expert) {
+    return (
+      <SafeAreaView
+        className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}
+        edges={['top']}
+      >
+        <View className="flex-1 items-center justify-center p-6">
+          <MaterialIcons name="error-outline" size={64} color="#EF4444" />
+          <Text className={`text-xl font-bold mt-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            Expert Not Found
+          </Text>
+          <Text className={`text-center mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            The expert you're looking for doesn't exist or has been removed.
+          </Text>
+          <Button title="Go Back" onPress={() => router.back()} className="mt-6" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const profile = expert.profile;
 
   return (
     <SafeAreaView
       className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}
       edges={['top']}
     >
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Cover Image */}
         <View className="relative">
-          <Image
-            source={{ uri: expertData.coverImage }}
-            className="h-48 w-full"
-            resizeMode="cover"
-          />
+          {expert.avatar ? (
+            <Image
+              source={{ uri: expert.avatar }}
+              className="h-48 w-full"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className={`h-48 w-full ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
+          )}
           <LinearGradient
             colors={['transparent', isDark ? '#111827' : '#FFFFFF']}
             className="absolute inset-0"
@@ -165,201 +240,209 @@ export default function ExpertDetailScreen() {
         {/* Profile Header */}
         <View className="px-4 -mt-12">
           <View className="items-center">
-            <Avatar source={expertData.profileImage} size="xl" className="border-4 border-white dark:border-slate-900" />
+            <Avatar
+              source={expert.avatar || undefined}
+              name={expert.full_name}
+              size="xl"
+              className="border-4 border-white dark:border-slate-900"
+            />
             <View className="items-center mt-4">
-              <View className="flex-row items-center gap-2">
+              <View className="flex-row items-center gap-2 flex-wrap justify-center">
                 <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {expertData.name}
+                  {profile?.business_name || expert.full_name}
                 </Text>
-                {expertData.verified && (
-                  <MaterialIcons name="verified" size={22} color="#3B82F6" />
+                {profile?.is_priority_listed && (
+                  <>
+                    <MaterialIcons name="verified" size={22} color="#3B82F6" />
+                    <View className="bg-amber-500 px-2 py-0.5 rounded">
+                      <Text className="text-white text-xs font-bold">PRO</Text>
+                    </View>
+                  </>
                 )}
               </View>
-              <Rating value={expertData.rating} reviewCount={expertData.reviewCount} size="md" className="mt-1" />
-              <View className="flex-row gap-2 mt-2">
-                {expertData.certifications.map((cert) => (
-                  <Badge key={cert} label={cert} variant="success" size="sm" />
-                ))}
-              </View>
+              <Rating
+                value={profile?.rating ?? 0}
+                reviewCount={profile?.rating_count ?? 0}
+                size="md"
+                className="mt-1"
+              />
+              {profile?.specializations && profile.specializations.length > 0 && (
+                <View className="flex-row gap-2 mt-2 flex-wrap justify-center">
+                  {profile.specializations.slice(0, 3).map((spec) => (
+                    <Badge key={spec.id} label={spec.name} variant="success" size="sm" />
+                  ))}
+                </View>
+              )}
             </View>
           </View>
 
           {/* Quick Info */}
           <View className="flex-row justify-around py-6">
+            {expert.distance_km !== undefined && (
+              <View className="items-center">
+                <MaterialIcons name="location-on" size={24} color="#3B82F6" />
+                <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {expert.distance_km.toFixed(1)} km
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Away
+                </Text>
+              </View>
+            )}
             <View className="items-center">
-              <MaterialIcons name="location-on" size={24} color="#3B82F6" />
+              <MaterialIcons
+                name="schedule"
+                size={24}
+                color={profile?.is_available ? '#10B981' : '#EF4444'}
+              />
               <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {expertData.distance} km
+                {profile?.is_available ? 'Available' : 'Busy'}
               </Text>
               <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Away
+                Status
               </Text>
             </View>
-            <View className="items-center">
-              <MaterialIcons name="schedule" size={24} color="#10B981" />
-              <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Open
-              </Text>
-              <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Closes 6 PM
-              </Text>
-            </View>
-            <View className="items-center">
-              <MaterialIcons name="work" size={24} color="#F59E0B" />
-              <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {expertData.yearsExperience} yrs
-              </Text>
-              <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Experience
-              </Text>
-            </View>
+            {profile?.experience_years !== undefined && profile.experience_years > 0 && (
+              <View className="items-center">
+                <MaterialIcons name="work" size={24} color="#F59E0B" />
+                <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {profile.experience_years} yrs
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Experience
+                </Text>
+              </View>
+            )}
+            {profile?.jobs_completed !== undefined && profile.jobs_completed > 0 && (
+              <View className="items-center">
+                <MaterialIcons name="check-circle" size={24} color="#10B981" />
+                <Text className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {profile.jobs_completed}
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Jobs
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Action Buttons */}
           <View className="flex-row gap-3">
-            <Button title="Contact Expert" icon="phone" fullWidth className="flex-1" onPress={handleContactPress} />
-            <Button title="Directions" icon="directions" variant="secondary" className="flex-1" onPress={handleDirections} />
+            <Button
+              title="Contact"
+              icon="phone"
+              fullWidth
+              className="flex-1"
+              onPress={handleContactPress}
+            />
+            <Button
+              title="Directions"
+              icon="directions"
+              variant="secondary"
+              className="flex-1"
+              onPress={handleDirections}
+            />
           </View>
         </View>
 
         {/* About */}
-        <View className="px-4 py-6">
-          <Text className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            About
-          </Text>
-          <Text className={`text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-            {expertData.bio}
-          </Text>
-        </View>
+        {profile?.bio && (
+          <View className="px-4 py-6">
+            <Text className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              About
+            </Text>
+            <Text className={`text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              {profile.bio}
+            </Text>
+          </View>
+        )}
 
         {/* Specialties */}
-        <View className="px-4 pb-6">
-          <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Specialties
-          </Text>
-          <View className="flex-row flex-wrap gap-2">
-            {expertData.specialties.map((specialty) => (
-              <Chip key={specialty} label={specialty} />
-            ))}
-          </View>
-        </View>
-
-        {/* Services & Pricing */}
-        <View className="px-4 pb-6">
-          <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Services & Pricing
-          </Text>
-          <Card variant="outlined" padding="none">
-            {expertData.services.map((service, index) => (
-              <View
-                key={service.name}
-                className={`flex-row justify-between p-4 ${
-                  index > 0 ? `border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}` : ''
-                }`}
-              >
-                <Text className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                  {service.name}
-                </Text>
-                <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {formatCurrencyRange(service.priceMin, service.priceMax)}
-                </Text>
-              </View>
-            ))}
-          </Card>
-        </View>
-
-        {/* Hours */}
-        <View className="px-4 pb-6">
-          <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Hours
-          </Text>
-          <Card variant="outlined">
-            <View className="flex-row justify-between mb-2">
-              <Text className={isDark ? 'text-slate-300' : 'text-slate-600'}>Monday - Friday</Text>
-              <Text className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {expertData.hours.weekday}
-              </Text>
-            </View>
-            <View className="flex-row justify-between mb-2">
-              <Text className={isDark ? 'text-slate-300' : 'text-slate-600'}>Saturday</Text>
-              <Text className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {expertData.hours.saturday}
-              </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className={isDark ? 'text-slate-300' : 'text-slate-600'}>Sunday</Text>
-              <Text className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {expertData.hours.sunday}
-              </Text>
-            </View>
-          </Card>
-        </View>
-
-        {/* Gallery */}
-        <View className="px-4 pb-6">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Photos
+        {profile?.specializations && profile.specializations.length > 0 && (
+          <View className="px-4 pb-6">
+            <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Specialties
             </Text>
-            <TouchableOpacity onPress={handleViewAllPhotos}>
-              <Text className="text-primary-500 font-semibold">View all ({expertData.gallery.length})</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-3">
-              {expertData.gallery.map((image, index) => (
-                <TouchableOpacity key={index} onPress={() => openGallery(index)} activeOpacity={0.8}>
-                  <Image
-                    source={{ uri: image }}
-                    className="h-24 w-24 rounded-xl"
-                  />
-                </TouchableOpacity>
+            <View className="flex-row flex-wrap gap-2">
+              {profile.specializations.map((specialty) => (
+                <Chip key={specialty.id} label={specialty.name} />
               ))}
             </View>
-          </ScrollView>
-        </View>
+          </View>
+        )}
+
+        {/* Location */}
+        {profile?.address && (
+          <View className="px-4 pb-6">
+            <Text className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Location
+            </Text>
+            <Card variant="outlined">
+              <View className="flex-row items-center">
+                <MaterialIcons name="location-on" size={20} color="#3B82F6" />
+                <Text className={`ml-2 flex-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {profile.address}
+                  {profile.city && `, ${profile.city}`}
+                </Text>
+              </View>
+            </Card>
+          </View>
+        )}
 
         {/* Reviews */}
         <View className="px-4 pb-32">
           <View className="flex-row justify-between items-center mb-3">
             <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Reviews ({expertData.reviewCount})
+              Reviews ({profile?.rating_count ?? 0})
             </Text>
-            <TouchableOpacity onPress={handleViewAllReviews}>
-              <Text className="text-primary-500 font-semibold">View all</Text>
-            </TouchableOpacity>
           </View>
 
-          {expertData.reviews.map((review) => (
-            <Card key={review.id} variant="outlined" className="mb-3">
-              <View className="flex-row items-start">
-                <Avatar name={review.author} size="sm" />
-                <View className="flex-1 ml-3">
-                  <View className="flex-row items-center justify-between">
-                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      {review.author}
-                    </Text>
-                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {review.date}
-                    </Text>
-                  </View>
-                  <Rating value={review.rating} showValue={false} size="sm" />
-                  <Text className={`mt-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    "{review.text}"
-                  </Text>
-                  <View className="flex-row items-center justify-between mt-2">
-                    <Badge label={review.service} variant="info" size="sm" />
-                    <TouchableOpacity className="flex-row items-center gap-1">
-                      <MaterialIcons name="thumb-up" size={14} color="#64748B" />
-                      <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Helpful ({review.helpful})
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <Card key={review.id} variant="outlined" className="mb-3">
+                <View className="flex-row items-start">
+                  <Avatar
+                    name={`${review.driver.first_name} ${review.driver.last_name}`}
+                    source={review.driver.avatar || undefined}
+                    size="sm"
+                  />
+                  <View className="flex-1 ml-3">
+                    <View className="flex-row items-center justify-between">
+                      <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {review.driver.first_name} {review.driver.last_name}
                       </Text>
-                    </TouchableOpacity>
+                      <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatDate(review.created_at)}
+                      </Text>
+                    </View>
+                    <Rating value={review.rating} showValue={false} size="sm" />
+                    {review.comment && (
+                      <Text className={`mt-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                        "{review.comment}"
+                      </Text>
+                    )}
+                    {review.expert_response && (
+                      <View className={`mt-2 p-3 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                        <Text className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          Expert's Response:
+                        </Text>
+                        <Text className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {review.expert_response}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
-              </View>
-            </Card>
-          ))}
+              </Card>
+            ))
+          ) : (
+            <View className={`p-6 rounded-xl items-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <MaterialIcons name="rate-review" size={40} color={isDark ? '#64748B' : '#94A3B8'} />
+              <Text className={`mt-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                No reviews yet
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -371,8 +454,20 @@ export default function ExpertDetailScreen() {
         style={{ paddingBottom: 32 }}
       >
         <View className="flex-row gap-3">
-          <Button title="Book Appointment" icon="event" fullWidth className="flex-1" onPress={handleBookAppointment} />
-          <Button title="Contact" icon="phone" variant="secondary" className="flex-1" onPress={handleContactPress} />
+          <Button
+            title="Book Appointment"
+            icon="event"
+            fullWidth
+            className="flex-1"
+            onPress={handleBookAppointment}
+          />
+          <Button
+            title="Contact"
+            icon="phone"
+            variant="secondary"
+            className="flex-1"
+            onPress={handleContactPress}
+          />
         </View>
       </View>
 
@@ -420,85 +515,6 @@ export default function ExpertDetailScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Fullscreen Gallery Modal */}
-      <Modal
-        visible={showGalleryModal}
-        transparent={false}
-        animationType="slide"
-        onRequestClose={() => setShowGalleryModal(false)}
-        statusBarTranslucent
-      >
-        <View className="flex-1 bg-black">
-          {/* Header with proper top padding */}
-          <View
-            className="absolute top-0 left-0 right-0 z-10"
-            style={{ paddingTop: statusBarHeight + 8 }}
-          >
-            <View className="flex-row items-center justify-between px-4 py-2">
-              <TouchableOpacity
-                onPress={() => setShowGalleryModal(false)}
-                className="h-12 w-12 rounded-full bg-black/60 items-center justify-center"
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="close" size={28} color="#FFFFFF" />
-              </TouchableOpacity>
-              <View className="bg-black/60 px-4 py-2 rounded-full">
-                <Text className="text-white font-semibold text-base">
-                  {selectedImageIndex + 1} / {expertData.gallery.length}
-                </Text>
-              </View>
-              <View className="w-12" />
-            </View>
-          </View>
-
-          {/* Image Viewer - centered vertically */}
-          <View className="flex-1 justify-center">
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(e) => {
-                const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-                setSelectedImageIndex(index);
-              }}
-              contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
-            >
-              {expertData.gallery.map((image, index) => (
-                <View key={index} style={{ width: screenWidth }} className="items-center justify-center">
-                  <Image
-                    source={{ uri: image.replace('w=400', 'w=800') }}
-                    style={{ width: screenWidth, height: screenWidth }}
-                    resizeMode="contain"
-                  />
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Thumbnail Navigation */}
-          <View style={{ paddingBottom: Platform.OS === 'ios' ? 34 : 16 }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-            >
-              {expertData.gallery.map((image, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => setSelectedImageIndex(index)}
-                  className={`rounded-lg overflow-hidden ${selectedImageIndex === index ? 'border-2 border-primary-500' : 'opacity-50'}`}
-                >
-                  <Image
-                    source={{ uri: image }}
-                    className="h-16 w-16"
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
           </View>
         </View>
       </Modal>
