@@ -28,6 +28,24 @@ export interface UpdateAvatarResponse {
   avatar: string;
 }
 
+/**
+ * Transform avatar URL to use the correct base URL for the mobile app
+ * Backend may return localhost URLs which don't work on mobile devices
+ */
+function transformAvatarUrl(url: string): string {
+  if (!url) return url;
+
+  // Extract the base URL from apiConfig (without /api/v1)
+  const apiBase = apiConfig.baseUrl.replace('/api/v1', '');
+
+  // Replace localhost or 127.0.0.1 URLs with the configured API base
+  const transformedUrl = url
+    .replace(/^https?:\/\/localhost(:\d+)?/, apiBase)
+    .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/, apiBase);
+
+  return transformedUrl;
+}
+
 export const profileService = {
   /**
    * Update user profile
@@ -81,17 +99,20 @@ export const profileService = {
       throw new Error(response.message || 'Failed to update avatar');
     }
 
+    // Transform the URL to work on mobile devices
+    const avatarUrl = transformAvatarUrl(response.data.avatar);
+
     // Update local storage with new avatar
     const storedUser = await storage.getObject<User | DriverProfile | ExpertProfile>(StorageKeys.USER);
     if (storedUser) {
       const updatedUser = {
         ...storedUser,
-        avatar: response.data.avatar,
+        avatar: avatarUrl,
       };
       await storage.setObject(StorageKeys.USER, updatedUser);
     }
 
-    return response.data.avatar;
+    return avatarUrl;
   },
 
   /**
