@@ -198,7 +198,7 @@ export async function deleteVehicle(id: number | string): Promise<void> {
  * Set a vehicle as primary
  */
 export async function setPrimaryVehicle(id: number | string): Promise<Vehicle> {
-  const response = await api.post<Vehicle>(
+  const response = await api.put<Vehicle>(
     apiConfig.endpoints.vehicles.setPrimary(id.toString())
   );
 
