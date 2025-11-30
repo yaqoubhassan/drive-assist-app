@@ -8,14 +8,16 @@ import apiConfig from '../config/api';
 
 export interface ExpertProfile {
   id: number;
-  user_id: number;
+  user_id?: number;
   business_name: string | null;
   bio: string | null;
   experience_years: number;
   city: string | null;
   address: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  location?: {
+    latitude: number | null;
+    longitude: number | null;
+  };
   whatsapp_number: string | null;
   rating: number;
   rating_count: number;

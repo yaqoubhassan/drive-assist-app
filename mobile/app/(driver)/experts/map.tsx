@@ -197,10 +197,10 @@ export default function ExpertsMapScreen() {
         {/* Expert Markers */}
         {experts.map((expert) => {
           const isWithinRadius = isExpertWithinRadius(expert);
-          const lat = expert.profile?.latitude;
-          const lng = expert.profile?.longitude;
+          const lat = expert.profile?.location?.latitude;
+          const lng = expert.profile?.location?.longitude;
 
-          if (!lat || !lng) return null;
+          if (lat === null || lat === undefined || lng === null || lng === undefined) return null;
 
           return (
             <Marker
