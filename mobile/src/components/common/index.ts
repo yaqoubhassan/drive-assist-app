@@ -35,3 +35,4 @@ export type { LocationData } from './AddressAutocomplete';
 export { SuccessModal } from './SuccessModal';
 export { ConfirmationModal } from './ConfirmationModal';
 export { PhoneNumberInput } from './PhoneNumberInput';
+export { default as DraggableBottomSheet } from './DraggableBottomSheet';
