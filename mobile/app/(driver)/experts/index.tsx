@@ -219,7 +219,8 @@ export default function ExpertsSearchScreen() {
 
     const matchesRating = (expert.profile?.rating ?? 0) >= minRating;
     const matchesAvailability = !openNowOnly || expert.profile?.is_available;
-    const matchesDistance = (expert.distance_km ?? 0) <= maxDistance;
+    // Use Infinity as fallback so experts without distance data are excluded from distance filter
+    const matchesDistance = (expert.distance_km ?? Infinity) <= maxDistance;
 
     return matchesSearch && matchesRating && matchesAvailability && matchesDistance;
   });

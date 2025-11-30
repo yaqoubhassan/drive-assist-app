@@ -1076,9 +1076,8 @@ export default function RemindersScreen() {
       {/* Complete Service Modal - Fixed keyboard issue */}
       <Modal visible={showCompleteModal} animationType="slide" transparent>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
           <View className="flex-1 justify-end">
             <TouchableOpacity
@@ -1088,16 +1087,12 @@ export default function RemindersScreen() {
             />
             <View
               className={`rounded-t-3xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
-              style={{ maxHeight: SCREEN_HEIGHT * 0.90 }}
+              style={{ maxHeight: SCREEN_HEIGHT * 0.85 }}
             >
               <DragHandle isDark={isDark} />
-              <ScrollView
-                className="px-6"
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 300 : 40 }}
-              >
-                <View className="flex-row items-center justify-between mb-6">
+              {/* Header outside ScrollView so it stays visible */}
+              <View className="px-6 pb-2">
+                <View className="flex-row items-center justify-between mb-4">
                   <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     Complete Service
                   </Text>
@@ -1105,6 +1100,13 @@ export default function RemindersScreen() {
                     <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
                   </TouchableOpacity>
                 </View>
+              </View>
+              <ScrollView
+                className="px-6"
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
 
                 {selectedReminder && (
                   <>
@@ -1201,90 +1203,105 @@ export default function RemindersScreen() {
 
       {/* Snooze Duration Modal */}
       <Modal visible={showSnoozeModal} animationType="slide" transparent>
-        <View className="flex-1 justify-end">
-          <TouchableOpacity
-            className="flex-1"
-            activeOpacity={1}
-            onPress={() => setShowSnoozeModal(false)}
-          />
-          <View className={`rounded-t-3xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
-            <DragHandle isDark={isDark} />
-            <View className="px-6 pb-6">
-              <View className="flex-row items-center justify-between mb-6">
-                <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Snooze Reminder
-                </Text>
-                <TouchableOpacity onPress={() => setShowSnoozeModal(false)}>
-                  <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
-                </TouchableOpacity>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View className="flex-1 justify-end">
+            <TouchableOpacity
+              className="flex-1"
+              activeOpacity={1}
+              onPress={() => setShowSnoozeModal(false)}
+            />
+            <View
+              className={`rounded-t-3xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+              style={{ maxHeight: SCREEN_HEIGHT * 0.85 }}
+            >
+              <DragHandle isDark={isDark} />
+              {/* Header outside ScrollView so it stays visible */}
+              <View className="px-6 pb-2">
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Snooze Reminder
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowSnoozeModal(false)}>
+                    <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+                  </TouchableOpacity>
+                </View>
               </View>
+              <ScrollView
+                className="px-6"
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
+                <Text className={`mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  How long would you like to snooze this reminder?
+                </Text>
 
-              <Text className={`mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                How long would you like to snooze this reminder?
-              </Text>
-
-              {/* Preset options */}
-              <View className="flex-row flex-wrap gap-2 mb-4">
-                {SNOOZE_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option.days}
-                    onPress={() => {
-                      setSelectedSnoozeDays(option.days);
-                      setCustomSnoozeDays('');
-                    }}
-                    className={`px-4 py-3 rounded-xl border-2 ${
-                      selectedSnoozeDays === option.days
-                        ? 'border-primary-500 bg-primary-500/10'
-                        : isDark
-                          ? 'border-slate-700 bg-slate-700/50'
-                          : 'border-slate-200 bg-slate-50'
-                    }`}
-                  >
-                    <Text
-                      className={`font-semibold ${
+                {/* Preset options */}
+                <View className="flex-row flex-wrap gap-2 mb-4">
+                  {SNOOZE_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.days}
+                      onPress={() => {
+                        setSelectedSnoozeDays(option.days);
+                        setCustomSnoozeDays('');
+                      }}
+                      className={`px-4 py-3 rounded-xl border-2 ${
                         selectedSnoozeDays === option.days
-                          ? 'text-primary-500'
+                          ? 'border-primary-500 bg-primary-500/10'
                           : isDark
-                            ? 'text-white'
-                            : 'text-slate-900'
+                            ? 'border-slate-700 bg-slate-700/50'
+                            : 'border-slate-200 bg-slate-50'
                       }`}
                     >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                      <Text
+                        className={`font-semibold ${
+                          selectedSnoozeDays === option.days
+                            ? 'text-primary-500'
+                            : isDark
+                              ? 'text-white'
+                              : 'text-slate-900'
+                        }`}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-              {/* Custom input */}
-              <Text className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Or enter custom days
-              </Text>
-              <TextInput
-                className={`p-4 rounded-xl mb-6 ${
-                  isDark ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-900'
-                }`}
-                placeholder="Enter number of days"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                keyboardType="numeric"
-                value={customSnoozeDays}
-                onChangeText={(text) => {
-                  setCustomSnoozeDays(text);
-                  if (text) {
-                    setSelectedSnoozeDays(null);
-                  }
-                }}
-              />
+                {/* Custom input */}
+                <Text className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Or enter custom days
+                </Text>
+                <TextInput
+                  className={`p-4 rounded-xl mb-6 ${
+                    isDark ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-900'
+                  }`}
+                  placeholder="Enter number of days"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="numeric"
+                  value={customSnoozeDays}
+                  onChangeText={(text) => {
+                    setCustomSnoozeDays(text);
+                    if (text) {
+                      setSelectedSnoozeDays(null);
+                    }
+                  }}
+                />
 
-              <Button
-                title={`Snooze for ${selectedSnoozeDays || customSnoozeDays || '?'} day${(selectedSnoozeDays || parseInt(customSnoozeDays || '0', 10)) === 1 ? '' : 's'}`}
-                onPress={handleSnooze}
-                loading={snoozing}
-                disabled={!selectedSnoozeDays && !customSnoozeDays}
-                fullWidth
-              />
+                <Button
+                  title={`Snooze for ${selectedSnoozeDays || customSnoozeDays || '?'} day${(selectedSnoozeDays || parseInt(customSnoozeDays || '0', 10)) === 1 ? '' : 's'}`}
+                  onPress={handleSnooze}
+                  loading={snoozing}
+                  disabled={!selectedSnoozeDays && !customSnoozeDays}
+                  fullWidth
+                />
+              </ScrollView>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Custom Maintenance Type Modal */}
