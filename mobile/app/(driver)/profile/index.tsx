@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Modal, Platform } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../../src/context/ThemeContext';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Image, Modal, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Card, Skeleton } from '../../../src/components/common';
+import { apiConfig } from '../../../src/config/api';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Card, Badge, Skeleton } from '../../../src/components/common';
+import { useTheme } from '../../../src/context/ThemeContext';
+import api from '../../../src/services/api';
 import { transformAvatarUrl } from '../../../src/services/profile';
 import vehicleService from '../../../src/services/vehicle';
-import api from '../../../src/services/api';
-import { apiConfig } from '../../../src/config/api';
 
 interface ProfileStats {
   diagnoses: number;
@@ -260,9 +260,10 @@ export default function ProfileScreen() {
               colors={['#3B82F6', '#8B5CF6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              className="rounded-xl overflow-hidden p-4"
+              className="p-5"
+              style={{ borderRadius: 16, overflow: 'hidden' }}
             >
-              <View className="flex-row items-center justify-between">
+              <View className={`flex-row items-center justify-between ${Platform.OS === 'ios' ? 'p-5' : ''}`}>
                 <View>
                   <Text className="text-white/80 text-sm">Current Plan</Text>
                   <Text className="text-white text-xl font-bold">Free Plan</Text>
@@ -271,7 +272,7 @@ export default function ProfileScreen() {
                   <Text className="text-white font-semibold">Upgrade</Text>
                 </View>
               </View>
-              <View className="mt-4">
+              <View className={`mt-1 ${Platform.OS === 'ios' ? 'px-5 pb-5' : ''}`}>
                 <Text className="text-white/80 text-sm">5 diagnoses remaining this month</Text>
                 <View className="h-2 bg-white/20 rounded-full mt-2">
                   <View className="h-full bg-white rounded-full" style={{ width: '50%' }} />
@@ -291,11 +292,10 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 key={item.id}
                 onPress={() => router.push(item.route as any)}
-                className={`flex-row items-center p-4 ${
-                  index !== menuItems.length - 1
-                    ? `border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`
-                    : ''
-                }`}
+                className={`flex-row items-center p-4 ${index !== menuItems.length - 1
+                  ? `border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`
+                  : ''
+                  }`}
               >
                 <View
                   className="h-10 w-10 rounded-lg items-center justify-center mr-3"
@@ -391,9 +391,8 @@ export default function ProfileScreen() {
         <View className="px-4 pb-8">
           <TouchableOpacity
             onPress={handleSignOut}
-            className={`flex-row items-center justify-center p-4 rounded-xl ${
-              isDark ? 'bg-red-500/10' : 'bg-red-50'
-            }`}
+            className={`flex-row items-center justify-center p-4 rounded-xl ${isDark ? 'bg-red-500/10' : 'bg-red-50'
+              }`}
           >
             <MaterialIcons name="logout" size={22} color="#EF4444" />
             <Text className="text-red-500 font-semibold ml-2">Sign Out</Text>
