@@ -152,9 +152,9 @@ export function SkeletonListItem({
  */
 export function SkeletonChips({ count = 5 }: { count?: number }) {
   return (
-    <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12 }}>
+    <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 8 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <Skeleton key={i} width={90} height={36} borderRadius={18} />
+        <Skeleton key={i} width={i === 0 ? 50 : 90} height={32} borderRadius={16} />
       ))}
     </View>
   );
