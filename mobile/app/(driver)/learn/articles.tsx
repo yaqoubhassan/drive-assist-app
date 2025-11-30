@@ -230,7 +230,7 @@ export default function ArticlesScreen() {
                     <View className="flex-row items-center mt-2">
                       <MaterialIcons name="schedule" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
                       <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {article.read_time_minutes ?? 3} min read
+                        {article.read_time ?? 3} min read
                       </Text>
                       <View className="flex-row items-center ml-3">
                         <MaterialIcons name="visibility" size={14} color={isDark ? '#64748B' : '#94A3B8'} />

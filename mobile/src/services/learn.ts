@@ -52,7 +52,7 @@ export interface Article {
   excerpt: string;
   content?: string;
   featured_image: string | null;
-  read_time_minutes: number;
+  read_time: number;
   views_count: number;
   likes_count: number;
   is_liked?: boolean;

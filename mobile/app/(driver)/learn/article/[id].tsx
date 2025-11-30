@@ -837,7 +837,7 @@ function transformApiArticle(apiArticle: ApiArticle): DisplayArticle {
     id: apiArticle.id.toString(),
     title: apiArticle.title,
     category: apiArticle.category?.name || 'Article',
-    readTime: `${apiArticle.read_time_minutes ?? 3} min read`,
+    readTime: `${apiArticle.read_time ?? 3} min read`,
     author: 'DriveAssist Team',
     date: new Date(apiArticle.created_at).toLocaleDateString('en-US', {
       month: 'short',
