@@ -21,25 +21,37 @@ export interface MaintenanceType {
 
 export interface MaintenanceReminder {
   id: number;
+  user_id: number;
   vehicle_id: number;
   maintenance_type_id: number;
   maintenance_type: MaintenanceType;
   vehicle: {
     id: number;
-    display_name: string;
+    display_name?: string;
     make: string;
     model: string;
     year: number;
   };
+  custom_title: string | null;
+  notes: string | null;
   due_date: string;
   due_mileage: number | null;
+  interval_km: number | null;
+  interval_months: number | null;
+  last_completed_date: string | null;
+  last_completed_mileage: number | null;
+  last_completed_cost: number | null;
+  currency: string;
   status: 'upcoming' | 'due' | 'overdue' | 'completed' | 'snoozed';
-  notes: string | null;
+  notifications_enabled: boolean;
+  notification_days: number[] | null;
   snoozed_until: string | null;
-  completed_at: string | null;
-  completed_mileage: number | null;
+  is_recurring: boolean;
   created_at: string;
   updated_at: string;
+  // Computed attributes
+  completed_at?: string | null; // Alias for last_completed_date
+  completed_mileage?: number | null; // Alias for last_completed_mileage
 }
 
 export interface MaintenanceLog {
@@ -98,16 +110,20 @@ export async function getReminders(params?: {
   status?: string;
   vehicle_id?: number;
 }): Promise<MaintenanceReminder[]> {
-  const response = await api.get<MaintenanceReminder[]>(
-    apiConfig.endpoints.maintenance.reminders,
-    params
-  );
+  // Backend returns paginated response
+  const response = await api.get<{
+    data: MaintenanceReminder[];
+    current_page: number;
+    last_page: number;
+    total: number;
+  }>(apiConfig.endpoints.maintenance.reminders, params);
 
   if (!response.success || !response.data) {
     throw new Error(response.message || 'Failed to fetch maintenance reminders');
   }
 
-  return response.data;
+  // Extract the data array from paginated response
+  return response.data.data || [];
 }
 
 /**
