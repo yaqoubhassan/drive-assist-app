@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Card, Chip, EmptyState, SearchBar, Skeleton } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Badge, Card, Chip, SearchBar, Skeleton, EmptyState } from '../../../src/components/common';
-import { articlesService, Article, ArticleCategory } from '../../../src/services/learn';
+import { Article, ArticleCategory, articlesService } from '../../../src/services/learn';
 
 export default function ArticlesScreen() {
   const router = useRouter();
@@ -157,6 +157,7 @@ export default function ArticlesScreen() {
 
       {/* Category Filter */}
       <ScrollView
+        style={{ flexGrow: 0 }}
         horizontal
         showsHorizontalScrollIndicator={false}
         className="mb-2"
