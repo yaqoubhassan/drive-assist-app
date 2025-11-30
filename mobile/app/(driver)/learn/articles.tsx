@@ -54,7 +54,8 @@ export default function ArticlesScreen() {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+      className="mb-3"
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
     >
       {[1, 2, 3, 4].map((i) => (
         <Skeleton key={i} width={i === 1 ? 50 : 90} height={40} borderRadius={20} />
@@ -160,7 +161,8 @@ export default function ArticlesScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+          className="mb-3"
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         >
           <Chip
             label="All"
