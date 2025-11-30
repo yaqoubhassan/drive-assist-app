@@ -10,6 +10,7 @@ import { apiConfig } from '../config/api';
 
 export interface MaintenanceType {
   id: number;
+  user_id: number | null;
   name: string;
   slug: string;
   description: string;
@@ -17,6 +18,23 @@ export interface MaintenanceType {
   default_interval_km: number;
   icon: string;
   color: string;
+  is_critical: boolean;
+  is_active: boolean;
+  is_system: boolean; // true if system type, false if user-created
+}
+
+export interface CreateMaintenanceTypeRequest {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  default_interval_km?: number;
+  default_interval_months?: number;
+  is_critical?: boolean;
+}
+
+export interface UpdateMaintenanceTypeRequest extends Partial<CreateMaintenanceTypeRequest> {
+  is_active?: boolean;
 }
 
 export interface MaintenanceReminder {
@@ -101,6 +119,56 @@ export async function getMaintenanceTypes(): Promise<MaintenanceType[]> {
   }
 
   return response.data;
+}
+
+/**
+ * Create a custom maintenance type
+ */
+export async function createMaintenanceType(
+  data: CreateMaintenanceTypeRequest
+): Promise<MaintenanceType> {
+  const response = await api.post<MaintenanceType>(
+    apiConfig.endpoints.maintenance.createType,
+    data
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to create maintenance type');
+  }
+
+  return response.data;
+}
+
+/**
+ * Update a custom maintenance type
+ */
+export async function updateMaintenanceType(
+  id: number | string,
+  data: UpdateMaintenanceTypeRequest
+): Promise<MaintenanceType> {
+  const response = await api.put<MaintenanceType>(
+    apiConfig.endpoints.maintenance.updateType(id.toString()),
+    data
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to update maintenance type');
+  }
+
+  return response.data;
+}
+
+/**
+ * Delete a custom maintenance type
+ */
+export async function deleteMaintenanceType(id: number | string): Promise<void> {
+  const response = await api.delete<null>(
+    apiConfig.endpoints.maintenance.deleteType(id.toString())
+  );
+
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to delete maintenance type');
+  }
 }
 
 /**
@@ -307,6 +375,9 @@ export function formatDueDate(date: string): string {
 
 const maintenanceService = {
   getMaintenanceTypes,
+  createMaintenanceType,
+  updateMaintenanceType,
+  deleteMaintenanceType,
   getReminders,
   getReminder,
   createReminder,

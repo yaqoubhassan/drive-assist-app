@@ -204,6 +204,11 @@ Route::prefix('v1')->group(function () {
                 Route::post('/reminders/{id}/complete', [MaintenanceController::class, 'complete']);
                 Route::post('/reminders/{id}/snooze', [MaintenanceController::class, 'snooze']);
                 Route::get('/logs', [MaintenanceController::class, 'logs']);
+
+                // Custom Maintenance Types
+                Route::post('/types', [MaintenanceController::class, 'storeType']);
+                Route::put('/types/{id}', [MaintenanceController::class, 'updateType']);
+                Route::delete('/types/{id}', [MaintenanceController::class, 'destroyType']);
             });
 
             // Expert Search (for drivers)

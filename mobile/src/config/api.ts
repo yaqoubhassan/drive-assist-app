@@ -172,6 +172,9 @@ export const apiConfig = {
     // Maintenance
     maintenance: {
       types: '/maintenance-types',
+      createType: '/maintenance/types',
+      updateType: (id: string) => `/maintenance/types/${id}`,
+      deleteType: (id: string) => `/maintenance/types/${id}`,
       reminders: '/maintenance/reminders',
       reminderShow: (id: string) => `/maintenance/reminders/${id}`,
       complete: (id: string) => `/maintenance/reminders/${id}/complete`,
