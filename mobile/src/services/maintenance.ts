@@ -28,8 +28,8 @@ export interface MaintenanceReminder {
   vehicle: {
     id: number;
     display_name?: string;
-    make: string;
-    model: string;
+    make_name?: string;
+    model_name?: string;
     year: number;
   };
   custom_title: string | null;

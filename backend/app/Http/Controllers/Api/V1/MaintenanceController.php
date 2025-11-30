@@ -21,7 +21,7 @@ class MaintenanceController extends Controller
     {
         $reminders = $request->user()
             ->maintenanceReminders()
-            ->with(['vehicle', 'maintenanceType'])
+            ->with(['vehicle.make', 'vehicle.model', 'maintenanceType'])
             ->orderByRaw("FIELD(status, 'overdue', 'due', 'upcoming', 'snoozed', 'completed')")
             ->orderBy('due_date')
             ->paginate(20);

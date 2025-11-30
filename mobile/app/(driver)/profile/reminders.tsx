@@ -486,7 +486,7 @@ export default function RemindersScreen() {
                   const typeColor = reminder.maintenance_type?.color || '#64748B';
                   const daysUntil = getDaysUntilDue(reminder.due_date);
                   const vehicleName = reminder.vehicle?.display_name ||
-                    `${reminder.vehicle?.make} ${reminder.vehicle?.model} ${reminder.vehicle?.year}`;
+                    `${reminder.vehicle?.year} ${reminder.vehicle?.make_name} ${reminder.vehicle?.model_name}`;
 
                   return (
                     <Card key={reminder.id} variant="default">
@@ -865,7 +865,7 @@ export default function RemindersScreen() {
                     </Text>
                     <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {selectedReminder.vehicle?.display_name ||
-                        `${selectedReminder.vehicle?.make} ${selectedReminder.vehicle?.model}`}
+                        `${selectedReminder.vehicle?.year} ${selectedReminder.vehicle?.make_name} ${selectedReminder.vehicle?.model_name}`}
                     </Text>
                   </View>
                 </View>

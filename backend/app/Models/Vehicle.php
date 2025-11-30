@@ -31,6 +31,11 @@ class Vehicle extends Model
         'is_primary',
     ];
 
+    /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = ['display_name', 'make_name', 'model_name'];
+
     protected function casts(): array
     {
         return [
