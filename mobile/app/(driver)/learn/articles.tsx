@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Badge, Card, Chip, SearchBar, Skeleton } from '../../../src/components/common';
+import { Badge, Card, Chip, SearchBar, Skeleton, EmptyState } from '../../../src/components/common';
 import { articlesService, Article, ArticleCategory } from '../../../src/services/learn';
 
 export default function ArticlesScreen() {
@@ -28,40 +28,6 @@ export default function ArticlesScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-
-  // Inline skeleton component following ExpertsSearchScreen pattern
-  const ArticlesSkeleton = () => (
-    <View className="gap-3">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <View
-          key={i}
-          className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
-        >
-          <Skeleton width={112} height={112} borderRadius={0} />
-          <View className="flex-1 p-4 justify-center">
-            <Skeleton width={60} height={18} borderRadius={9} style={{ marginBottom: 8 }} />
-            <Skeleton width="90%" height={14} style={{ marginBottom: 6 }} />
-            <Skeleton width="70%" height={14} style={{ marginBottom: 8 }} />
-            <Skeleton width="50%" height={12} />
-          </View>
-        </View>
-      ))}
-    </View>
-  );
-
-  // Skeleton for category chips - matches Chip component (h-10 = 40px)
-  const CategoryChipsSkeleton = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      className="mb-3"
-      contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-    >
-      {[1, 2, 3, 4].map((i) => (
-        <Skeleton key={i} width={i === 1 ? 50 : 90} height={40} borderRadius={20} />
-      ))}
-    </ScrollView>
-  );
 
   const fetchArticles = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
@@ -130,23 +96,58 @@ export default function ArticlesScreen() {
     }
   };
 
+  // Build category chips
+  const categoryChips = [
+    { id: 'all', slug: null, label: 'All' },
+    ...categories.map(cat => ({ id: cat.id.toString(), slug: cat.slug, label: cat.name })),
+  ];
+
+  // Skeleton for category chips - matches Chip component (h-10 = 40px)
+  const CategoryChipsSkeleton = () => (
+    <View className="flex-row gap-2 px-4">
+      {[1, 2, 3, 4].map((i) => (
+        <Skeleton key={i} width={i === 1 ? 50 : 90} height={40} borderRadius={20} />
+      ))}
+    </View>
+  );
+
+  // Skeleton for article cards
+  const ArticlesSkeleton = () => (
+    <View className="gap-3">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <View
+          key={i}
+          className={`flex-row rounded-xl overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+        >
+          <Skeleton width={112} height={112} borderRadius={0} />
+          <View className="flex-1 p-4 justify-center">
+            <Skeleton width={60} height={18} borderRadius={9} style={{ marginBottom: 8 }} />
+            <Skeleton width="90%" height={14} style={{ marginBottom: 6 }} />
+            <Skeleton width="70%" height={14} style={{ marginBottom: 8 }} />
+            <Skeleton width="50%" height={12} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
       {/* Header */}
-      <View className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center mr-3"
-        >
-          <MaterialIcons name="arrow-back" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
-        </TouchableOpacity>
-        <Text className={`text-xl font-bold flex-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-          All Articles
-        </Text>
-      </View>
+      <View className="px-4 py-4">
+        <View className="flex-row items-center mb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="h-10 w-10 items-center justify-center"
+          >
+            <MaterialIcons name="arrow-back" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+          </TouchableOpacity>
+          <Text className={`text-xl font-bold flex-1 ml-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            All Articles
+          </Text>
+        </View>
 
-      {/* Search */}
-      <View className="px-4 py-3">
+        {/* Search */}
         <SearchBar
           placeholder="Search articles..."
           value={searchQuery}
@@ -155,32 +156,35 @@ export default function ArticlesScreen() {
       </View>
 
       {/* Category Filter */}
-      {loading ? (
-        <CategoryChipsSkeleton />
-      ) : categories.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-3"
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-        >
-          <Chip
-            label="All"
-            selected={!selectedCategory}
-            onPress={() => setSelectedCategory(null)}
-          />
-          {categories.map((cat) => (
-            <Chip
-              key={cat.id}
-              label={cat.name}
-              selected={selectedCategory === cat.slug}
-              onPress={() => setSelectedCategory(cat.slug)}
-            />
-          ))}
-        </ScrollView>
-      ) : null}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="mb-2"
+      >
+        {loading ? (
+          <CategoryChipsSkeleton />
+        ) : (
+          <View className="flex-row gap-2 px-4">
+            {categoryChips.map((cat) => (
+              <Chip
+                key={cat.id}
+                label={cat.label}
+                selected={selectedCategory === cat.slug}
+                onPress={() => setSelectedCategory(cat.slug)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
 
-      {/* Articles List - Single ScrollView with conditional content */}
+      {/* Results count */}
+      <View className="px-4 py-2">
+        <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          {loading ? 'Loading...' : `${articles.length} articles found`}
+        </Text>
+      </View>
+
+      {/* Articles List */}
       <ScrollView
         className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
@@ -192,18 +196,8 @@ export default function ArticlesScreen() {
       >
         {loading ? (
           <ArticlesSkeleton />
-        ) : articles.length === 0 ? (
-          <View className="items-center justify-center py-12">
-            <MaterialIcons name="article" size={64} color={isDark ? '#475569' : '#94A3B8'} />
-            <Text className={`mt-4 text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              No articles found
-            </Text>
-            <Text className={`mt-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              {searchQuery ? 'Try a different search term' : 'Check back later for new content'}
-            </Text>
-          </View>
-        ) : (
-          <View className="gap-3 pb-6">
+        ) : articles.length > 0 ? (
+          <View className="gap-3 pb-8">
             {articles.map((article) => (
               <Card
                 key={article.id}
@@ -264,6 +258,12 @@ export default function ArticlesScreen() {
               </View>
             )}
           </View>
+        ) : (
+          <EmptyState
+            icon="article"
+            title="No Articles Found"
+            description={searchQuery ? 'Try a different search term' : 'Check back later for new content'}
+          />
         )}
       </ScrollView>
     </SafeAreaView>
