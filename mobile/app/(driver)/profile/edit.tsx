@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Image, Platform, ActionSheetIOS, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useAlert } from '../../../src/context/AlertContext';
-import { Button, Input, Avatar, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
+import { Button, Input, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
 import { profileService, ProfileImage, transformAvatarUrl } from '../../../src/services/profile';
 import { getErrorMessage } from '../../../src/services/api';
 
@@ -26,60 +26,149 @@ export default function EditProfileScreen() {
   const [lastName, setLastName] = useState(initialLastName);
   const [email] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [avatar, setAvatar] = useState(transformAvatarUrl(user?.avatar) || '');
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Image state - separate states for new pick and existing (like VehicleEditScreen)
+  const [avatarImage, setAvatarImage] = useState<ProfileImage | null>(null);
+  const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(
+    transformAvatarUrl(user?.avatar) || null
+  );
+
+  // Image preview modal state
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   // Delete account modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
 
-  const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  // Get the display avatar URL
+  const displayAvatarUrl = avatarImage?.uri || existingAvatarUrl;
 
-    if (status !== 'granted') {
-      showWarning('Permission Required', 'Please allow access to your photos to change your profile picture.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      const fileName = asset.uri.split('/').pop() || 'avatar.jpg';
-      const fileType = fileName.split('.').pop()?.toLowerCase() || 'jpg';
-
-      // Create ProfileImage object (same pattern as vehicle service)
-      const profileImage: ProfileImage = {
-        uri: asset.uri,
-        name: fileName,
-        type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
-      };
-
-      // Show the local image immediately
-      setAvatar(asset.uri);
-
-      // Upload avatar
-      try {
-        setUploadingAvatar(true);
-        const newAvatarUrl = await profileService.updateAvatar(profileImage);
-        setAvatar(newAvatarUrl);
-        await refreshUser();
-        showSuccess('Success', 'Profile photo updated successfully');
-      } catch (error) {
-        showError('Upload Failed', getErrorMessage(error));
-        // Revert to previous avatar
-        setAvatar(transformAvatarUrl(user?.avatar) || '');
-      } finally {
-        setUploadingAvatar(false);
+  // Image picker functions (following VehicleEditScreen pattern)
+  const pickImage = async (useCamera: boolean) => {
+    try {
+      // Request permissions
+      if (useCamera) {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          showError('Permission Denied', 'Camera permission is required to take photos.');
+          return;
+        }
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showError('Permission Denied', 'Photo library permission is required to select images.');
+          return;
+        }
       }
+
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const fileName = asset.uri.split('/').pop() || 'avatar.jpg';
+        const fileType = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+
+        const profileImage: ProfileImage = {
+          uri: asset.uri,
+          name: fileName,
+          type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
+        };
+
+        // Set local state immediately for preview
+        setAvatarImage(profileImage);
+
+        // Upload avatar to backend
+        try {
+          setUploadingAvatar(true);
+          const newAvatarUrl = await profileService.updateAvatar(profileImage);
+          // Update existing URL with the server response
+          setExistingAvatarUrl(newAvatarUrl);
+          // Clear the local image since it's now saved
+          setAvatarImage(null);
+          await refreshUser();
+          showSuccess('Success', 'Profile photo updated successfully');
+        } catch (error) {
+          showError('Upload Failed', getErrorMessage(error));
+          // Revert to previous state
+          setAvatarImage(null);
+        } finally {
+          setUploadingAvatar(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      showError('Error', 'Failed to select image. Please try again.');
+    }
+  };
+
+  const showImageOptions = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library', ...(displayAvatarUrl ? ['Remove Photo'] : [])],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: displayAvatarUrl ? 3 : undefined,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) pickImage(true);
+          else if (buttonIndex === 2) pickImage(false);
+          else if (buttonIndex === 3 && displayAvatarUrl) handleRemovePhoto();
+        }
+      );
+    } else {
+      Alert.alert(
+        'Profile Photo',
+        'Choose an option',
+        [
+          { text: 'Take Photo', onPress: () => pickImage(true) },
+          { text: 'Choose from Library', onPress: () => pickImage(false) },
+          ...(displayAvatarUrl
+            ? [{ text: 'Remove Photo', style: 'destructive' as const, onPress: handleRemovePhoto }]
+            : []),
+          { text: 'Cancel', style: 'cancel' as const },
+        ]
+      );
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      setUploadingAvatar(true);
+      await profileService.deleteAvatar();
+      setAvatarImage(null);
+      setExistingAvatarUrl(null);
+      await refreshUser();
+      showSuccess('Success', 'Profile photo removed');
+    } catch (error) {
+      showError('Error', getErrorMessage(error));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarPress = () => {
+    if (displayAvatarUrl) {
+      // Show preview if there's an image
+      setShowImagePreview(true);
+    } else {
+      // Show image picker options if no image
+      showImageOptions();
     }
   };
 
@@ -162,25 +251,52 @@ export default function EditProfileScreen() {
       >
         {/* Avatar Section */}
         <View className="items-center py-6">
-          <TouchableOpacity onPress={handlePickImage} className="relative" disabled={uploadingAvatar}>
-            <Avatar
-              size="xl"
-              source={avatar ? { uri: avatar } : undefined}
-              name={`${firstName} ${lastName}` || 'User'}
-            />
+          <TouchableOpacity
+            onPress={handleAvatarPress}
+            className="relative"
+            disabled={uploadingAvatar}
+            activeOpacity={0.8}
+          >
+            {displayAvatarUrl ? (
+              <View className="rounded-full overflow-hidden" style={{ width: 120, height: 120 }}>
+                <Image
+                  source={{ uri: displayAvatarUrl }}
+                  style={{ width: 120, height: 120 }}
+                  resizeMode="cover"
+                />
+                {uploadingAvatar && (
+                  <View className="absolute inset-0 bg-black/40 items-center justify-center">
+                    <MaterialIcons name="hourglass-empty" size={32} color="#FFFFFF" />
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View
+                className="rounded-full items-center justify-center border-2 border-dashed"
+                style={{
+                  width: 120,
+                  height: 120,
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderColor: isDark ? '#475569' : '#CBD5E1',
+                }}
+              >
+                <MaterialIcons name="person" size={48} color={isDark ? '#64748B' : '#94A3B8'} />
+              </View>
+            )}
             <View className="absolute bottom-0 right-0 h-10 w-10 rounded-full bg-primary-500 items-center justify-center border-2 border-white">
-              {uploadingAvatar ? (
-                <MaterialIcons name="hourglass-empty" size={20} color="#FFFFFF" />
-              ) : (
-                <MaterialIcons name="camera-alt" size={20} color="#FFFFFF" />
-              )}
+              <MaterialIcons name="camera-alt" size={20} color="#FFFFFF" />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handlePickImage} className="mt-3" disabled={uploadingAvatar}>
+          <TouchableOpacity onPress={showImageOptions} className="mt-3" disabled={uploadingAvatar}>
             <Text className="text-primary-500 font-semibold">
-              {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+              {uploadingAvatar ? 'Uploading...' : displayAvatarUrl ? 'Change Photo' : 'Add Photo'}
             </Text>
           </TouchableOpacity>
+          {displayAvatarUrl && (
+            <Text className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              Tap photo to preview
+            </Text>
+          )}
         </View>
 
         {/* Form */}
@@ -299,6 +415,47 @@ export default function EditProfileScreen() {
                 disabled={deletingAccount}
               />
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Image Preview Modal */}
+      <Modal
+        visible={showImagePreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImagePreview(false)}
+      >
+        <View className="flex-1 bg-black items-center justify-center">
+          {/* Close button */}
+          <TouchableOpacity
+            onPress={() => setShowImagePreview(false)}
+            className="absolute top-12 right-4 z-10 h-10 w-10 rounded-full bg-black/50 items-center justify-center"
+          >
+            <MaterialIcons name="close" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Full screen image */}
+          {displayAvatarUrl && (
+            <Image
+              source={{ uri: displayAvatarUrl }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain"
+            />
+          )}
+
+          {/* Action buttons */}
+          <View className="absolute bottom-12 left-0 right-0 px-6">
+            <TouchableOpacity
+              onPress={() => {
+                setShowImagePreview(false);
+                showImageOptions();
+              }}
+              className="flex-row items-center justify-center py-4 rounded-xl bg-white/10"
+            >
+              <MaterialIcons name="edit" size={20} color="#FFFFFF" />
+              <Text className="text-white font-semibold ml-2">Change Photo</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Modal } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Card, Avatar, Badge } from '../../../src/components/common';
+import { Card, Badge, Skeleton } from '../../../src/components/common';
 import { transformAvatarUrl } from '../../../src/services/profile';
 import vehicleService from '../../../src/services/vehicle';
 import api from '../../../src/services/api';
@@ -87,9 +87,13 @@ export default function ProfileScreen() {
     appointments: 0,
   });
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchStats = async (showLoading = true) => {
     try {
+      if (showLoading) setLoadingStats(true);
+
       // Fetch all stats in parallel
       const [vehiclesResponse, diagnosesResponse, appointmentsResponse] = await Promise.all([
         vehicleService.getVehicles().catch(() => []),
@@ -104,6 +108,8 @@ export default function ProfileScreen() {
       });
     } catch (error) {
       console.error('Failed to fetch profile stats:', error);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -116,7 +122,7 @@ export default function ProfileScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchStats();
+    await fetchStats(false); // Don't show skeleton during pull-to-refresh
     setRefreshing(false);
   };
 
@@ -153,16 +159,42 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View className="px-4 pb-6">
           <Card variant="default" className="items-center py-6">
+            {/* Avatar with tap to preview */}
+            <TouchableOpacity
+              onPress={() => avatarUrl ? setShowImagePreview(true) : router.push('/(driver)/profile/edit')}
+              className="relative"
+              activeOpacity={0.8}
+            >
+              {avatarUrl ? (
+                <View className="rounded-full overflow-hidden" style={{ width: 96, height: 96 }}>
+                  <Image
+                    source={{ uri: avatarUrl }}
+                    style={{ width: 96, height: 96 }}
+                    resizeMode="cover"
+                  />
+                </View>
+              ) : (
+                <View
+                  className="rounded-full items-center justify-center"
+                  style={{
+                    width: 96,
+                    height: 96,
+                    backgroundColor: isDark ? '#1E293B' : '#E2E8F0',
+                  }}
+                >
+                  <Text className={`text-3xl font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {(user?.fullName || 'G').charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Edit button - separate from avatar */}
             <TouchableOpacity
               onPress={() => router.push('/(driver)/profile/edit')}
-              className="relative"
+              className="absolute top-6 right-6"
             >
-              <Avatar
-                size="xl"
-                source={avatarUrl ? { uri: avatarUrl } : undefined}
-                name={user?.fullName || 'Guest User'}
-              />
-              <View className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary-500 items-center justify-center border-2 border-white">
+              <View className="h-8 w-8 rounded-full bg-primary-500 items-center justify-center">
                 <MaterialIcons name="edit" size={16} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
@@ -174,6 +206,12 @@ export default function ProfileScreen() {
               {user?.email || 'guest@driveassist.com'}
             </Text>
 
+            {avatarUrl && (
+              <Text className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                Tap photo to preview
+              </Text>
+            )}
+
             {user?.isGuest && (
               <TouchableOpacity
                 onPress={() => router.push('/(auth)/sign-up')}
@@ -183,18 +221,31 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Stats */}
+            {/* Stats with skeleton loading */}
             <View className="flex-row mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 w-full justify-around">
-              {statsDisplay.map((stat) => (
-                <View key={stat.label} className="items-center">
-                  <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {stat.value}
-                  </Text>
-                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {stat.label}
-                  </Text>
-                </View>
-              ))}
+              {loadingStats ? (
+                // Skeleton loading state
+                <>
+                  {[1, 2, 3].map((i) => (
+                    <View key={i} className="items-center">
+                      <Skeleton width={40} height={28} borderRadius={6} style={{ marginBottom: 4 }} />
+                      <Skeleton width={70} height={14} borderRadius={4} />
+                    </View>
+                  ))}
+                </>
+              ) : (
+                // Loaded state
+                statsDisplay.map((stat) => (
+                  <View key={stat.label} className="items-center">
+                    <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {stat.value}
+                    </Text>
+                    <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {stat.label}
+                    </Text>
+                  </View>
+                ))
+              )}
             </View>
           </Card>
         </View>
@@ -343,6 +394,47 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Image Preview Modal */}
+      <Modal
+        visible={showImagePreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImagePreview(false)}
+      >
+        <View className="flex-1 bg-black items-center justify-center">
+          {/* Close button */}
+          <TouchableOpacity
+            onPress={() => setShowImagePreview(false)}
+            className="absolute top-12 right-4 z-10 h-10 w-10 rounded-full bg-black/50 items-center justify-center"
+          >
+            <MaterialIcons name="close" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Full screen image */}
+          {avatarUrl && (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain"
+            />
+          )}
+
+          {/* Edit button */}
+          <View className="absolute bottom-12 left-0 right-0 px-6">
+            <TouchableOpacity
+              onPress={() => {
+                setShowImagePreview(false);
+                router.push('/(driver)/profile/edit');
+              }}
+              className="flex-row items-center justify-center py-4 rounded-xl bg-white/10"
+            >
+              <MaterialIcons name="edit" size={20} color="#FFFFFF" />
+              <Text className="text-white font-semibold ml-2">Edit Profile</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
