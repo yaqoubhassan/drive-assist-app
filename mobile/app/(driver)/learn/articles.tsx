@@ -62,7 +62,7 @@ export default function ArticlesScreen() {
 
   const fetchCategories = async () => {
     try {
-      const cats = await articlesService.getArticleCategories();
+      const cats = await articlesService.getCategories();
       setCategories(cats);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
