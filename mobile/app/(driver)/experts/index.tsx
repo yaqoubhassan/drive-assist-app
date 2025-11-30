@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, Modal, Switch, RefreshControl, Linking } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -20,20 +20,22 @@ import {
 } from '../../../src/components/common';
 import expertService, { Expert, Specialization } from '../../../src/services/expert';
 
-const ghanaLocations = [
-  'Accra, Greater Accra',
-  'Tema, Greater Accra',
-  'Kumasi, Ashanti',
-  'Takoradi, Western',
-  'Cape Coast, Central',
-  'Tamale, Northern',
-  'Sunyani, Bono',
-  'Ho, Volta',
-  'Koforidua, Eastern',
+// Ghana locations with coordinates for accurate expert search
+const ghanaLocations: { name: string; latitude: number; longitude: number }[] = [
+  { name: 'Accra, Greater Accra', latitude: 5.6037, longitude: -0.1870 },
+  { name: 'Tema, Greater Accra', latitude: 5.6698, longitude: -0.0166 },
+  { name: 'Kumasi, Ashanti', latitude: 6.6885, longitude: -1.6244 },
+  { name: 'Takoradi, Western', latitude: 4.8845, longitude: -1.7554 },
+  { name: 'Cape Coast, Central', latitude: 5.1053, longitude: -1.2466 },
+  { name: 'Tamale, Northern', latitude: 9.4075, longitude: -0.8533 },
+  { name: 'Sunyani, Bono', latitude: 7.3349, longitude: -2.3123 },
+  { name: 'Ho, Volta', latitude: 6.6009, longitude: 0.4712 },
+  { name: 'Koforidua, Eastern', latitude: 6.0940, longitude: -0.2573 },
 ];
 
 export default function ExpertsSearchScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { isDark } = useTheme();
   const { isAuthenticated, userType } = useAuth();
   const isGuest = !isAuthenticated || userType === 'guest';
@@ -45,7 +47,7 @@ export default function ExpertsSearchScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [contactExpert, setContactExpert] = useState<Expert | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState('Accra, Greater Accra');
+  const [selectedLocation, setSelectedLocation] = useState(ghanaLocations[0]);
 
   // Data states
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -59,7 +61,34 @@ export default function ExpertsSearchScreen() {
   const [openNowOnly, setOpenNowOnly] = useState(false);
   const [maxDistance, setMaxDistance] = useState(50);
 
-  // Fetch user location
+  // Helper function to calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Find nearest predefined location
+  const findNearestLocation = (lat: number, lon: number) => {
+    let nearestLocation = ghanaLocations[0];
+    let minDistance = Infinity;
+
+    for (const location of ghanaLocations) {
+      const distance = calculateDistance(lat, lon, location.latitude, location.longitude);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestLocation = location;
+      }
+    }
+    return nearestLocation;
+  };
+
+  // Fetch user location and set nearest predefined location
   useEffect(() => {
     (async () => {
       try {
@@ -72,6 +101,12 @@ export default function ExpertsSearchScreen() {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
           });
+          // Auto-select nearest predefined location
+          const nearestLocation = findNearestLocation(
+            location.coords.latitude,
+            location.coords.longitude
+          );
+          setSelectedLocation(nearestLocation);
         }
       } catch (error) {
         console.error('Error getting location:', error);
@@ -102,24 +137,24 @@ export default function ExpertsSearchScreen() {
 
       let fetchedExperts: Expert[] = [];
 
-      if (userLocation) {
-        // Use getNearbyExperts for location-based search
-        const specId = selectedFilter !== 'all'
-          ? specializations.find(s => s.slug === selectedFilter)?.id
-          : undefined;
+      // Use selected location coordinates (or fall back to user's GPS location)
+      const searchLocation = {
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+      };
 
-        fetchedExperts = await expertService.getNearbyExperts({
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-          radius: maxDistance,
-          limit: 20,
-          specialization_id: specId,
-        });
-      } else {
-        // Fallback to regular getExperts
-        const result = await expertService.getExperts({ radius: maxDistance });
-        fetchedExperts = Array.isArray(result) ? result : result.data || [];
-      }
+      // Use getNearbyExperts for location-based search
+      const specId = selectedFilter !== 'all'
+        ? specializations.find(s => s.slug === selectedFilter)?.id
+        : undefined;
+
+      fetchedExperts = await expertService.getNearbyExperts({
+        latitude: searchLocation.latitude,
+        longitude: searchLocation.longitude,
+        radius: maxDistance,
+        limit: 20,
+        specialization_id: specId,
+      });
 
       // Sort experts by priority metrics:
       // 1. Priority listing (subscribed experts first)
@@ -161,7 +196,7 @@ export default function ExpertsSearchScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [userLocation, maxDistance, selectedFilter, specializations]);
+  }, [selectedLocation, maxDistance, selectedFilter, specializations]);
 
   useFocusEffect(
     useCallback(() => {
@@ -198,9 +233,11 @@ export default function ExpertsSearchScreen() {
     fetchExperts();
   };
 
-  const handleSelectLocation = (location: string) => {
+  const handleSelectLocation = (location: typeof ghanaLocations[0]) => {
     setSelectedLocation(location);
     setShowLocationModal(false);
+    // Fetch experts for the new location
+    fetchExperts();
   };
 
   const handleContactPress = (expert: Expert) => {
@@ -283,7 +320,13 @@ export default function ExpertsSearchScreen() {
       <View className="px-4 py-4">
         <View className="flex-row items-center justify-between mb-4">
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(driver)');
+              }
+            }}
             className="h-10 w-10 items-center justify-center"
           >
             <MaterialIcons
@@ -316,7 +359,7 @@ export default function ExpertsSearchScreen() {
             <Text
               className={`flex-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              {selectedLocation.split(',')[0]}, Ghana
+              {selectedLocation.name.split(',')[0]}, Ghana
             </Text>
             <TouchableOpacity onPress={() => setShowLocationModal(true)}>
               <Text className="text-primary-500 font-semibold text-sm">
@@ -643,25 +686,56 @@ export default function ExpertsSearchScreen() {
           </View>
 
           <ScrollView className="flex-1">
+            {/* Use Current Location Option */}
+            {userLocation && (
+              <TouchableOpacity
+                onPress={async () => {
+                  const nearestLocation = findNearestLocation(userLocation.latitude, userLocation.longitude);
+                  handleSelectLocation(nearestLocation);
+                }}
+                className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+              >
+                <View className="h-8 w-8 rounded-full bg-primary-500 items-center justify-center">
+                  <MaterialIcons name="my-location" size={18} color="#FFFFFF" />
+                </View>
+                <View className="flex-1 ml-3">
+                  <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Use my current location
+                  </Text>
+                  <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Auto-detect nearest city
+                  </Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color={isDark ? '#64748B' : '#94A3B8'} />
+              </TouchableOpacity>
+            )}
+
+            {/* Section Header */}
+            <View className={`px-4 py-3 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <Text className={`text-sm font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                SELECT A CITY
+              </Text>
+            </View>
+
             {ghanaLocations.map((location) => (
               <TouchableOpacity
-                key={location}
+                key={location.name}
                 onPress={() => handleSelectLocation(location)}
                 className={`flex-row items-center px-4 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
               >
                 <MaterialIcons
                   name="location-on"
                   size={24}
-                  color={selectedLocation === location ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
+                  color={selectedLocation.name === location.name ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
                 />
                 <Text className={`flex-1 ml-3 ${
-                  selectedLocation === location
+                  selectedLocation.name === location.name
                     ? 'text-primary-500 font-semibold'
                     : isDark ? 'text-white' : 'text-slate-900'
                 }`}>
-                  {location}
+                  {location.name}
                 </Text>
-                {selectedLocation === location && (
+                {selectedLocation.name === location.name && (
                   <MaterialIcons name="check" size={24} color="#3B82F6" />
                 )}
               </TouchableOpacity>
