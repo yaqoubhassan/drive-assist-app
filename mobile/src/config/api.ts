@@ -171,7 +171,7 @@ export const apiConfig = {
 
     // Maintenance
     maintenance: {
-      types: '/maintenance-types',
+      types: '/maintenance/types', // Use authenticated endpoint to include user's custom types
       createType: '/maintenance/types',
       updateType: (id: string) => `/maintenance/types/${id}`,
       deleteType: (id: string) => `/maintenance/types/${id}`,

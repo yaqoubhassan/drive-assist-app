@@ -1308,7 +1308,7 @@ export default function RemindersScreen() {
       <Modal visible={showCustomTypeModal} animationType="slide" transparent>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
+          style={{ flex: 1 }}
         >
           <View className="flex-1 justify-end">
             <TouchableOpacity
@@ -1321,12 +1321,9 @@ export default function RemindersScreen() {
               style={{ maxHeight: SCREEN_HEIGHT * 0.85 }}
             >
               <DragHandle isDark={isDark} />
-              <ScrollView
-                className="px-6 pb-6"
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-              >
-                <View className="flex-row items-center justify-between mb-6">
+              {/* Header outside ScrollView so it stays visible */}
+              <View className="px-6 pb-2">
+                <View className="flex-row items-center justify-between mb-4">
                   <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {editingType ? 'Edit Custom Type' : 'Create Custom Type'}
                   </Text>
@@ -1334,7 +1331,13 @@ export default function RemindersScreen() {
                     <MaterialIcons name="close" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
                   </TouchableOpacity>
                 </View>
-
+              </View>
+              <ScrollView
+                className="px-6"
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
                 <Text className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Create your own maintenance type to track specific services for your vehicle.
                 </Text>
@@ -1435,9 +1438,6 @@ export default function RemindersScreen() {
                   loading={savingCustomType}
                   fullWidth
                 />
-
-                {/* Bottom padding for keyboard */}
-                <View style={{ height: 20 }} />
               </ScrollView>
             </View>
           </View>
