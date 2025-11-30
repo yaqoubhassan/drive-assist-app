@@ -8,7 +8,7 @@ import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useAlert } from '../../../src/context/AlertContext';
 import { Button, Input, Avatar, SuccessModal, PhoneNumberInput } from '../../../src/components/common';
-import { profileService } from '../../../src/services/profile';
+import { profileService, ProfileImage, transformAvatarUrl } from '../../../src/services/profile';
 import { getErrorMessage } from '../../../src/services/api';
 
 export default function EditProfileScreen() {
@@ -26,7 +26,7 @@ export default function EditProfileScreen() {
   const [lastName, setLastName] = useState(initialLastName);
   const [email] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [avatar, setAvatar] = useState(user?.avatar || '');
+  const [avatar, setAvatar] = useState(transformAvatarUrl(user?.avatar) || '');
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -52,20 +52,31 @@ export default function EditProfileScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      const imageUri = result.assets[0].uri;
-      setAvatar(imageUri);
+      const asset = result.assets[0];
+      const fileName = asset.uri.split('/').pop() || 'avatar.jpg';
+      const fileType = fileName.split('.').pop()?.toLowerCase() || 'jpg';
 
-      // Upload avatar immediately
+      // Create ProfileImage object (same pattern as vehicle service)
+      const profileImage: ProfileImage = {
+        uri: asset.uri,
+        name: fileName,
+        type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
+      };
+
+      // Show the local image immediately
+      setAvatar(asset.uri);
+
+      // Upload avatar
       try {
         setUploadingAvatar(true);
-        const newAvatarUrl = await profileService.updateAvatar(imageUri);
+        const newAvatarUrl = await profileService.updateAvatar(profileImage);
         setAvatar(newAvatarUrl);
         await refreshUser();
         showSuccess('Success', 'Profile photo updated successfully');
       } catch (error) {
         showError('Upload Failed', getErrorMessage(error));
         // Revert to previous avatar
-        setAvatar(user?.avatar || '');
+        setAvatar(transformAvatarUrl(user?.avatar) || '');
       } finally {
         setUploadingAvatar(false);
       }

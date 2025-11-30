@@ -1,11 +1,21 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { Card, Avatar, Badge, ListItem } from '../../../src/components/common';
+import { Card, Avatar, Badge } from '../../../src/components/common';
+import { transformAvatarUrl } from '../../../src/services/profile';
+import vehicleService from '../../../src/services/vehicle';
+import api from '../../../src/services/api';
+import { apiConfig } from '../../../src/config/api';
+
+interface ProfileStats {
+  diagnoses: number;
+  vehicles: number;
+  appointments: number;
+}
 
 const menuItems = [
   {
@@ -14,7 +24,6 @@ const menuItems = [
     subtitle: 'Manage your saved vehicles',
     icon: 'directions-car' as const,
     route: '/(driver)/profile/vehicles',
-    badge: '2',
   },
   {
     id: 'reminders',
@@ -22,8 +31,6 @@ const menuItems = [
     subtitle: 'Track your vehicle maintenance',
     icon: 'event' as const,
     route: '/(driver)/profile/reminders',
-    badge: '3',
-    badgeVariant: 'warning' as const,
   },
   {
     id: 'history',
@@ -69,25 +76,73 @@ const menuItems = [
   },
 ];
 
-const stats = [
-  { label: 'Diagnoses', value: '12' },
-  { label: 'Vehicles', value: '2' },
-  { label: 'Appointments', value: '5' },
-];
-
 export default function ProfileScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { user, signOut } = useAuth();
+
+  const [stats, setStats] = useState<ProfileStats>({
+    diagnoses: 0,
+    vehicles: 0,
+    appointments: 0,
+  });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch all stats in parallel
+      const [vehiclesResponse, diagnosesResponse, appointmentsResponse] = await Promise.all([
+        vehicleService.getVehicles().catch(() => []),
+        api.get<{ data: unknown[] }>(apiConfig.endpoints.diagnoses.list).catch(() => ({ data: { data: [] } })),
+        api.get<{ count: number }>(apiConfig.endpoints.appointments.upcomingCount).catch(() => ({ data: { count: 0 } })),
+      ]);
+
+      setStats({
+        vehicles: Array.isArray(vehiclesResponse) ? vehiclesResponse.length : 0,
+        diagnoses: diagnosesResponse?.data?.data ? diagnosesResponse.data.data.length : 0,
+        appointments: appointmentsResponse?.data?.count ?? 0,
+      });
+    } catch (error) {
+      console.error('Failed to fetch profile stats:', error);
+    }
+  };
+
+  // Fetch stats when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchStats();
+    }, [])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchStats();
+    setRefreshing(false);
+  };
 
   const handleSignOut = () => {
     signOut();
     router.replace('/(auth)/welcome');
   };
 
+  // Transform avatar URL for mobile device compatibility
+  const avatarUrl = transformAvatarUrl(user?.avatar);
+
+  const statsDisplay = [
+    { label: 'Diagnoses', value: stats.diagnoses.toString() },
+    { label: 'Vehicles', value: stats.vehicles.toString() },
+    { label: 'Appointments', value: stats.appointments.toString() },
+  ];
+
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Header */}
         <View className="px-4 py-4">
           <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -104,7 +159,7 @@ export default function ProfileScreen() {
             >
               <Avatar
                 size="xl"
-                source={user?.avatar ? { uri: user.avatar } : undefined}
+                source={avatarUrl ? { uri: avatarUrl } : undefined}
                 name={user?.fullName || 'Guest User'}
               />
               <View className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary-500 items-center justify-center border-2 border-white">
@@ -130,7 +185,7 @@ export default function ProfileScreen() {
 
             {/* Stats */}
             <View className="flex-row mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 w-full justify-around">
-              {stats.map((stat) => (
+              {statsDisplay.map((stat) => (
                 <View key={stat.label} className="items-center">
                   <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {stat.value}
@@ -203,13 +258,6 @@ export default function ProfileScreen() {
                     {item.subtitle}
                   </Text>
                 </View>
-                {item.badge && (
-                  <View className={`h-6 min-w-[24px] rounded-full items-center justify-center mr-2 ${
-                    item.badgeVariant === 'warning' ? 'bg-amber-500' : 'bg-primary-500'
-                  }`}>
-                    <Text className="text-white text-xs font-bold px-2">{item.badge}</Text>
-                  </View>
-                )}
                 <MaterialIcons
                   name="chevron-right"
                   size={24}

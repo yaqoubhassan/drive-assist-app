@@ -28,12 +28,18 @@ export interface UpdateAvatarResponse {
   avatar: string;
 }
 
+export interface ProfileImage {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 /**
  * Transform avatar URL to use the correct base URL for the mobile app
  * Backend may return localhost URLs which don't work on mobile devices
  */
-function transformAvatarUrl(url: string): string {
-  if (!url) return url;
+export function transformAvatarUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
 
   // Extract the base URL from apiConfig (without /api/v1)
   const apiBase = apiConfig.baseUrl.replace('/api/v1', '');
@@ -77,18 +83,15 @@ export const profileService = {
   /**
    * Update user avatar
    */
-  async updateAvatar(imageUri: string): Promise<string> {
+  async updateAvatar(image: ProfileImage): Promise<string> {
     const formData = new FormData();
 
-    // Get the file extension from the URI
-    const uriParts = imageUri.split('.');
-    const fileType = uriParts[uriParts.length - 1];
-
+    // Follow the same pattern as vehicle service
     formData.append('avatar', {
-      uri: imageUri,
-      name: `avatar.${fileType}`,
-      type: `image/${fileType}`,
-    } as unknown as Blob);
+      uri: image.uri,
+      name: image.name,
+      type: image.type,
+    } as any);
 
     const response = await api.postFormData<UpdateAvatarResponse>(
       apiConfig.endpoints.profile.updateAvatar,
@@ -112,7 +115,7 @@ export const profileService = {
       await storage.setObject(StorageKeys.USER, updatedUser);
     }
 
-    return avatarUrl;
+    return avatarUrl || '';
   },
 
   /**
