@@ -122,7 +122,7 @@ export default function ArticlesScreen() {
 
       {/* Category Filter */}
       {loading ? (
-        <View className="py-3">
+        <View className="pb-3">
           <SkeletonChips count={4} />
         </View>
       ) : categories.length > 0 ? (
