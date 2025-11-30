@@ -20,7 +20,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const { isDark } = useTheme();
 
-  const bgColor = isDark ? 'bg-slate-800' : 'bg-slate-100';
+  const bgColor = isDark ? 'bg-slate-700' : 'bg-slate-100';
   const textColor = isDark ? 'text-white' : 'text-slate-900';
   const placeholderColor = isDark ? '#64748B' : '#9CA3AF';
   const iconColor = isDark ? '#64748B' : '#6B7280';
