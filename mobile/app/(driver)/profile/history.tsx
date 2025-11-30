@@ -1,88 +1,72 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Badge, Chip, EmptyState } from '../../../src/components/common';
-import { formatCurrency } from '../../../src/constants';
-
-interface DiagnosisHistoryItem {
-  id: string;
-  title: string;
-  category: string;
-  vehicle: string;
-  date: string;
-  confidence: number;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  estimatedCost: { min: number; max: number };
-  status: 'completed' | 'in_progress' | 'expert_contacted';
-}
-
-const mockHistory: DiagnosisHistoryItem[] = [
-  {
-    id: '1',
-    title: 'Engine Overheating',
-    category: 'Engine',
-    vehicle: 'Toyota Corolla 2019',
-    date: '2024-11-20',
-    confidence: 92,
-    severity: 'high',
-    estimatedCost: { min: 500, max: 1200 },
-    status: 'completed',
-  },
-  {
-    id: '2',
-    title: 'Brake Pad Wear',
-    category: 'Brakes',
-    vehicle: 'Toyota Corolla 2019',
-    date: '2024-11-15',
-    confidence: 88,
-    severity: 'medium',
-    estimatedCost: { min: 200, max: 400 },
-    status: 'expert_contacted',
-  },
-  {
-    id: '3',
-    title: 'AC Not Cooling',
-    category: 'Electrical',
-    vehicle: 'Honda CR-V 2021',
-    date: '2024-11-10',
-    confidence: 75,
-    severity: 'low',
-    estimatedCost: { min: 150, max: 350 },
-    status: 'completed',
-  },
-  {
-    id: '4',
-    title: 'Check Engine Light',
-    category: 'Engine',
-    vehicle: 'Toyota Corolla 2019',
-    date: '2024-11-05',
-    confidence: 85,
-    severity: 'medium',
-    estimatedCost: { min: 100, max: 800 },
-    status: 'completed',
-  },
-];
+import { Card, Badge, Chip, EmptyState, Skeleton, SkeletonListItem } from '../../../src/components/common';
+import diagnosisService, { DiagnosisResult } from '../../../src/services/diagnosis';
 
 const filters = [
   { id: 'all', label: 'All' },
   { id: 'completed', label: 'Completed' },
-  { id: 'expert_contacted', label: 'Expert Contacted' },
+  { id: 'failed', label: 'Failed' },
+  { id: 'pending', label: 'Pending' },
 ];
 
 export default function HistoryScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [diagnoses, setDiagnoses] = useState<DiagnosisResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const filteredHistory = selectedFilter === 'all'
-    ? mockHistory
-    : mockHistory.filter((item) => item.status === selectedFilter);
+  const fetchDiagnoses = useCallback(async (page: number = 1, refresh: boolean = false) => {
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else if (page === 1) {
+        setLoading(true);
+      }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
+      const result = await diagnosisService.getDiagnoses(page);
+
+      if (refresh || page === 1) {
+        setDiagnoses(result.diagnoses);
+      } else {
+        setDiagnoses(prev => [...prev, ...result.diagnoses]);
+      }
+
+      setCurrentPage(result.currentPage);
+      setHasMore(result.currentPage < result.lastPage);
+    } catch (error) {
+      console.error('Failed to fetch diagnoses:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDiagnoses(1, false);
+    }, [fetchDiagnoses])
+  );
+
+  const onRefresh = useCallback(() => {
+    fetchDiagnoses(1, true);
+  }, [fetchDiagnoses]);
+
+  const filteredDiagnoses = selectedFilter === 'all'
+    ? diagnoses
+    : diagnoses.filter((item) => item.status === selectedFilter);
+
+  const getUrgencyColor = (urgency: string | null) => {
+    switch (urgency) {
       case 'critical':
         return '#DC2626';
       case 'high':
@@ -100,29 +84,24 @@ export default function HistoryScreen() {
     switch (status) {
       case 'completed':
         return <Badge label="Completed" variant="success" size="sm" />;
-      case 'expert_contacted':
-        return <Badge label="Expert Contacted" variant="info" size="sm" />;
-      case 'in_progress':
-        return <Badge label="In Progress" variant="warning" size="sm" />;
+      case 'failed':
+        return <Badge label="Failed" variant="error" size="sm" />;
+      case 'pending':
+      case 'processing':
+        return <Badge label="Pending" variant="warning" size="sm" />;
       default:
         return null;
     }
   };
 
-  const getCategoryIcon = (category: string): keyof typeof MaterialIcons.glyphMap => {
-    switch (category.toLowerCase()) {
-      case 'engine':
-        return 'engineering';
-      case 'brakes':
-        return 'do-not-disturb';
-      case 'electrical':
-        return 'electrical-services';
-      case 'transmission':
-        return 'settings';
-      case 'tires':
-        return 'trip-origin';
+  const getCategoryIcon = (inputType: string): keyof typeof MaterialIcons.glyphMap => {
+    switch (inputType) {
+      case 'voice':
+        return 'mic';
+      case 'text_image':
+        return 'photo-camera';
       default:
-        return 'build';
+        return 'edit';
     }
   };
 
@@ -134,6 +113,59 @@ export default function HistoryScreen() {
       year: 'numeric',
     });
   };
+
+  const getDiagnosisTitle = (diagnosis: DiagnosisResult) => {
+    if (diagnosis.ai_diagnosis) {
+      // Get first sentence or first 60 chars
+      const firstLine = diagnosis.ai_diagnosis.split('.')[0];
+      return firstLine.length > 60 ? firstLine.substring(0, 60) + '...' : firstLine;
+    }
+    if (diagnosis.symptoms_description) {
+      return diagnosis.symptoms_description.length > 60
+        ? diagnosis.symptoms_description.substring(0, 60) + '...'
+        : diagnosis.symptoms_description;
+    }
+    return 'Vehicle Diagnosis';
+  };
+
+  const getVehicleInfo = (diagnosis: DiagnosisResult) => {
+    if (diagnosis.vehicle) {
+      return `${diagnosis.vehicle.year} ${diagnosis.vehicle.make_name} ${diagnosis.vehicle.model_name}`;
+    }
+    return 'No vehicle specified';
+  };
+
+  const getConfidenceScore = (score: number | null) => {
+    if (score === null) return null;
+    return Math.round(score * 100);
+  };
+
+  // Skeleton Loading Component
+  const HistorySkeleton = () => (
+    <View className="gap-3 pb-8">
+      {[1, 2, 3, 4].map((i) => (
+        <View
+          key={i}
+          className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}
+        >
+          <View className="flex-row items-start mb-3">
+            <Skeleton width={48} height={48} borderRadius={12} style={{ marginRight: 12 }} />
+            <View className="flex-1">
+              <Skeleton width="80%" height={16} style={{ marginBottom: 8 }} />
+              <Skeleton width="50%" height={12} />
+            </View>
+            <Skeleton width={70} height={20} borderRadius={10} />
+          </View>
+          <View className={`flex-row items-center justify-between pt-3 border-t ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+            <View className="flex-row gap-4">
+              <Skeleton width={80} height={14} />
+              <Skeleton width={60} height={14} />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -155,7 +187,7 @@ export default function HistoryScreen() {
               Diagnosis History
             </Text>
             <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              {filteredHistory.length} diagnosis record{filteredHistory.length !== 1 ? 's' : ''}
+              {loading ? 'Loading...' : `${filteredDiagnoses.length} diagnosis record${filteredDiagnoses.length !== 1 ? 's' : ''}`}
             </Text>
           </View>
         </View>
@@ -177,10 +209,18 @@ export default function HistoryScreen() {
         </ScrollView>
       </View>
 
-      <ScrollView className="flex-1 px-4 py-4" showsVerticalScrollIndicator={false}>
-        {filteredHistory.length > 0 ? (
+      <ScrollView
+        className="flex-1 px-4 py-4"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {loading ? (
+          <HistorySkeleton />
+        ) : filteredDiagnoses.length > 0 ? (
           <View className="gap-3 pb-8">
-            {filteredHistory.map((item) => (
+            {filteredDiagnoses.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 onPress={() => router.push(`/(driver)/diagnose/results?id=${item.id}`)}
@@ -192,20 +232,23 @@ export default function HistoryScreen() {
                     <View className="flex-row items-center flex-1">
                       <View
                         className="h-12 w-12 rounded-xl items-center justify-center mr-3"
-                        style={{ backgroundColor: getSeverityColor(item.severity) + '20' }}
+                        style={{ backgroundColor: getUrgencyColor(item.ai_urgency_level) + '20' }}
                       >
                         <MaterialIcons
-                          name={getCategoryIcon(item.category)}
+                          name={item.status === 'completed' ? 'check-circle' : item.status === 'failed' ? 'error' : 'pending'}
                           size={24}
-                          color={getSeverityColor(item.severity)}
+                          color={getUrgencyColor(item.ai_urgency_level)}
                         />
                       </View>
                       <View className="flex-1">
-                        <Text className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {item.title}
+                        <Text
+                          className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                          numberOfLines={2}
+                        >
+                          {getDiagnosisTitle(item)}
                         </Text>
                         <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {item.vehicle}
+                          {getVehicleInfo(item)}
                         </Text>
                       </View>
                     </View>
@@ -218,19 +261,31 @@ export default function HistoryScreen() {
                       <View className="flex-row items-center">
                         <MaterialIcons name="calendar-today" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
                         <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {formatDate(item.date)}
+                          {formatDate(item.created_at)}
                         </Text>
                       </View>
-                      <View className="flex-row items-center">
-                        <MaterialIcons name="analytics" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
-                        <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {item.confidence}% match
-                        </Text>
-                      </View>
+                      {item.ai_confidence_score !== null && (
+                        <View className="flex-row items-center">
+                          <MaterialIcons name="analytics" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
+                          <Text className={`text-sm ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {getConfidenceScore(item.ai_confidence_score)}% confidence
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      {formatCurrency(item.estimatedCost.min)} - {formatCurrency(item.estimatedCost.max)}
-                    </Text>
+                    {item.ai_urgency_level && (
+                      <View
+                        className="px-2 py-1 rounded-full"
+                        style={{ backgroundColor: getUrgencyColor(item.ai_urgency_level) + '20' }}
+                      >
+                        <Text
+                          className="text-xs font-semibold capitalize"
+                          style={{ color: getUrgencyColor(item.ai_urgency_level) }}
+                        >
+                          {item.ai_urgency_level} urgency
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </Card>
               </TouchableOpacity>
