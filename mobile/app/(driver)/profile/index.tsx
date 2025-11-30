@@ -134,8 +134,6 @@ export default function ProfileScreen() {
 
   // Transform avatar URL for mobile device compatibility
   const avatarUrl = transformAvatarUrl(user?.avatar);
-  console.log('[ProfileScreen] user?.avatar:', user?.avatar);
-  console.log('[ProfileScreen] transformed avatarUrl:', avatarUrl);
 
   const statsDisplay = [
     { label: 'Diagnoses', value: stats.diagnoses.toString() },

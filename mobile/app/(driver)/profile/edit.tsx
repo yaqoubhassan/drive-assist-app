@@ -35,11 +35,6 @@ export default function EditProfileScreen() {
   const initialAvatarUrl = transformAvatarUrl(user?.avatar) || null;
   const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(initialAvatarUrl);
 
-  // Debug logs
-  console.log('[EditProfileScreen] user?.avatar:', user?.avatar);
-  console.log('[EditProfileScreen] initialAvatarUrl:', initialAvatarUrl);
-  console.log('[EditProfileScreen] existingAvatarUrl:', existingAvatarUrl);
-
   // Image preview modal state
   const [showImagePreview, setShowImagePreview] = useState(false);
 
@@ -50,7 +45,6 @@ export default function EditProfileScreen() {
 
   // Get the display avatar URL
   const displayAvatarUrl = avatarImage?.uri || existingAvatarUrl;
-  console.log('[EditProfileScreen] displayAvatarUrl:', displayAvatarUrl);
 
   // Image picker functions (following VehicleEditScreen pattern)
   const pickImage = async (useCamera: boolean) => {

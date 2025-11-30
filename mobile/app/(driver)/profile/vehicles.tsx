@@ -1,83 +1,122 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Card, Button, Badge, EmptyState, ConfirmationModal, SuccessModal } from '../../../src/components/common';
-import { Vehicle } from '../../../src/types';
-
-const mockVehicles: Vehicle[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    make: 'Toyota',
-    model: 'Corolla',
-    year: 2019,
-    plateNumber: 'GR-1234-20',
-    vin: '1HGBH41JXMN109186',
-    color: 'Silver',
-    fuelType: 'petrol',
-    transmission: 'automatic',
-    mileage: 45000,
-    isDefault: true,
-    createdAt: '2022-01-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    make: 'Honda',
-    model: 'CR-V',
-    year: 2021,
-    plateNumber: 'GW-5678-21',
-    color: 'White',
-    fuelType: 'petrol',
-    transmission: 'automatic',
-    mileage: 22000,
-    isDefault: false,
-    createdAt: '2023-03-15T15:30:00Z',
-  },
-];
+import { useAlert } from '../../../src/context/AlertContext';
+import { Card, Badge, EmptyState, Skeleton } from '../../../src/components/common';
+import vehicleService, { Vehicle } from '../../../src/services/vehicle';
 
 export default function VehiclesScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
-  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { showSuccess, showError, showConfirm } = useAlert();
 
-  const handleSetDefault = (vehicleId: string) => {
-    setVehicles(vehicles.map((v) => ({
-      ...v,
-      isDefault: v.id === vehicleId,
-    })));
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  const fetchVehicles = async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      const data = await vehicleService.getVehicles();
+      setVehicles(data);
+    } catch (error) {
+      console.error('Failed to fetch vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch vehicles when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchVehicles();
+    }, [])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchVehicles(false);
+    setRefreshing(false);
+  };
+
+  const handleSetPrimary = async (vehicle: Vehicle) => {
+    try {
+      setActionLoading(vehicle.id);
+      await vehicleService.setPrimaryVehicle(vehicle.id);
+      // Update local state
+      setVehicles(vehicles.map((v) => ({
+        ...v,
+        is_primary: v.id === vehicle.id,
+      })));
+      showSuccess('Success', `${vehicle.display_name} is now your primary vehicle`);
+    } catch (error: any) {
+      showError('Error', error.message || 'Failed to set primary vehicle');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleDelete = (vehicle: Vehicle) => {
-    setVehicleToDelete(vehicle);
-    setShowDeleteModal(true);
+    showConfirm({
+      title: 'Delete Vehicle',
+      message: `Are you sure you want to remove your ${vehicle.display_name}? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      onConfirm: async () => {
+        try {
+          await vehicleService.deleteVehicle(vehicle.id);
+          setVehicles(vehicles.filter((v) => v.id !== vehicle.id));
+          showSuccess('Vehicle Removed', 'The vehicle has been removed from your garage.');
+        } catch (error: any) {
+          showError('Error', error.message || 'Failed to delete vehicle');
+        }
+      },
+    });
   };
 
-  const confirmDeleteVehicle = () => {
-    if (vehicleToDelete) {
-      setVehicles(vehicles.filter((v) => v.id !== vehicleToDelete.id));
-      setShowDeleteModal(false);
-      setVehicleToDelete(null);
-      setShowSuccessModal(true);
-    }
+  const handleEdit = (vehicle: Vehicle) => {
+    router.push({
+      pathname: '/(driver)/profile/vehicle-edit',
+      params: { id: vehicle.id.toString() },
+    });
   };
 
-  const getVehicleIcon = (make: string) => {
-    const lowMake = make.toLowerCase();
-    if (lowMake.includes('toyota') || lowMake.includes('honda')) {
-      return 'directions-car';
-    }
-    if (lowMake.includes('suv') || lowMake.includes('cr-v') || lowMake.includes('rav')) {
-      return 'directions-car';
-    }
-    return 'directions-car';
+  const handleAddVehicle = () => {
+    router.push('/(driver)/profile/vehicle-edit');
   };
+
+  // Skeleton loading component
+  const VehicleSkeleton = () => (
+    <Card variant="default" className="overflow-hidden">
+      <View className="flex-row items-start">
+        <Skeleton width={56} height={56} borderRadius={12} style={{ marginRight: 12 }} />
+        <View className="flex-1">
+          <Skeleton width="70%" height={20} style={{ marginBottom: 8 }} />
+          <Skeleton width="40%" height={14} />
+        </View>
+      </View>
+      <View className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+        <View className="flex-row flex-wrap gap-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <View key={i} className="w-1/2">
+              <Skeleton width={60} height={10} style={{ marginBottom: 4 }} />
+              <Skeleton width={80} height={16} />
+            </View>
+          ))}
+        </View>
+      </View>
+      <View className={`flex-row mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
+        <Skeleton width="30%" height={32} borderRadius={8} style={{ marginRight: 8 }} />
+        <Skeleton width="30%" height={32} borderRadius={8} style={{ marginRight: 8 }} />
+        <Skeleton width="30%" height={32} borderRadius={8} />
+      </View>
+    </Card>
+  );
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
@@ -97,47 +136,72 @@ export default function VehiclesScreen() {
           <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
             My Vehicles
           </Text>
-          <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} saved
-          </Text>
+          {!loading && (
+            <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} saved
+            </Text>
+          )}
         </View>
         <TouchableOpacity
-          onPress={() => router.push('/(driver)/diagnose/vehicle')}
+          onPress={handleAddVehicle}
           className="h-10 w-10 rounded-full bg-primary-500 items-center justify-center"
         >
           <MaterialIcons name="add" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-4 py-4" showsVerticalScrollIndicator={false}>
-        {vehicles.length > 0 ? (
+      <ScrollView
+        className="flex-1 px-4 py-4"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {loading ? (
+          // Skeleton loading state
+          <View className="gap-4 pb-8">
+            {[1, 2].map((i) => (
+              <VehicleSkeleton key={i} />
+            ))}
+          </View>
+        ) : vehicles.length > 0 ? (
           <View className="gap-4 pb-8">
             {vehicles.map((vehicle) => (
               <Card key={vehicle.id} variant="default" className="overflow-hidden">
                 {/* Vehicle Header */}
                 <View className="flex-row items-start justify-between">
                   <View className="flex-row items-center flex-1">
-                    <View
-                      className="h-14 w-14 rounded-xl items-center justify-center mr-3"
-                      style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
-                    >
-                      <MaterialIcons
-                        name={getVehicleIcon(vehicle.make) as any}
-                        size={28}
-                        color="#3B82F6"
-                      />
-                    </View>
+                    {vehicle.image_url ? (
+                      <View className="h-14 w-14 rounded-xl overflow-hidden mr-3">
+                        <Image
+                          source={{ uri: vehicle.image_url }}
+                          style={{ width: 56, height: 56 }}
+                          resizeMode="cover"
+                        />
+                      </View>
+                    ) : (
+                      <View
+                        className="h-14 w-14 rounded-xl items-center justify-center mr-3"
+                        style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }}
+                      >
+                        <MaterialIcons
+                          name="directions-car"
+                          size={28}
+                          color="#3B82F6"
+                        />
+                      </View>
+                    )}
                     <View className="flex-1">
-                      <View className="flex-row items-center gap-2">
+                      <View className="flex-row items-center gap-2 flex-wrap">
                         <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {vehicle.make} {vehicle.model}
+                          {vehicle.display_name}
                         </Text>
-                        {vehicle.isDefault && (
-                          <Badge label="Default" variant="success" size="sm" />
+                        {vehicle.is_primary && (
+                          <Badge label="Primary" variant="success" size="sm" />
                         )}
                       </View>
                       <Text className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {vehicle.year} • {vehicle.color}
+                        {vehicle.year} • {vehicle.color || 'No color'}
                       </Text>
                     </View>
                   </View>
@@ -148,10 +212,10 @@ export default function VehiclesScreen() {
                   <View className="flex-row flex-wrap gap-y-3">
                     <View className="w-1/2">
                       <Text className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Plate Number
+                        License Plate
                       </Text>
                       <Text className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {vehicle.plateNumber || 'Not set'}
+                        {vehicle.license_plate || 'Not set'}
                       </Text>
                     </View>
                     <View className="w-1/2">
@@ -159,7 +223,7 @@ export default function VehiclesScreen() {
                         Fuel Type
                       </Text>
                       <Text className={`font-semibold capitalize ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {vehicle.fuelType || 'Not set'}
+                        {vehicle.fuel_type || 'Not set'}
                       </Text>
                     </View>
                     <View className="w-1/2">
@@ -183,17 +247,20 @@ export default function VehiclesScreen() {
 
                 {/* Actions */}
                 <View className={`flex-row mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-100'}`}>
-                  {!vehicle.isDefault && (
+                  {!vehicle.is_primary && (
                     <TouchableOpacity
-                      onPress={() => handleSetDefault(vehicle.id)}
+                      onPress={() => handleSetPrimary(vehicle)}
+                      disabled={actionLoading === vehicle.id}
                       className="flex-1 flex-row items-center justify-center py-2"
                     >
                       <MaterialIcons name="star-outline" size={18} color="#3B82F6" />
-                      <Text className="text-primary-500 font-semibold ml-1">Set Default</Text>
+                      <Text className="text-primary-500 font-semibold ml-1">
+                        {actionLoading === vehicle.id ? 'Setting...' : 'Set Primary'}
+                      </Text>
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
-                    onPress={() => { }}
+                    onPress={() => handleEdit(vehicle)}
                     className="flex-1 flex-row items-center justify-center py-2"
                   >
                     <MaterialIcons name="edit" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
@@ -218,34 +285,10 @@ export default function VehiclesScreen() {
             title="No Vehicles Saved"
             description="Add your vehicles to get personalized diagnoses and maintenance tips."
             actionLabel="Add Vehicle"
-            onAction={() => router.push('/(driver)/diagnose/vehicle')}
+            onAction={handleAddVehicle}
           />
         )}
       </ScrollView>
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        visible={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setVehicleToDelete(null);
-        }}
-        onConfirm={confirmDeleteVehicle}
-        title="Delete Vehicle"
-        message={`Are you sure you want to remove your ${vehicleToDelete?.year} ${vehicleToDelete?.make} ${vehicleToDelete?.model}? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        variant="danger"
-      />
-
-      {/* Success Modal */}
-      <SuccessModal
-        visible={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        title="Vehicle Removed"
-        message="The vehicle has been removed from your garage."
-        primaryButtonLabel="Done"
-      />
     </SafeAreaView>
   );
 }

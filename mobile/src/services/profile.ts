@@ -84,8 +84,6 @@ export const profileService = {
    * Update user avatar
    */
   async updateAvatar(image: ProfileImage): Promise<string> {
-    console.log('[Profile] Uploading avatar:', { uri: image.uri, name: image.name, type: image.type });
-
     const formData = new FormData();
 
     // Follow the same pattern as vehicle service
@@ -100,18 +98,12 @@ export const profileService = {
       formData
     );
 
-    console.log('[Profile] Avatar upload response:', response);
-
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Failed to update avatar');
     }
 
-    // Log the raw avatar URL from backend
-    console.log('[Profile] Raw avatar URL from backend:', response.data.avatar);
-
     // Transform the URL to work on mobile devices (if needed)
     const avatarUrl = transformAvatarUrl(response.data.avatar);
-    console.log('[Profile] Transformed avatar URL:', avatarUrl);
 
     // Update local storage with new avatar
     const storedUser = await storage.getObject<User | DriverProfile | ExpertProfile>(StorageKeys.USER);
@@ -121,7 +113,6 @@ export const profileService = {
         avatar: avatarUrl,
       };
       await storage.setObject(StorageKeys.USER, updatedUser);
-      console.log('[Profile] Updated stored user with avatar:', avatarUrl);
     }
 
     return avatarUrl || '';
