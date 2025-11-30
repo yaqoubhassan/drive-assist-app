@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../../src/context/ThemeContext';
-import { Badge, Button } from '../../../../src/components/common';
+import { Badge, Button, SkeletonArticleDetail } from '../../../../src/components/common';
 import { articlesService, Article as ApiArticle } from '../../../../src/services/learn';
 
 const articles: Record<string, {
@@ -891,13 +891,10 @@ export default function ArticleDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Loading article...
-          </Text>
-        </View>
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-white'}`} edges={['top']}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <SkeletonArticleDetail />
+        </ScrollView>
       </SafeAreaView>
     );
   }

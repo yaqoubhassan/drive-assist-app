@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { SearchBar, Chip, Card } from '../../../src/components/common';
+import { SearchBar, Chip, Card, SkeletonVideosScreen, SkeletonChips, Skeleton } from '../../../src/components/common';
 import { videosService, Video, VideoCategory } from '../../../src/services/learn';
 
 export default function VideosScreen() {
@@ -109,11 +109,25 @@ export default function VideosScreen() {
   if (loading && videos.length === 0) {
     return (
       <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Loading videos...
-          </Text>
+        {/* Header */}
+        <View className={`px-4 py-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+          <View className="flex-row items-center mb-4">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="h-10 w-10 items-center justify-center mr-2"
+            >
+              <MaterialIcons name="arrow-back" size={24} color={isDark ? '#FFFFFF' : '#111827'} />
+            </TouchableOpacity>
+            <View>
+              <Skeleton width={140} height={24} style={{ marginBottom: 4 }} />
+              <Skeleton width={100} height={14} />
+            </View>
+          </View>
+          <Skeleton width="100%" height={44} borderRadius={22} style={{ marginBottom: 16 }} />
+          <SkeletonChips count={4} />
+        </View>
+        <View className="flex-1 py-4">
+          <SkeletonVideosScreen />
         </View>
       </SafeAreaView>
     );

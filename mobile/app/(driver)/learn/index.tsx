@@ -10,12 +10,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
   Linking,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, SearchBar } from '../../../src/components/common';
+import { Badge, Card, SearchBar, SkeletonLearnScreen } from '../../../src/components/common';
 import { useTheme } from '../../../src/context/ThemeContext';
 import {
   articlesService,
@@ -364,16 +363,16 @@ export default function LearnScreen() {
           </View>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <View className="items-center justify-center py-12">
-            <ActivityIndicator size="large" color="#3B82F6" />
-            <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Loading content...
-            </Text>
-          </View>
-        )}
       </ScrollView>
+
+      {/* Skeleton Loading Overlay */}
+      {loading && (
+        <View className="absolute inset-0">
+          <SafeAreaView className={`flex-1 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`} edges={['top']}>
+            <SkeletonLearnScreen />
+          </SafeAreaView>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

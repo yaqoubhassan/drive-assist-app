@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { Badge, Card, SearchBar } from '../../../src/components/common';
+import { Badge, Card, SearchBar, SkeletonArticlesScreen, SkeletonChips } from '../../../src/components/common';
 import { articlesService, Article, ArticleCategory } from '../../../src/services/learn';
 
 export default function ArticlesScreen() {
@@ -159,11 +159,13 @@ export default function ArticlesScreen() {
 
       {/* Articles List */}
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className={`mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Loading articles...
-          </Text>
+        <View className="flex-1 pt-4">
+          {/* Category chips skeleton */}
+          <View className="mb-4">
+            <SkeletonChips count={4} />
+          </View>
+          {/* Articles skeleton */}
+          <SkeletonArticlesScreen />
         </View>
       ) : (
         <ScrollView
