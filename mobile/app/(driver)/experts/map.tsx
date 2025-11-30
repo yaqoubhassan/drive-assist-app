@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, Platform, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, Platform, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useTheme } from '../../../src/context/ThemeContext';
-import { SearchBar, Card, Rating, Avatar } from '../../../src/components/common';
+import { SearchBar, Card, Rating, Avatar, Skeleton } from '../../../src/components/common';
 import expertService, { Expert } from '../../../src/services/expert';
 
 const { width } = Dimensions.get('window');
@@ -144,13 +144,64 @@ export default function ExpertsMapScreen() {
         longitudeDelta: LONGITUDE_DELTA,
       };
 
+  // Map Loading Skeleton
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className={`mt-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Loading map...
-        </Text>
+      <View className="flex-1" style={{ backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }}>
+        {/* Map Placeholder with subtle pattern */}
+        <View className="flex-1 items-center justify-center">
+          <MaterialIcons name="map" size={80} color={isDark ? '#334155' : '#CBD5E1'} />
+          <Text className={`mt-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            Loading map...
+          </Text>
+        </View>
+
+        {/* Top Controls Skeleton */}
+        <View style={{ position: 'absolute', top: insets.top + 16, left: 16, right: 16 }}>
+          <View className="flex-row items-center gap-3">
+            {/* Back button skeleton */}
+            <Skeleton width={44} height={44} borderRadius={22} />
+            {/* Search bar skeleton */}
+            <View className="flex-1">
+              <Skeleton width="100%" height={44} borderRadius={22} />
+            </View>
+          </View>
+
+          {/* Radius Selector Skeleton */}
+          <View className={`mt-3 rounded-xl p-3 ${isDark ? 'bg-slate-800/95' : 'bg-white/95'}`}>
+            <Skeleton width={120} height={16} style={{ marginBottom: 8 }} />
+            <View className="flex-row justify-between">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} width={48} height={28} borderRadius={14} />
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Legend Skeleton */}
+        <View
+          style={{ position: 'absolute', left: 16, bottom: insets.bottom + 100 }}
+          className={`rounded-xl p-3 ${isDark ? 'bg-slate-800/95' : 'bg-white/95'}`}
+        >
+          <Skeleton width={50} height={14} style={{ marginBottom: 8 }} />
+          <View className="flex-row items-center mb-1">
+            <Skeleton width={16} height={16} borderRadius={8} style={{ marginRight: 8 }} />
+            <Skeleton width={30} height={12} />
+          </View>
+          <View className="flex-row items-center mb-1">
+            <Skeleton width={16} height={16} borderRadius={8} style={{ marginRight: 8 }} />
+            <Skeleton width={80} height={12} />
+          </View>
+          <View className="flex-row items-center">
+            <Skeleton width={16} height={16} borderRadius={8} style={{ marginRight: 8 }} />
+            <Skeleton width={70} height={12} />
+          </View>
+        </View>
+
+        {/* My Location Button Skeleton */}
+        <View style={{ position: 'absolute', right: 16, bottom: insets.bottom + 100 }}>
+          <Skeleton width={44} height={44} borderRadius={22} />
+        </View>
       </View>
     );
   }
