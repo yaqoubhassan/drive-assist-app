@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Modal, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../src/context/ThemeContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { Card, Badge, Skeleton } from '../../../src/components/common';
@@ -255,25 +256,28 @@ export default function ProfileScreen() {
         {/* Membership Card */}
         <View className="px-4 pb-6">
           <TouchableOpacity activeOpacity={0.8}>
-            <View className="rounded-xl overflow-hidden">
-              <View className="bg-gradient-to-r from-primary-500 to-secondary-500 p-4">
-                <View className="flex-row items-center justify-between">
-                  <View>
-                    <Text className="text-white/80 text-sm">Current Plan</Text>
-                    <Text className="text-white text-xl font-bold">Free Plan</Text>
-                  </View>
-                  <View className="bg-white/20 px-3 py-1 rounded-full">
-                    <Text className="text-white font-semibold">Upgrade</Text>
-                  </View>
+            <LinearGradient
+              colors={['#3B82F6', '#8B5CF6']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              className="rounded-xl overflow-hidden p-4"
+            >
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text className="text-white/80 text-sm">Current Plan</Text>
+                  <Text className="text-white text-xl font-bold">Free Plan</Text>
                 </View>
-                <View className="mt-4">
-                  <Text className="text-white/80 text-sm">5 diagnoses remaining this month</Text>
-                  <View className="h-2 bg-white/20 rounded-full mt-2">
-                    <View className="h-full bg-white rounded-full" style={{ width: '50%' }} />
-                  </View>
+                <View className="bg-white/20 px-3 py-1 rounded-full">
+                  <Text className="text-white font-semibold">Upgrade</Text>
                 </View>
               </View>
-            </View>
+              <View className="mt-4">
+                <Text className="text-white/80 text-sm">5 diagnoses remaining this month</Text>
+                <View className="h-2 bg-white/20 rounded-full mt-2">
+                  <View className="h-full bg-white rounded-full" style={{ width: '50%' }} />
+                </View>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -427,7 +431,10 @@ export default function ProfileScreen() {
             <TouchableOpacity
               onPress={() => {
                 setShowImagePreview(false);
-                router.push('/(driver)/profile/edit');
+                // Small delay on iOS to let modal close animation complete
+                setTimeout(() => {
+                  router.push('/(driver)/profile/edit');
+                }, Platform.OS === 'ios' ? 300 : 0);
               }}
               className="flex-row items-center justify-center py-4 rounded-xl bg-white/10"
             >

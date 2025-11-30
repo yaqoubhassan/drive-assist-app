@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Image, Platform, ActionSheetIOS, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Image, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -122,21 +122,9 @@ export default function EditProfileScreen() {
     }
   };
 
-  const showImageOptions = () => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Take Photo', 'Choose from Library', ...(displayAvatarUrl ? ['Remove Photo'] : [])],
-          cancelButtonIndex: 0,
-          destructiveButtonIndex: displayAvatarUrl ? 3 : undefined,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) pickImage(true);
-          else if (buttonIndex === 2) pickImage(false);
-          else if (buttonIndex === 3 && displayAvatarUrl) handleRemovePhoto();
-        }
-      );
-    } else {
+  const showImageOptions = (withDelay = false) => {
+    const showOptions = () => {
+      // Use Alert.alert on both platforms to avoid iOS ActionSheetIOS conflicts with modals
       Alert.alert(
         'Profile Photo',
         'Choose an option',
@@ -149,6 +137,13 @@ export default function EditProfileScreen() {
           { text: 'Cancel', style: 'cancel' as const },
         ]
       );
+    };
+
+    // Add delay when called after closing a modal to avoid iOS freeze
+    if (withDelay && Platform.OS === 'ios') {
+      setTimeout(showOptions, 300);
+    } else {
+      showOptions();
     }
   };
 
@@ -454,7 +449,8 @@ export default function EditProfileScreen() {
             <TouchableOpacity
               onPress={() => {
                 setShowImagePreview(false);
-                showImageOptions();
+                // Use delay on iOS to let modal close animation complete
+                showImageOptions(true);
               }}
               className="flex-row items-center justify-center py-4 rounded-xl bg-white/10"
             >
