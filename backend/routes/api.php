@@ -196,6 +196,7 @@ Route::prefix('v1')->group(function () {
 
             // Maintenance Reminders
             Route::prefix('maintenance')->group(function () {
+                Route::get('/types', [MaintenanceController::class, 'types']); // Authenticated types with user custom types
                 Route::get('/reminders', [MaintenanceController::class, 'index']);
                 Route::post('/reminders', [MaintenanceController::class, 'store']);
                 Route::get('/reminders/{id}', [MaintenanceController::class, 'show']);
