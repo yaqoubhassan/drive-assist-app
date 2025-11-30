@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -44,6 +44,7 @@ export default function VehicleEditScreen() {
   const { isDark } = useTheme();
   const { showSuccess, showError, showConfirm } = useAlert();
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const isEditing = !!id;
 
@@ -69,6 +70,10 @@ export default function VehicleEditScreen() {
   const [showMakePicker, setShowMakePicker] = useState(false);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
+
+  // Track if user is actively typing (for filtering dropdowns)
+  const [isMakeSearching, setIsMakeSearching] = useState(false);
+  const [isModelSearching, setIsModelSearching] = useState(false);
 
   // Image state
   const [vehicleImage, setVehicleImage] = useState<VehicleImage | null>(null);
@@ -150,13 +155,21 @@ export default function VehicleEditScreen() {
     }
   };
 
-  // Filter makes based on typed input
-  const filteredMakes = makeName
+  // Filter makes based on typed input (only when user is actively searching)
+  const filteredMakes = isMakeSearching && makeName
     ? vehicleMakes.filter(m => m.name.toLowerCase().includes(makeName.toLowerCase()))
     : vehicleMakes;
 
-  // Filter models based on typed input
-  const filteredModels = modelName
+  // Scroll to bottom when mileage field is focused (to ensure it's visible above keyboard)
+  const handleMileageFocus = () => {
+    // Small delay to allow keyboard to open first
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  // Filter models based on typed input (only when user is actively searching)
+  const filteredModels = isModelSearching && modelName
     ? vehicleModels.filter(m => m.name.toLowerCase().includes(modelName.toLowerCase()))
     : vehicleModels;
 
@@ -370,6 +383,7 @@ export default function VehicleEditScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ScrollView
+          ref={scrollViewRef}
           className="flex-1 px-4 py-4"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -441,6 +455,7 @@ export default function VehicleEditScreen() {
                     onChangeText={(text) => {
                       setMakeName(text);
                       setMakeId(null); // Clear ID when typing custom value
+                      setIsMakeSearching(true); // Enable filtering
                       setShowMakePicker(true);
                       setShowModelPicker(false);
                       setShowYearPicker(false);
@@ -460,6 +475,7 @@ export default function VehicleEditScreen() {
                   />
                   <TouchableOpacity
                     onPress={() => {
+                      setIsMakeSearching(false); // Show all items when clicking dropdown
                       setShowMakePicker(!showMakePicker);
                       setShowModelPicker(false);
                       setShowYearPicker(false);
@@ -486,6 +502,7 @@ export default function VehicleEditScreen() {
                           onPress={() => {
                             setMakeId(vehicleMake.id);
                             setMakeName(vehicleMake.name);
+                            setIsMakeSearching(false); // Reset search flag
                             setShowMakePicker(false);
                             // Load models for selected make
                             if (vehicleMake.id > 0) {
@@ -526,6 +543,7 @@ export default function VehicleEditScreen() {
                     onChangeText={(text) => {
                       setModelName(text);
                       setModelId(null); // Clear ID when typing custom value
+                      setIsModelSearching(true); // Enable filtering
                       setShowModelPicker(true);
                       setShowMakePicker(false);
                       setShowYearPicker(false);
@@ -546,6 +564,7 @@ export default function VehicleEditScreen() {
                   ) : vehicleModels.length > 0 && (
                     <TouchableOpacity
                       onPress={() => {
+                        setIsModelSearching(false); // Show all items when clicking dropdown
                         setShowModelPicker(!showModelPicker);
                         setShowMakePicker(false);
                         setShowYearPicker(false);
@@ -573,6 +592,7 @@ export default function VehicleEditScreen() {
                           onPress={() => {
                             setModelId(vehicleModel.id);
                             setModelName(vehicleModel.name);
+                            setIsModelSearching(false); // Reset search flag
                             setShowModelPicker(false);
                           }}
                           className={`p-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
@@ -748,6 +768,7 @@ export default function VehicleEditScreen() {
               value={mileage}
               onChangeText={setMileage}
               keyboardType="numeric"
+              onFocus={handleMileageFocus}
             />
           </View>
 
